@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="../public/styles/messages.css">
+  
+</head>
+
+<body>
+  <div class="d-flex">
+    <!-- Sidebar -->
+    <aside class="sidebar d-flex flex-column justify-content-between">
+      <div>
+        <button class="btn btn-primary mb-4">Logo</button>
+        <ul class="nav flex-column gap-3">
+          <li><a href="#" class="nav-link" data-page="discover"><i class="bi bi-compass"></i> Discover</a></li>
+          <li><a href="#" class="nav-link" data-page="upload"><i class="bi bi-upload"></i> Upload</a></li>
+          <li><a href="#" class="nav-link" data-page="messages"><i class="bi bi-chat"></i> Messages</a></li>
+          <li><a href="#" class="nav-link" data-page="explore"><i class="bi bi-tag"></i> Explore Tags</a></li>
+        </ul>
+      </div>
+      <button class="btn btn-primary mt-4">Login</button>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-grow-1">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+        <div class="flex-grow-1 px-4">
+          <input type="search" class="form-control" placeholder="Login for more contentcontents">
+        </div>
+        <div class="px-4">
+          <a href="#">Create Center</a>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="container py-4">
+        <ul class="nav nav-tabs mb-4 justify-content-center" id="messageTabs">
+            <li class="nav-item">
+              <a class="nav-link active" data-tab="comments-tab" href="#">Comments&@</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-tab="likes-tab" href="#">Likes&Saves</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-tab="follows-tab" href="#">New followers</a>
+            </li>
+          </ul>
+
+        <!-- Tab Content Area -->
+<div class="tab-content">
+    <!-- Comments&@ -->
+    <div id="comments-tab" class="tab-pane active">
+      <div class="message-item">
+        <div class="left">
+          <img src="https://via.placeholder.com/40" alt="user">
+          <div>
+            <div class="username">craftqueen88</div>
+            <div class="action">Commented: “Love it!” <span class="time">28-05</span></div>
+          </div>
+        </div>
+        <img class="preview-img" src="./public/images/post1.jpg" alt="post preview">
+      </div>
+    </div>
+  
+    <!-- Likes & Saves -->
+    <div id="likes-tab" class="tab-pane d-none">
+      <div class="message-item">
+        <div class="left">
+          <img src="https://via.placeholder.com/40" alt="user">
+          <div>
+            <div class="username">sewlover123</div>
+            <div class="action">Like your post <span class="time">27-05</span></div>
+          </div>
+        </div>
+        <img class="preview-img" src="./public/images/post2.jpg" alt="post preview">
+      </div>
+  
+      <div class="message-item">
+        <div class="left">
+          <img src="https://via.placeholder.com/40" alt="user">
+          <div>
+            <div class="username">madecraft</div>
+            <div class="action">Collect your post <span class="time">24-05</span></div>
+          </div>
+        </div>
+        <img class="preview-img" src="./public/images/post3.jpg" alt="post preview">
+      </div>
+    </div>
+  
+    <!-- New followers -->
+    <div id="follows-tab" class="tab-pane d-none">
+      <div class="message-item">
+        <div class="left">
+          <img src="https://via.placeholder.com/40" alt="user">
+          <div>
+            <div class="username">stitchingstar</div>
+            <div class="action">Started following you <span class="time">23-05</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+        <!-- Messages List -->
+        <div class="message-item">
+          <div class="left">
+            <img src="https://via.placeholder.com/40" alt="user">
+            <div>
+              <div class="username">sewlover123</div>
+              <div class="action">Like your post <span class="time">27-05</span></div>
+            </div>
+          </div>
+          <img class="preview-img" src="./public/images/post2.jpg" alt="post preview">
+        </div>
+
+        <div class="message-item">
+          <div class="left">
+            <img src="https://via.placeholder.com/40" alt="user">
+            <div>
+              <div class="username">madecraft</div>
+              <div class="action">Collect your post <span class="time">24-05</span></div>
+            </div>
+          </div>
+          <img class="preview-img" src="./public/images/post3.jpg" alt="post preview">
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <script src="../js/messages.js"></script>
+
+  
+</body>
+
+</html>

@@ -1,0 +1,59 @@
+body {
+    margin: 0;
+    padding: 0;
+  }
+
+  .sidebar {
+    width: 220px;
+    height: 100vh;
+    background-color: #f8f9fa;
+    padding: 20px;
+  }
+
+  .sidebar .btn,
+  .sidebar .nav-link {
+    width: 100%;
+    margin-bottom: 10px;
+    
+  }
+
+  .tag-list button,
+  .tag-boxes button {
+    display: inline-block;
+    margin: 5px 8px 5px 0;
+    padding: 6px 14px;
+    border: 1px solid #ccc;
+    background-color: white;
+    border-radius: 20px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .post-actions button {
+    border: none;
+    background: none;
+    font-size: 1.2rem;
+    color: #555;
+    transition: color 0.2s ease;
+  }
+
+  .post-actions button:hover {
+    color: #000;
+  }
+
+  .post-actions .liked {
+    color: red;
+  }
+
+  .post-actions .saved {
+    color: #007bff;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #222;
+  }
