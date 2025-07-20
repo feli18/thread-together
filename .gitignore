@@ -1,3 +1,7 @@
+#account
+.env
+
+
 # Logs
 logs
 *.log

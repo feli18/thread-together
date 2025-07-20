@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= post.title %> - ThreadTogether</title>
+  <link rel="stylesheet" href="/styles/style.css" />
+  <link rel="stylesheet" href="/styles/post.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+</head>
+<body class="container py-4">
+
+  <a href="/explore" class="btn btn-outline-primary mb-4">← Back to browse</a>
+
+  <div class="post-detail-container">
+
+    <!-- 左侧：成果图 + 评论区 -->
+    <div class="left-column">
+      <img src="<%= post.image %>" alt="<%= post.title %>" class="post-image" />
+
+      <h5 class="mt-4">Comments</h5>
+      <% post.comments.forEach(comment => { %>
+        <div class="comment">
+          <p><i class="bi bi-person-circle"></i> <strong><%= comment.user %></strong><br><%= comment.text %></p>
+        </div>
+      <% }); %>
+
+      <form action="/posts/<%= post._id %>/comments" method="POST" class="mt-3">
+        <input type="text" name="comment" class="form-control" placeholder="Write a comment ..." />
+        <button class="btn btn-primary mt-2" type="submit">Post</button>
+      </form>
+    </div>
+
+    <!-- 右侧：标题 + 标签 + 描述 + 步骤 -->
+    <div class="right-column">
+      <h1><%= post.title %></h1>
+      <p class="text-muted"><i class="bi bi-person-circle"></i> <%= post.author %> &nbsp;•&nbsp; <%= post.date %></p>
+
+      <div class="mb-3">
+        <% post.tags.forEach(tag => { %>
+          <span class="tag"><%= tag %></span>
+        <% }); %>
+      </div>
+
+      <p><%= post.description %></p>
+
+      <h4 class="mt-4">Step-by-Step Process</h4>
+      <div class="steps-row">
+        <% post.steps.forEach((step, index) => { %>
+          <div class="step-box">
+            <p><strong>Step <%= index + 1 %></strong></p>
+            <% if (step.type === 'image') { %>
+              <img src="<%= step.image %>" class="step-image" />
+            <% } else if (step.type === 'video') { %>
+              <video class="step-image" controls>
+                <source src="<%= step.video %>" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            <% } %>
+            <p><%= step.text %></p>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
