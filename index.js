@@ -1,4 +1,21 @@
 import express from "express";
+import session from "express-session";
+import MongoStore from "connect-mongo";
+import bodyParser from "body-parser";
+
+import './config/db.js';
+import authRoutes from './routes/auth.js';
+
+import multer from 'multer';
+import Post from './models/Post.js';
+import User from './models/User.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import methodOverride from 'method-override';
+
+
+import mongoose from 'mongoose'; 
+
 
 const app = express();
 const port = 3000;
@@ -6,8 +23,34 @@ const port = 3000;
 // 设置视图引擎为 EJS
 app.set("view engine", "ejs");
 
+
+
 // 静态资源目录（包括 images、videos、styles）
 app.use(express.static("public"));
+
+
+// 会话中间件（保存登录状态）
+app.use(express.static("public"));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
+app.use(session({
+  secret: 'threadTogether-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI,
+    collectionName: 'sessions'
+  }),
+  cookie: { maxAge: 1000 * 60 * 60 * 24 }
+}));
+
+
+
+app.use((req, res, next) => {
+  res.locals.currentUser = req.session.userId || null;
+  next();
+});
+app.use("/", authRoutes);
 
 // 模拟数据数组（未来可以替换为数据库）
 const posts = [
@@ -16,7 +59,7 @@ const posts = [
     title: "Vintage French Embroidery Blouse",
     author: "sewwithjane",
     date: "2d",
-    image: "/images/blouse.jpg",
+    image: "/images/blouse.png",
     description:
       "This blouse is inspired by 1950s fashion and made from natural linen, featuring hand embroidery in delicate floral motifs.",
     tags: ["French", "Vintage", "Linen"],
@@ -35,7 +78,7 @@ const posts = [
     title: "Sewing with Video Steps Only",
     author: "videostitcher",
     date: "1d",
-    image: "/images/blouce.png",
+    image: "/images/blouse.png",
     description: "This post demonstrates a sewing project where each step is explained through video.",
     tags: ["Video", "Tutorial", "Modern"],
     steps: [
@@ -48,6 +91,126 @@ const posts = [
     ],
   },
 ];
+
+// upload funcyion
+// ES module 中 __dirname 替代方法
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// 设置 multer 存储路径
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, 'public/uploads'));
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + '-' + file.originalname;
+    cb(null, uniqueName);
+  }
+});
+const upload = multer({ storage: storage });
+
+// 支持上传多个字段
+app.post("/upload", upload.fields([
+  { name: "coverImage", maxCount: 1 },
+  { name: "stepFiles" }, // 支持多个步骤文件
+]), async (req, res) => {
+  if (!req.session.userId) return res.redirect("/login");
+
+  const { title, description, tags, stepDescriptions } = req.body;
+
+  // 1. 封面图路径
+  const coverImagePath = req.files["coverImage"]?.[0]?.filename
+    ? "/uploads/" + req.files["coverImage"][0].filename
+    : null;
+
+  // 2. 步骤文件数组（图或视频）
+  const stepFiles = req.files["stepFiles"] || [];
+
+  // 3. 步骤描述数组
+  const descriptions = Array.isArray(stepDescriptions)
+    ? stepDescriptions
+    : [stepDescriptions];
+
+  // 4. 构造 steps 数组
+  const steps = stepFiles.map((file, idx) => {
+    const isVideo = file.mimetype.startsWith("video/");
+    return {
+      type: isVideo ? "video" : "image",
+      [isVideo ? "video" : "image"]: "/uploads/" + file.filename,
+      text: descriptions[idx] || "",
+    };
+  });
+
+  // 5. 保存 Post
+  const newPost = new Post({
+    title,
+    author: req.session.userId,
+    description,
+    tags: tags.split(",").map(tag => tag.trim()),
+    steps,
+    comments: [],
+  });
+
+  await newPost.save();
+  res.redirect("/explore");
+});
+app.post("/posts/:id/delete", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).send("Post not found");
+
+    if (post.author.toString() !== req.session.userId) {
+      return res.status(403).send("Unauthorized");
+    }
+
+    await Post.findByIdAndDelete(req.params.id);
+    res.redirect("/profile");
+  } catch (err) {
+    console.error("Delete error:", err);
+    res.status(500).send("Server error");
+  }
+});
+
+app.get("/posts/:id/edit", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).send("Post not found");
+
+    if (post.author.toString() !== req.session.userId) {
+      return res.status(403).send("Unauthorized");
+    }
+
+    res.render("edit.ejs", { post });
+  } catch (err) {
+    res.status(500).send("Server error");
+  }
+});
+
+app.post("/posts/:id/edit", upload.fields([
+  { name: "coverImage", maxCount: 1 },
+]), async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    if (!post) return res.status(404).send("Post not found");
+    if (post.author.toString() !== req.session.userId) {
+      return res.status(403).send("Unauthorized");
+    }
+
+    post.title = req.body.title;
+    post.description = req.body.description;
+    post.tags = req.body.tags.split(",").map(tag => tag.trim());
+
+    if (req.files["coverImage"]?.[0]) {
+      post.steps[0].image = "/uploads/" + req.files["coverImage"][0].filename;
+    }
+
+    await post.save();
+    res.redirect("/posts/" + post._id);
+  } catch (err) {
+    res.status(500).send("Server error");
+  }
+});
+
 
 // 路由：主页
 app.get("/", (req, res) => {
@@ -65,25 +228,97 @@ app.get("/messages", (req, res) => {
 });
 
 // 路由：探索页面
-app.get("/explore", (req, res) => {
-  res.render("explore.ejs", { posts }); // 可传入 posts 做卡片展示
-});
-
-// 路由：动态加载某个帖子详情
-app.get("/posts/:id", (req, res) => {
-  const postId = req.params.id;
-  const post = posts.find((p) => p._id === postId);
-
-  if (post) {
-    res.render("post.ejs", { post });
-  } else {
-    res.status(404).send("Post not found");
+// app.get("/explore", (req, res) => {
+//   res.render("explore.ejs", { posts }); // 可传入 posts 做卡片展示
+// });
+app.get("/explore", async (req, res) => {
+  try {
+    const posts = await Post.find().sort({ createdAt: -1 }).populate("author");
+    res.render("explore.ejs", { posts });
+  } catch (err) {
+    console.error("Failed to load posts:", err);
+    res.status(500).send("Server error");
   }
 });
 
+// 详情页：查看某个帖子的内容
+app.get("/posts/:id", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id)
+      .populate("author")
+      .populate("comments.user"); // 确保评论中 user 被加载出来
+
+    if (!post) {
+      return res.status(404).send("Post not found");
+    }
+
+    res.render("post.ejs", { post, query: req.query }); // ✅ 关键是加上 query
+  } catch (err) {
+    console.error("Error fetching post:", err);
+    res.status(500).send("Server error");
+  }
+});
+
+
+app.post("/posts/:id/comments", async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (!post) return res.status(404).send("Post not found");
+
+  const { comment, replyTo } = req.body;
+
+  post.comments.push({
+    user: req.session.userId,
+    text: comment,
+    replyTo: replyTo || null
+  });
+
+  await post.save();
+  res.redirect(`/posts/${req.params.id}`);
+});
+
+app.delete("/posts/:postId/comments/:commentId", async (req, res) => {
+  const { postId, commentId } = req.params;
+
+  try {
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).send("Post not found");
+
+    const comment = post.comments.id(commentId);
+    if (!comment) return res.status(404).send("Comment not found");
+
+    if (comment.user.toString() !== req.session.userId) {
+      return res.status(403).send("Unauthorized");
+    }
+
+    comment.remove();
+    await post.save();
+
+    res.redirect(`/posts/${postId}`);
+  } catch (err) {
+    console.error("Error deleting comment:", err);
+    res.status(500).send("Server error");
+  }
+});
+
+
+async function testComments() {
+  const post = await Post.findOne().lean(); // 获取一条帖子
+  console.log(post.comments);
+}
+testComments();
+
+
 // 路由：用户个人主页
-app.get("/profile", (req, res) => {
-  res.render("profile.ejs");
+app.get("/profile", async (req, res) => {
+  if (!req.session.userId) return res.redirect("/login");
+
+  try {
+    const userPosts = await Post.find({ author: req.session.userId }).sort({ createdAt: -1 });
+    res.render("profile.ejs", { posts: userPosts });
+  } catch (err) {
+    console.error("Error loading profile posts:", err);
+    res.status(500).send("Server error");
+  }
 });
 
 // 启动服务器

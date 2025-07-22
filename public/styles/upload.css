@@ -1,188 +1,45 @@
-/* 通用设置 */
-body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-  }
-  
-  /* 侧边栏样式 */
-  .sidebar {
-    width: 220px;
-    height: 100vh;
-    background-color: #f8f9fa;
-    padding: 20px;
-  }
-  
-  .sidebar .btn,
-  .sidebar .nav-link {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-  
-  /* 主体部分 */
-  .main-content {
-    flex-grow: 1;
-    padding: 30px;
-    background-color: #fff;
-  }
-  
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-  }
-  
-  .header h2 {
-    font-size: 20px;
-    font-weight: 600;
-    color: #222;
-  }
-  
-  .back-btn {
-    text-decoration: none;
-    color: #333;
-    font-size: 14px;
-  }
-  
-  .back-btn i {
-    margin-right: 4px;
-  }
-  
-  /* Upload 表单布局 */
-  .upload-container {
-    display: flex;
-    gap: 40px;
-  }
-  
-  /* 左边 */
-  .upload-left {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .upload-cover {
-    width: 100%;
-    height: 160px;
-    background-color: #f1f1f1;
-    border: 2px dashed #ccc;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #888;
-    cursor: pointer;
-  }
-  
-  .upload-left label {
-    font-weight: bold;
-    margin-top: 10px;
-  }
-  
-  .upload-left input,
-  .upload-left textarea {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 14px;
-  }
-  
-  /* 标签样式 */
-  .tag-box {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  
-  .tag,
-  .add-tag {
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid #ccc;
-    background-color: white;
-    font-size: 14px;
-    color: #333;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  
-  .tag.selected {
-    background-color: #e0f7fa;
-    color: #007bff;
-    font-weight: bold;
-  }
-  
-  /* 按钮区域 */
-  .action-btns {
-    display: flex;
-    gap: 15px;
-    margin-top: 10px;
-  }
-  
-  .action-btns .btn {
-    padding: 8px 20px;
-    font-size: 14px;
-    border-radius: 25px;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    transition: background-color 0.2s ease;
-  }
-  
-  .action-btns .btn:hover {
-    background-color: #0056b3;
-  }
-  
-  /* 右边 */
-  .upload-right {
-    flex: 1;
-  }
-  
-  .upload-right h3 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 15px;
-    color: #222;
-  }
-  
-  .step-upload-row {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-  }
-  
-  .upload-box {
-    flex: 1;
-    height: 100px;
-    background-color: #f1f1f1;
-    border: 2px dashed #ccc;
-    border-radius: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #888;
-    cursor: pointer;
-  }
-  
-  .step-description {
-    width: 100%;
-    height: 100px;
-    padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    resize: vertical;
-  }
-  
-  .add-step {
-    margin-top: 10px;
-    background: none;
-    border: none;
-    color: #007bff;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  
+.upload-cover-container {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  position: relative;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#coverLabel {
+  font-size: 1.2rem;
+  color: #888;
+  cursor: pointer;
+  text-align: center;
+}
+
+.cover-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.step-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: #fdfdfd;
+}
+
+.step-media {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.step-preview {
+  margin-bottom: 10px;
+}
