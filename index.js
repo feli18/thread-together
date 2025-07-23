@@ -12,7 +12,8 @@ import User from './models/User.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import methodOverride from 'method-override';
-
+import Comment from './models/comment.js';
+import commentRoutes from './routes/comments.js';
 
 import mongoose from 'mongoose'; 
 
@@ -51,46 +52,47 @@ app.use((req, res, next) => {
   next();
 });
 app.use("/", authRoutes);
+app.use('/posts/:postId/comments', commentRoutes);
 
 // 模拟数据数组（未来可以替换为数据库）
-const posts = [
-  {
-    _id: "12345",
-    title: "Vintage French Embroidery Blouse",
-    author: "sewwithjane",
-    date: "2d",
-    image: "/images/blouse.png",
-    description:
-      "This blouse is inspired by 1950s fashion and made from natural linen, featuring hand embroidery in delicate floral motifs.",
-    tags: ["French", "Vintage", "Linen"],
-    steps: [
-      { type: "image", image: "/images/step1.png", text: "Pinned fabric and hand-embroidered motif." },
-      { type: "image", image: "/images/step2.png", text: "Cutting out the fabric pieces." },
-      { type: "image", image: "/images/step3.png", text: "Assembling the final garment." },
-    ],
-    comments: [
-      { user: "sewlover123", text: "Love the neckline detail! How long did it take to make?" },
-      { user: "handmadecrafts", text: "Can you share the pattern?" },
-    ],
-  },
-  {
-    _id: "video-demo",
-    title: "Sewing with Video Steps Only",
-    author: "videostitcher",
-    date: "1d",
-    image: "/images/blouse.png",
-    description: "This post demonstrates a sewing project where each step is explained through video.",
-    tags: ["Video", "Tutorial", "Modern"],
-    steps: [
-      { type: "video", video: "/videos/step1.mp4", text: "Step 1: Cutting the fabric pieces." },
-      { type: "video", video: "/videos/step2.mp4", text: "Step 2: Stitching the sides together." },
-      { type: "video", video: "/videos/step3.mp4", text: "Step 3: Adding finishing touches." },
-    ],
-    comments: [
-      { user: "videoFan88", text: "Video steps make this so clear, thanks!" }
-    ],
-  },
-];
+// const posts = [
+//   {
+//     _id: "12345",
+//     title: "Vintage French Embroidery Blouse",
+//     author: "sewwithjane",
+//     date: "2d",
+//     image: "/images/blouse.png",
+//     description:
+//       "This blouse is inspired by 1950s fashion and made from natural linen, featuring hand embroidery in delicate floral motifs.",
+//     tags: ["French", "Vintage", "Linen"],
+//     steps: [
+//       { type: "image", image: "/images/step1.png", text: "Pinned fabric and hand-embroidered motif." },
+//       { type: "image", image: "/images/step2.png", text: "Cutting out the fabric pieces." },
+//       { type: "image", image: "/images/step3.png", text: "Assembling the final garment." },
+//     ],
+//     comments: [
+//       { user: "sewlover123", text: "Love the neckline detail! How long did it take to make?" },
+//       { user: "handmadecrafts", text: "Can you share the pattern?" },
+//     ],
+//   },
+//   {
+//     _id: "video-demo",
+//     title: "Sewing with Video Steps Only",
+//     author: "videostitcher",
+//     date: "1d",
+//     image: "/images/blouse.png",
+//     description: "This post demonstrates a sewing project where each step is explained through video.",
+//     tags: ["Video", "Tutorial", "Modern"],
+//     steps: [
+//       { type: "video", video: "/videos/step1.mp4", text: "Step 1: Cutting the fabric pieces." },
+//       { type: "video", video: "/videos/step2.mp4", text: "Step 2: Stitching the sides together." },
+//       { type: "video", video: "/videos/step3.mp4", text: "Step 3: Adding finishing touches." },
+//     ],
+//     comments: [
+//       { user: "videoFan88", text: "Video steps make this so clear, thanks!" }
+//     ],
+//   },
+// ];
 
 // upload funcyion
 // ES module 中 __dirname 替代方法
@@ -108,6 +110,8 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ storage: storage });
+
+
 
 // 支持上传多个字段
 app.post("/upload", upload.fields([
@@ -211,11 +215,59 @@ app.post("/posts/:id/edit", upload.fields([
   }
 });
 
+app.post("/posts/:id/like", async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  const userId = req.session.userId;
+
+  if (!post) return res.status(404).send("Post not found");
+  if (!userId) return res.status(403).send("Login required");
+
+  const alreadyLiked = post.likedBy.includes(userId);
+
+  if (alreadyLiked) {
+    // 已点赞 → 取消点赞
+    post.likedBy.pull(userId);
+  } else {
+    // 未点赞 → 添加点赞
+    post.likedBy.push(userId);
+  }
+
+  await post.save();
+  res.redirect(`/posts/${post._id}`);
+});
+
+app.post("/posts/:id/bookmark", async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  const userId = req.session.userId;
+
+  if (!post) return res.status(404).send("Post not found");
+  if (!userId) return res.redirect("/login");
+
+  const alreadyBookmarked = post.bookmarkedBy.includes(userId);
+  if (alreadyBookmarked) {
+    post.bookmarkedBy.pull(userId); // 取消收藏
+  } else {
+    post.bookmarkedBy.push(userId); // 添加收藏
+  }
+
+  await post.save();
+  res.redirect(req.get("referer")); // 返回原页面
+});
+
+
+
 
 // 路由：主页
-app.get("/", (req, res) => {
-  res.render("index.ejs");
+app.get("/", async (req, res) => {
+  try {
+    const posts = await Post.find().sort({ createdAt: -1 }).populate("author");
+    res.render("index.ejs", { posts }); //  确保传入 posts
+  } catch (err) {
+    console.error("Failed to load posts:", err);
+    res.status(500).send("Server error");
+  }
 });
+
 
 // 路由：上传页面
 app.get("/upload", (req, res) => {
@@ -228,12 +280,12 @@ app.get("/messages", (req, res) => {
 });
 
 // 路由：探索页面
-// app.get("/explore", (req, res) => {
-//   res.render("explore.ejs", { posts }); // 可传入 posts 做卡片展示
-// });
 app.get("/explore", async (req, res) => {
   try {
-    const posts = await Post.find().sort({ createdAt: -1 }).populate("author");
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate("author")
+      .populate('likedBy');
     res.render("explore.ejs", { posts });
   } catch (err) {
     console.error("Failed to load posts:", err);
@@ -245,14 +297,16 @@ app.get("/explore", async (req, res) => {
 app.get("/posts/:id", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate("author")
-      .populate("comments.user"); // 确保评论中 user 被加载出来
+      .populate('author')
+      .populate({
+        path: 'comments',
+        populate: { path: 'user', select: 'username' }
+      })
+      .populate('likedBy'); 
 
-    if (!post) {
-      return res.status(404).send("Post not found");
-    }
+    if (!post) return res.status(404).send("Post not found");
 
-    res.render("post.ejs", { post, query: req.query }); // ✅ 关键是加上 query
+    res.render("post.ejs", { post, query: req.query });
   } catch (err) {
     console.error("Error fetching post:", err);
     res.status(500).send("Server error");
@@ -260,45 +314,48 @@ app.get("/posts/:id", async (req, res) => {
 });
 
 
+
 app.post("/posts/:id/comments", async (req, res) => {
   const post = await Post.findById(req.params.id);
   if (!post) return res.status(404).send("Post not found");
 
-  const { comment, replyTo } = req.body;
-
-  post.comments.push({
+  const newComment = new Comment({
     user: req.session.userId,
-    text: comment,
-    replyTo: replyTo || null
+    post: post._id,
+    text: req.body.comment,
+    replyTo: req.body.replyTo || null,
   });
 
+  await newComment.save();
+  post.comments.push(newComment._id);
   await post.save();
-  res.redirect(`/posts/${req.params.id}`);
+
+  res.redirect(`/posts/${post._id}`);
 });
 
-app.delete("/posts/:postId/comments/:commentId", async (req, res) => {
-  const { postId, commentId } = req.params;
+// app.delete("/posts/:postId/comments/:commentId", async (req, res) => {
+//   const { postId, commentId } = req.params;
 
-  try {
-    const post = await Post.findById(postId);
-    if (!post) return res.status(404).send("Post not found");
+//   try {
+//     const post = await Post.findById(postId);
+//     if (!post) return res.status(404).send("Post not found");
 
-    const comment = post.comments.id(commentId);
-    if (!comment) return res.status(404).send("Comment not found");
+//     const comment = post.comments.id(commentId);
+//     if (!comment) return res.status(404).send("Comment not found");
 
-    if (comment.user.toString() !== req.session.userId) {
-      return res.status(403).send("Unauthorized");
-    }
+//     if (comment.user.toString() !== req.session.userId) {
+//       return res.status(403).send("Unauthorized");
+//     }
 
-    comment.remove();
-    await post.save();
+//     comment.remove();
+//     await post.save();
 
-    res.redirect(`/posts/${postId}`);
-  } catch (err) {
-    console.error("Error deleting comment:", err);
-    res.status(500).send("Server error");
-  }
-});
+//     res.redirect(`/posts/${postId}`);
+//   } catch (err) {
+//     console.error("Error deleting comment:", err);
+//     res.status(500).send("Server error");
+//   }
+// });
 
 
 async function testComments() {
@@ -323,5 +380,5 @@ app.get("/profile", async (req, res) => {
 
 // 启动服务器
 app.listen(port, () => {
-  console.log(`✅ Server running at http://localhost:${port}`);
+  console.log(` Server running at http://localhost:${port}`);
 });

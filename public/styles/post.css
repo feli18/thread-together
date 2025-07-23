@@ -49,3 +49,9 @@
   font-size: 14px;
   display: inline-block;
 }
+.like-btn i {
+  transition: color 0.3s ease;
+  font-size: 1.3rem;
+  margin-right: 4px;
+}
+
