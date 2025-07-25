@@ -1,0 +1,34 @@
+<!-- Flash  -->
+<div class="container mt-3">
+  <% if (success && success.length > 0) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <%= success[0] %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <% if (error && error.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <%= error[0] %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+</div>
+
+<!-- Search -->
+<!-- <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+  <form method="GET" action="/explore" class="flex-grow-1 px-4">
+    <input type="search" name="q" class="form-control" placeholder="Search users..." value="<%= query || '' %>">
+  </form>
+  <div class="px-4">
+    <a href="#">Create Center</a>
+  </div>
+</div> -->
+<div class="container-fluid d-flex justify-content-between align-items-center px-4 py-2">
+  <form method="GET" action="/search-users">
+    <input type="search" name="q" class="form-control" placeholder="Search users by username..." value="<%= query %>">
+   </form>
+  <a href="#" class="text-decoration-none">Create Center</a>
+</div>
+
+

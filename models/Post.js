@@ -12,9 +12,11 @@ const postSchema = new mongoose.Schema({
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   description: String,
   tags: [{ type: String }],
+
+  coverImage: { type: String },  
+
   steps: [stepSchema],
 
-  
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
   likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   bookmarkedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],

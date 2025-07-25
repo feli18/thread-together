@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title><%= user.username %>'s Profile</title>
+  <link rel="stylesheet" href="/styles/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body class="m-0 p-0">
+  <div class="d-flex" style="height: 100vh;">
+    <!-- Sidebar -->
+    <%- include('../partials/sidebar') %>
+
+    <!-- Main Content -->
+    <div class="flex-grow-1 d-flex flex-column overflow-auto">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+        <h4 class="ms-4 mb-0"><%= user.username %>'s Profile</h4>
+        <div class="me-4">
+          <a href="/explore" class="btn btn-outline-secondary">Back to Explore</a>
+        </div>
+      </div>
+
+      <!-- Profile Section -->
+      <div class="container mt-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap">
+          <div class="d-flex align-items-center gap-4">
+            <img src="<%= user.avatar %>" alt="Avatar" class="rounded-circle border border-3" width="80" height="80">
+            <div>
+              <h5 class="mb-1">@<%= user.username %></h5>
+              <p class="text-muted mb-1"><%= user.bio || 'This user has not written a bio yet.' %></p>
+              <div class="text-muted small">
+                <span class="me-3">粉丝数：<%= user.followers.length %></span>
+                <span>关注数：<%= user.following.length %></span>
+              </div>
+            </div>
+          </div>
+
+          <% if (currentUser && currentUser !== user._id.toString()) { %>
+            <% const isFollowing = user.followers.some(f => f.toString() === currentUser); %>
+            <form method="POST" action="/users/<%= user._id %>/<%= isFollowing ? 'unfollow' : 'follow' %>">
+              <button class="btn <%= isFollowing ? 'btn-secondary' : 'btn-primary' %>">
+                <%= isFollowing ? '取消关注' : '关注TA' %>
+              </button>
+            </form>
+          <% } %>
+        </div>
+
+
+        <!-- Posts -->
+        <hr class="my-4">
+        <h5 class="mb-3">Sewing Projects by <%= user.username %></h5>
+
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+          <% if (userPosts.length > 0) { %>
+            <% userPosts.forEach(post => { %>
+              <div class="col">
+                <div class="card h-100 shadow-sm">
+                  <a href="/posts/<%= post._id %>">
+                    <img src="<%= post.coverImage || post.steps[0]?.image || '/images/default.jpg' %>" class="card-img-top" alt="Post Image">
+                  </a>
+                  <div class="card-body">
+                    <h5 class="card-title"><%= post.title %></h5>
+                    <div class="d-flex flex-wrap gap-2">
+                      <% post.tags.forEach(tag => { %>
+                        <span class="badge bg-light text-dark">#<%= tag %></span>
+                      <% }) %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <p class="text-muted">This user hasn’t posted anything yet.</p>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

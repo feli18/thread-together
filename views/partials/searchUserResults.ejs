@@ -1,0 +1,23 @@
+<!-- 搜索用户结果 -->
+<% if (query && matchedUsers.length > 0) { %>
+  <div class="container mt-4">
+    <h3>Matched Users</h3>
+    <div class="row">
+      <% matchedUsers.forEach(user => { %>
+        <div class="col-md-4 mb-3">
+          <div class="card p-3">
+            <div class="d-flex align-items-center gap-2">
+              <img src="<%= user.avatar %>" width="50" height="50" class="rounded-circle" alt="avatar">
+              <div>
+                <strong><a href="/users/<%= user._id %>"><%= user.username %></a></strong><br>
+                <small><%= user.bio %></small>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+<% } else if (query) { %>
+  <p class="text-muted text-center mt-4">No user found for "<%= query %>"</p>
+<% } %>

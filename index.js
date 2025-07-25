@@ -14,6 +14,11 @@ import { fileURLToPath } from 'url';
 import methodOverride from 'method-override';
 import Comment from './models/comment.js';
 import commentRoutes from './routes/comments.js';
+import flash from 'connect-flash';
+
+
+import userRoutes from './routes/users.js';
+
 
 import mongoose from 'mongoose'; 
 
@@ -44,15 +49,47 @@ app.use(session({
   }),
   cookie: { maxAge: 1000 * 60 * 60 * 24 }
 }));
+app.use(flash());
 
+app.use(async (req, res, next) => {
+  const query = req.query.q || '';
 
-
-app.use((req, res, next) => {
+  // 登录状态
   res.locals.currentUser = req.session.userId || null;
+  res.locals.query = query;
+  res.locals.success = req.flash('success');
+  res.locals.error = req.flash('error');
+
+  // 登录用户信息（全局 user）
+  res.locals.user = req.session.userId
+    ? await User.findById(req.session.userId)
+    : null;
+
+  // 匹配搜索用户结果（全局 matchedUsers）
+  res.locals.matchedUsers = query
+    ? await User.find({
+        username: { $regex: query, $options: 'i' }
+      })
+    : [];
+
   next();
 });
+
+
 app.use("/", authRoutes);
+app.use("/", userRoutes);
 app.use('/posts/:postId/comments', commentRoutes);
+
+// 全局设置 res.locals.user
+// app.use(async (req, res, next) => {
+//   if (req.session.userId) {
+//     res.locals.user = await User.findById(req.session.userId);
+//   } else {
+//     res.locals.user = null;
+//   }
+//   next();
+// });
+
 
 // 模拟数据数组（未来可以替换为数据库）
 // const posts = [
@@ -116,26 +153,21 @@ const upload = multer({ storage: storage });
 // 支持上传多个字段
 app.post("/upload", upload.fields([
   { name: "coverImage", maxCount: 1 },
-  { name: "stepFiles" }, // 支持多个步骤文件
+  { name: "stepFiles" },
 ]), async (req, res) => {
   if (!req.session.userId) return res.redirect("/login");
 
   const { title, description, tags, stepDescriptions } = req.body;
 
-  // 1. 封面图路径
+  // 封面图路径（不要放入 steps）
   const coverImagePath = req.files["coverImage"]?.[0]?.filename
     ? "/uploads/" + req.files["coverImage"][0].filename
     : null;
 
-  // 2. 步骤文件数组（图或视频）
+  // 步骤图/视频
   const stepFiles = req.files["stepFiles"] || [];
+  const descriptions = Array.isArray(stepDescriptions) ? stepDescriptions : [stepDescriptions];
 
-  // 3. 步骤描述数组
-  const descriptions = Array.isArray(stepDescriptions)
-    ? stepDescriptions
-    : [stepDescriptions];
-
-  // 4. 构造 steps 数组
   const steps = stepFiles.map((file, idx) => {
     const isVideo = file.mimetype.startsWith("video/");
     return {
@@ -145,12 +177,13 @@ app.post("/upload", upload.fields([
     };
   });
 
-  // 5. 保存 Post
+  // 存储 Post，不把封面图放进 steps
   const newPost = new Post({
     title,
     author: req.session.userId,
     description,
     tags: tags.split(",").map(tag => tag.trim()),
+    coverImage: coverImagePath, // <- 独立字段
     steps,
     comments: [],
   });
@@ -158,6 +191,8 @@ app.post("/upload", upload.fields([
   await newPost.save();
   res.redirect("/explore");
 });
+
+
 app.post("/posts/:id/delete", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -204,8 +239,9 @@ app.post("/posts/:id/edit", upload.fields([
     post.description = req.body.description;
     post.tags = req.body.tags.split(",").map(tag => tag.trim());
 
+    //正确更新封面图字段
     if (req.files["coverImage"]?.[0]) {
-      post.steps[0].image = "/uploads/" + req.files["coverImage"][0].filename;
+      post.coverImage = "/uploads/" + req.files["coverImage"][0].filename;
     }
 
     await post.save();
@@ -214,6 +250,7 @@ app.post("/posts/:id/edit", upload.fields([
     res.status(500).send("Server error");
   }
 });
+
 
 app.post("/posts/:id/like", async (req, res) => {
   const post = await Post.findById(req.params.id);
@@ -261,12 +298,19 @@ app.post("/posts/:id/bookmark", async (req, res) => {
 app.get("/", async (req, res) => {
   try {
     const posts = await Post.find().sort({ createdAt: -1 }).populate("author");
-    res.render("index.ejs", { posts }); //  确保传入 posts
+
+    let user = null;
+    if (req.session.userId) {
+      user = await User.findById(req.session.userId); // 🔁 查询当前登录用户信息
+    }
+
+    res.render("index.ejs", { posts});
   } catch (err) {
     console.error("Failed to load posts:", err);
     res.status(500).send("Server error");
   }
 });
+
 
 
 // 路由：上传页面
@@ -276,6 +320,7 @@ app.get("/upload", (req, res) => {
 
 // 路由：消息页面
 app.get("/messages", (req, res) => {
+  
   res.render("messages.ejs");
 });
 
@@ -285,13 +330,16 @@ app.get("/explore", async (req, res) => {
     const posts = await Post.find()
       .sort({ createdAt: -1 })
       .populate("author")
-      .populate('likedBy');
+      .populate("likedBy")
+      .populate("bookmarkedBy");
+
     res.render("explore.ejs", { posts });
   } catch (err) {
     console.error("Failed to load posts:", err);
     res.status(500).send("Server error");
   }
 });
+
 
 // 详情页：查看某个帖子的内容
 app.get("/posts/:id", async (req, res) => {
@@ -306,7 +354,7 @@ app.get("/posts/:id", async (req, res) => {
 
     if (!post) return res.status(404).send("Post not found");
 
-    res.render("post.ejs", { post, query: req.query });
+    res.render("post.ejs", { post });
   } catch (err) {
     console.error("Error fetching post:", err);
     res.status(500).send("Server error");
@@ -333,29 +381,17 @@ app.post("/posts/:id/comments", async (req, res) => {
   res.redirect(`/posts/${post._id}`);
 });
 
-// app.delete("/posts/:postId/comments/:commentId", async (req, res) => {
-//   const { postId, commentId } = req.params;
+app.get("/search-users", async (req, res) => {
+  const query = req.query.q || '';
+  const matchedUsers = await User.find({
+    username: { $regex: query, $options: "i" }
+  });
 
-//   try {
-//     const post = await Post.findById(postId);
-//     if (!post) return res.status(404).send("Post not found");
-
-//     const comment = post.comments.id(commentId);
-//     if (!comment) return res.status(404).send("Comment not found");
-
-//     if (comment.user.toString() !== req.session.userId) {
-//       return res.status(403).send("Unauthorized");
-//     }
-
-//     comment.remove();
-//     await post.save();
-
-//     res.redirect(`/posts/${postId}`);
-//   } catch (err) {
-//     console.error("Error deleting comment:", err);
-//     res.status(500).send("Server error");
-//   }
-// });
+  res.render("searchUsers.ejs", {
+    matchedUsers,
+    query
+  });
+});
 
 
 async function testComments() {
@@ -370,13 +406,34 @@ app.get("/profile", async (req, res) => {
   if (!req.session.userId) return res.redirect("/login");
 
   try {
-    const userPosts = await Post.find({ author: req.session.userId }).sort({ createdAt: -1 });
-    res.render("profile.ejs", { posts: userPosts });
+    const userId = req.session.userId;
+
+    const user = await User.findById(userId)
+      .populate('followers')  
+      .populate('following'); 
+
+    const [userPosts, likedPosts, collectedPosts] = await Promise.all([
+      Post.find({ author: userId }).sort({ createdAt: -1 }),
+      Post.find({ likedBy: userId }).sort({ createdAt: -1 }),
+      Post.find({ bookmarkedBy: userId }).sort({ createdAt: -1 }),
+    ]);
+
+    res.render("profile.ejs", {
+      user,
+      userPosts,
+      likedPosts,
+      collectedPosts
+    });
   } catch (err) {
-    console.error("Error loading profile posts:", err);
+    console.error("Error loading profile:", err);
     res.status(500).send("Server error");
   }
 });
+
+
+app.use('/uploads', express.static('public/uploads'));
+
+
 
 // 启动服务器
 app.listen(port, () => {

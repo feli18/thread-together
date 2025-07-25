@@ -12,37 +12,18 @@
 <body class="m-0 p-0">
   <div class="d-flex" style="height: 100vh;">
     <!-- Sidebar -->
-    <aside class="sidebar d-flex flex-column justify-content-between p-4 bg-light" style="width: 220px;">
-      <div>
-        <button class="btn btn-primary mb-4">Logo</button>
-        <ul class="nav flex-column gap-3">
-          <li><a href="/" class="nav-link"><i class="bi bi-compass"></i> Discover</a></li>
-          <li><a href="/upload" class="nav-link"><i class="bi bi-upload"></i> Upload</a></li>
-          <li><a href="/messages" class="nav-link"><i class="bi bi-chat"></i> Messages</a></li>
-          <li><a href="/explore" class="nav-link"><i class="bi bi-tag"></i> Explore Tags</a></li>
-        </ul>
-      </div>
-      <!-- <button id="login-btn" class="btn btn-primary mt-4">Login</button> -->
-       <div class="mt-4">
-          <% if (currentUser) { %>
-            <a href="/profile" class="d-flex align-items-center gap-2 text-dark text-decoration-none mb-2">
-              <img src="/images/propic.png" alt="avatar" class="rounded-circle" style="width: 32px; height: 32px;">
-              <span>Me</span>
-            </a>
-            <a href="/logout" class="btn btn-outline-secondary w-100">Logout</a>
-          <% } else { %>
-            <a href="/login" class="btn btn-primary w-100">Login</a>
-          <% } %>
-        </div>
-    </aside>
+    <%- include('partials/sidebar') %>
 
     <!-- Main Content -->
     <div class="flex-grow-1 d-flex flex-column" style="overflow-y: auto;">
       <!-- Top Bar -->
       <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-        <div class="flex-grow-1 px-4">
+        <!-- <div class="flex-grow-1 px-4">
           <input type="search" class="form-control" placeholder="Login for more content..." />
-        </div>
+        </div> -->
+        <%- include('partials/header.ejs') %>
+        <%- include('partials/searchUserResults.ejs') %>
+
         <div class="px-4">
           <a href="#">Create Center</a>
         </div>
@@ -97,7 +78,7 @@
 
                     <!-- thumbnail-->
                     <a href="/posts/<%= post._id %>" style="text-decoration: none;">
-                      <img src="<%= post.steps[0]?.image || '/images/default.jpg' %>" class="card-img-top" alt="Post Image" />
+                      <img src="<%= post.coverImage || post.steps[0]?.image|| '/images/default.jpg' %>" class="card-img-top" alt="Post Image" />
                     </a>
 
                     <div class="card-body">

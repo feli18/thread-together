@@ -11,28 +11,8 @@
 <body>
   <div class="d-flex">
     <!-- Sidebar -->
-    <aside class="sidebar d-flex flex-column justify-content-between p-4 bg-light" style="width: 220px;">
-      <div>
-        <button class="btn btn-primary mb-4"><a href="/" class="nav-link"> Logo</a></button>
-        <ul class="nav flex-column gap-3">
-          <li><a href="/" class="nav-link"><i class="bi bi-compass"></i> Discover</a></li>
-          <li><a href="/upload" class="nav-link"><i class="bi bi-upload"></i> Upload</a></li>
-          <li><a href="/messages" class="nav-link"><i class="bi bi-chat"></i> Messages</a></li>
-          <li><a href="/explore" class="nav-link"><i class="bi bi-tag"></i> Explore Tags</a></li>
-        </ul>
-      </div>
-      <div class="mt-4">
-        <% if (currentUser) { %>
-          <a href="/profile" class="d-flex align-items-center gap-2 text-dark text-decoration-none mb-2">
-            <img src="/images/propic.png" class="rounded-circle" style="width: 32px; height: 32px;" />
-            <span>Me</span>
-          </a>
-          <a href="/logout" class="btn btn-outline-secondary w-100">Logout</a>
-        <% } else { %>
-          <a href="/login" class="btn btn-primary w-100">Login</a>
-        <% } %>
-      </div>
-    </aside>
+    <%- include('partials/sidebar') %>
+
 
     <!-- Main Content -->
     <main class="flex-grow-1 p-4">
@@ -64,6 +44,8 @@
             <h4>STEPS</h4>
             <div id="stepsContainer"></div>
             <button type="button" class="btn btn-outline-primary mt-2" id="addStepBtn">+ Add next step</button>
+            
+
           </div>
         </div>
 
@@ -97,14 +79,22 @@
     const addStepBtn = document.getElementById('addStepBtn');
 
     function createStepBox(index) {
+      const stepId = `step-${Date.now()}-${index}`;
       return `
-        <div class="step-box mt-3">
-          <p><strong>Step ${index}</strong></p>
+        <div class="step-box mt-3" id="${stepId}">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <p class="mb-0"><strong>Step ${index}</strong></p>
+            <button type="button" class="btn btn-sm btn-outline-danger remove-step" data-step-id="${stepId}">
+              <i class="bi bi-trash"></i> Delete
+            </button>
+          </div>
           <input type="file" name="stepFiles" accept="image/*,video/*" class="form-control step-file mb-2" />
-          <div class="step-preview"></div>
+          <div class="step-preview mb-2"></div>
           <textarea name="stepDescriptions" class="form-control" placeholder="Add description ..." required></textarea>
-        </div>`;
+        </div>
+      `;
     }
+
 
     function addStep() {
       const newStep = createStepBox(stepIndex);
@@ -115,6 +105,14 @@
     addStepBtn.addEventListener('click', addStep);
     window.addEventListener('load', () => {
       addStep(); // 初始加载一个 step
+    });
+    //delete ‘nextstep’
+    stepsContainer.addEventListener("click", function (e) {
+      if (e.target.closest(".remove-step")) {
+        const stepId = e.target.closest(".remove-step").dataset.stepId;
+        const stepDiv = document.getElementById(stepId);
+        if (stepDiv) stepDiv.remove();
+      }
     });
 
     // Step preview logic

@@ -15,38 +15,22 @@
 <body>
   <div class="d-flex">
     <!-- Sidebar -->
-    <aside class="sidebar d-flex flex-column justify-content-between p-4 bg-light" style="width: 220px;">
-      <div>
-        <button class="btn btn-primary mb-4"><a href="/" class="nav-link"> Logo</a></button>
-        <ul class="nav flex-column gap-3">
-          <li><a href="/" class="nav-link"><i class="bi bi-compass"></i> Discover</a></li>
-          <li><a href="/upload" class="nav-link"><i class="bi bi-upload"></i> Upload</a></li>
-          <li><a href="/messages" class="nav-link"><i class="bi bi-chat"></i> Messages</a></li>
-          <li><a href="/explore" class="nav-link"><i class="bi bi-tag"></i> Explore Tags</a></li>
-        </ul>
-      </div>
-      <!-- <button id="login-btn" class="btn btn-primary mt-4">Login</button> -->
-       <div class="mt-4">
-          <% if (currentUser) { %>
-            <a href="/profile" class="d-flex align-items-center gap-2 text-dark text-decoration-none mb-2">
-              <img src="/images/propic.png" alt="avatar" class="rounded-circle" style="width: 32px; height: 32px;">
-              <span>Me</span>
-            </a>
-            <a href="/logout" class="btn btn-outline-secondary w-100">Logout</a>
-          <% } else { %>
-            <a href="/login" class="btn btn-primary w-100">Login</a>
-          <% } %>
-        </div>
+    <%- include('partials/sidebar') %>
 
-    </aside>
 
     <!-- Main Content -->
     <div class="flex-grow-1">
       <!-- Header -->
       <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
         <div class="flex-grow-1 px-4">
-          <input type="search" class="form-control" placeholder="Search tags...">
+          <!-- <input type="search" class="form-control" placeholder="Search tags..."> -->
+          
+        <%- include('partials/header.ejs') %>
+        <%- include('partials/searchUserResults.ejs') %>
+
         </div>
+
+        
         <div class="px-4">
           <a href="#">Create Center</a>
         </div>
@@ -83,89 +67,12 @@
 
         <!-- Featured Posts -->
         <section>
+          
+
           <h2>Featured Posts</h2>
           
-          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
-            <% if (posts && posts.length > 0) { %>
-              <% posts.forEach(post => { %>
-                <div class="col">
-                  <div class="card shadow-sm rounded">
+          <%- include('partials/postCardGrid', { posts, currentUser }) %>
 
-                    <!-- thumbnail-->
-                    <a href="/posts/<%= post._id %>" style="text-decoration: none;">
-                      <img src="<%= post.steps[0]?.image || '/images/default.jpg' %>" class="card-img-top" alt="Post Image" />
-                    </a>
-
-                    <div class="card-body">
-                      <!-- title-->
-                      <a href="/posts/<%= post._id %>" style="text-decoration: none; color: inherit;">
-                        <h5 class="card-title mb-1 fw-bold"><%= post.title %></h5>
-                      </a>
-
-                      <!-- tags-->
-                      <div class="d-flex flex-wrap gap-2 mb-2">
-                        <% post.tags.forEach(tag => { %>
-                          <span class="badge bg-light text-dark">#<%= tag %></span>
-                        <% }) %>
-                      </div>
-
-                      <!-- like button-->
-                      <div class="d-flex justify-content-between align-items-center">
-                        <% const liked = post.likedBy.some(user => user._id.toString() === currentUser?.toString()); %>
-
-                        <% if (currentUser) { %>
-                          <!-- 已登录时，正常点赞功能 -->
-                          <form action="/posts/<%= post._id %>/like" method="POST" class="like-form" data-post-id="<%= post._id %>">
-                            <button type="submit" class="btn btn-light like-btn border-0">
-                              <i class="<%= liked ? 'bi bi-heart-fill text-danger' : 'bi bi-heart text-secondary' %>"></i>
-                              <span class="like-count"><%= post.likedBy.length %></span>
-                            </button>
-                          </form>
-                        <% } else { %>
-                          <!-- 未登录时，引导跳转 -->
-                          <a href="/login" class="btn btn-light border-0">
-                            <i class="bi bi-heart text-secondary"></i>
-                            <span class="like-count"><%= post.likedBy.length %></span>
-                          </a>
-                        <% } %>
-                          <!-- comment -->
-                        <!-- <a href="/posts/<%= post._id %>" class="btn btn-light border-0">
-                          <i class="bi bi-chat text-secondary"></i>
-                        </a> -->
-
-                        <!-- collect -->
-                      <!-- <div class="d-flex justify-content-between align-items-center"> -->
-                        <% const bookmarked = post.bookmarkedBy.some(user => user._id.toString() === currentUser?.toString()); %>
-                          <% if (currentUser) { %>
-                            <form action="/posts/<%= post._id %>/bookmark" method="POST" style="display:inline;">
-                              <button type="submit" class="btn btn-light save-btn border-0">
-                                <i class="<%= bookmarked ? 'bi bi-bookmark-fill text-primary' : 'bi bi-bookmark text-secondary' %>"></i>
-                                <span class="bookmark-count"><%= post.bookmarkedBy.length %></span>
-                              </button>
-                            </form>
-                          <% } else { %>
-                            <a href="/login" class="btn btn-light save-btn border-0">
-                              <i class="bi bi-bookmark text-secondary"></i>
-                            </a>
-                          <% } %>
-                      <!-- </div> -->
-
-
-                      </div>
-
-                      
-
-                      
-                    </div>
-                  </div>
-                </div>
-              <% }) %>
-            <% } else { %>
-              <div class="col">
-                <p>No posts yet. Upload your first sewing project!</p>
-              </div>
-            <% } %>
-          </div>
 
 
         </section>

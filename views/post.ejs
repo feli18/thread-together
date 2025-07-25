@@ -16,7 +16,8 @@
 
     <!-- Left Column -->
     <div class="left-column" style="flex: 1; min-width: 300px;">
-      <img src="<%= post.steps[0]?.image || '/images/post1.png' %>" alt="<%= post.title %>" class="post-image mb-4" />
+      <img src="<%= post.coverImage || post.steps[0]?.image || '/images/default.jpg' %>" alt="<%= post.title %>" class="post-image mb-4" />
+
 
       <h5 class="mt-4">Comments</h5>
 

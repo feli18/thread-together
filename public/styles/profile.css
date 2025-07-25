@@ -62,4 +62,7 @@ body {
     background-color: #eee;
     font-weight: 600;
   }
-  
+  .follow-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+}
