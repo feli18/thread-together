@@ -18,6 +18,11 @@ import flash from 'connect-flash';
 
 
 import userRoutes from './routes/users.js';
+import generateTags from './routes/generateTags.js';
+import messageRoutes from "./routes/messages.js";
+import notificationRoutes from "./routes/notifications.js";
+import Notification from './models/Notification.js';
+import Message from './models/Message.js';
 
 
 import mongoose from 'mongoose'; 
@@ -50,6 +55,7 @@ app.use(session({
   cookie: { maxAge: 1000 * 60 * 60 * 24 }
 }));
 app.use(flash());
+app.use("/generate-tags", generateTags);
 
 app.use(async (req, res, next) => {
   const query = req.query.q || '';
@@ -71,6 +77,18 @@ app.use(async (req, res, next) => {
         username: { $regex: query, $options: 'i' }
       })
     : [];
+    // 通知和消息数量
+    if (req.session.userId) {
+      const [notificationCount, messageCount] = await Promise.all([
+        Notification.countDocuments({ recipient: req.session.userId }),
+        Message.countDocuments({ recipient: req.session.userId })
+      ]);
+      res.locals.unreadNotifications = notificationCount;
+      res.locals.unreadMessages = messageCount;
+    } else {
+      res.locals.unreadNotifications = 0;
+      res.locals.unreadMessages = 0;
+    }
 
   next();
 });
@@ -79,6 +97,8 @@ app.use(async (req, res, next) => {
 app.use("/", authRoutes);
 app.use("/", userRoutes);
 app.use('/posts/:postId/comments', commentRoutes);
+app.use("/messages", messageRoutes);
+app.use("/notifications", notificationRoutes);
 
 // 全局设置 res.locals.user
 // app.use(async (req, res, next) => {
@@ -268,6 +288,19 @@ app.post("/posts/:id/like", async (req, res) => {
     // 未点赞 → 添加点赞
     post.likedBy.push(userId);
   }
+  if (!alreadyLiked) {
+  // 添加点赞
+  post.likedBy.push(userId);
+  if (post.author.toString() !== userId) {
+      await Notification.create({
+        recipient: post.author,
+        sender: userId,
+        type: "like",
+        post: post._id
+      });
+    }
+  }
+  
 
   await post.save();
   res.redirect(`/posts/${post._id}`);
@@ -285,6 +318,17 @@ app.post("/posts/:id/bookmark", async (req, res) => {
     post.bookmarkedBy.pull(userId); // 取消收藏
   } else {
     post.bookmarkedBy.push(userId); // 添加收藏
+  }
+  if (!alreadyBookmarked) {
+  post.bookmarkedBy.push(userId);
+  if (post.author.toString() !== userId) {
+      await Notification.create({
+        recipient: post.author,
+        sender: userId,
+        type: "bookmark",
+        post: post._id
+      });
+    }
   }
 
   await post.save();
@@ -319,9 +363,20 @@ app.get("/upload", (req, res) => {
 });
 
 // 路由：消息页面
-app.get("/messages", (req, res) => {
+// app.get("/notifications", (req, res) => {
   
-  res.render("messages.ejs");
+//   res.render("notifications.ejs");
+// });
+app.get("/notifications", async (req, res) => {
+  if (!req.session.userId) return res.redirect("/login");
+
+  const notifications = await Notification.find({ recipient: req.session.userId })
+    .sort({ createdAt: -1 })
+    .populate("sender", "username avatar")
+    .populate("post", "coverImage")
+    .populate("comment", "text");
+
+  res.render("notifications.ejs", { notifications });
 });
 
 // 路由：探索页面
@@ -361,11 +416,10 @@ app.get("/posts/:id", async (req, res) => {
   }
 });
 
-
-
 app.post("/posts/:id/comments", async (req, res) => {
   const post = await Post.findById(req.params.id);
   if (!post) return res.status(404).send("Post not found");
+
 
   const newComment = new Comment({
     user: req.session.userId,
@@ -374,12 +428,40 @@ app.post("/posts/:id/comments", async (req, res) => {
     replyTo: req.body.replyTo || null,
   });
 
+
   await newComment.save();
+
   post.comments.push(newComment._id);
   await post.save();
 
+  // 4️⃣ 评论通知：给帖子作者
+  if (post.author.toString() !== req.session.userId) {
+    await Notification.create({
+      recipient: post.author,
+      sender: req.session.userId,
+      type: "comment",
+      post: post._id,
+      comment: newComment._id,
+    });
+  }
+
+  // 5️⃣ 回复通知：给被回复的人
+  if (req.body.replyTo) {
+    const parentComment = await Comment.findById(req.body.replyTo).populate("user");
+    if (parentComment && parentComment.user._id.toString() !== req.session.userId) {
+      await Notification.create({
+        recipient: parentComment.user._id,
+        sender: req.session.userId,
+        type: "reply",
+        post: post._id,
+        comment: newComment._id,
+      });
+    }
+  }
+
   res.redirect(`/posts/${post._id}`);
 });
+
 
 app.get("/search-users", async (req, res) => {
   const query = req.query.q || '';

@@ -25,23 +25,27 @@
           <%- include('partials/searchUserResults.ejs') %>
         </div>
         <div class="px-4">
-          <a href="#">Create Center</a>
+          <!-- <a href="#">Create Center</a> -->
         </div>
       </div>
 
       
       
 
-      <div class="container py-4 text-center">
+      <div class="container py-4 ">
         <!-- Profile Info -->
-        <img src="<%= user.avatar %>" width="100" height="100" alt="Avatar" class="rounded-circle mb-2 border border-3  ">
-        <h4><%= user.username %></h4>
-        <% if (user.bio) { %><p class="text-muted"><%= user.bio %></p><% } %>
-        <% if (user.website) { %>
-          <p><a href="<%= user.website %>" target="_blank" class="btn btn-outline-dark btn-sm ">🌐 Website</a></p>
-          
-        <% } %>
-        <a href="/profile/edit" class="btn btn-outline-dark btn-sm ">Edit Profile</a>
+         <div class="text-center mb-4">
+          <img src="<%= user.avatar %>" width="100" height="100" alt="Avatar" class="rounded-circle mb-2 border border-3  ">
+          <h4><%= user.username %></h4>
+          <% if (user.bio) { %><p class="text-muted"><%= user.bio %></p><% } %>
+          <% if (user.website) { %>
+            <p><a href="<%= user.website %>" target="_blank" class="btn btn-outline-dark btn-sm ">🌐 Website</a></p>
+            
+          <% } %>
+          <a href="/profile/edit" class="btn btn-outline-dark btn-sm ">Edit Profile</a>
+
+         </div>
+        
 
 
 

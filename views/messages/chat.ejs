@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat with <%= targetUser.username %></title>
+  <link rel="stylesheet" href="/styles/style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
+  <style>
+    .chat-container {
+      padding: 2rem;
+    }
+    .chat-box {
+      height: 70vh;
+      overflow-y: auto;
+      padding: 1rem;
+      background: #f9f9f9;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+    }
+    .chat-bubble {
+      max-width: 75%;
+      padding: 10px 15px;
+      border-radius: 15px;
+      margin-bottom: 10px;
+      display: inline-block;
+    }
+    .chat-bubble.left {
+      background-color: #e0e0e0;
+      text-align: left;
+    }
+    .chat-bubble.right {
+      background-color: #d1e7dd;
+      text-align: right;
+    }
+    .chat-image {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="d-flex">
+    <!-- Sidebar -->
+    <%- include('../partials/sidebar') %>
+
+    <!-- Main Chat Content -->
+    <div class="flex-grow-1 px-5 py-4 ">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Chat with @<%= targetUser.username %></h5>
+        <a href="/messages" class="btn btn-sm btn-outline-secondary">← Back to Messages</a>
+      </div>
+
+      <!-- Chat messages -->
+      <div class="chat-box mb-3">
+        <% messages.forEach(msg => { %>
+          <div class="d-flex <%= msg.sender._id.toString() === currentUser ? 'justify-content-end' : 'justify-content-start' %>">
+            <div class="chat-bubble <%= msg.sender._id.toString() === currentUser ? 'right' : 'left' %>">
+              <% if (msg.text) { %>
+                <div><%= msg.text %></div>
+              <% } %>
+              <% if (msg.image) { %>
+                <img src="<%= msg.image %>" class="chat-image"/>
+              <% } %>
+              <div class="text-muted small mt-1 text-end">
+                <%= new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <!-- Send message -->
+      <form method="POST" action="/messages/<%= targetUser._id %>" enctype="multipart/form-data">
+        <div class="input-group">
+          <input type="text" name="text" class="form-control" placeholder="Type your message...">
+          <input type="file" name="image" class="form-control" accept="image/*">
+          <button class="btn btn-primary"><i class="bi bi-send"></i></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

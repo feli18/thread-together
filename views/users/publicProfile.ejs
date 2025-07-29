@@ -46,6 +46,9 @@
             </form>
           <% } %>
         </div>
+        <% if (currentUser && currentUser !== user._id.toString()) { %>
+          <a href="/messages/<%= user._id %>" class="btn btn-outline-dark btn-sm">Send Message</a>
+        <% } %>
 
 
         <!-- Posts -->

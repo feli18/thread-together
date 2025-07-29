@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Messages</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
+  <link rel="stylesheet" href="/styles/messages.css"/>
+  <style>
+    a.list-group-item:hover {
+    background-color: #f0f0f0;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="d-flex">
+    <!-- Sidebar -->
+    <%- include('../partials/sidebar') %>
+
+    <!-- Main Content -->
+    <div class="flex-grow-1">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+        <div class="flex-grow-1 px-4">
+          <%- include('../partials/header') %>
+          <%- include('../partials/searchUserResults') %>
+        </div>
+      </div>
+
+      <!-- Conversation List -->
+      <div class="container py-4">
+        <h4 class="mb-4">Messages</h4>
+        <% if (conversations.length === 0) { %>
+          <p class="text-muted">No conversations yet.</p>
+        <% } else { %>
+          <ul class="list-group">
+            <% conversations.forEach(conv => { %>
+                <a href="/messages/<%= conv.user._id %>" class="list-group-item list-group-item-action d-flex align-items-center">
+                <img src="<%= conv.user.avatar %>" width="40" class="rounded-circle me-2" />
+                <span>@<%= conv.user.username %></span>
+                </a>
+            <% }) %>
+            </ul>
+
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

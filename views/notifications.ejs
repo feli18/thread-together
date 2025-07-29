@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Notifications</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
+  <link rel="stylesheet" href="/styles/notifications.css"/>
+</head>
+
+<body>
+  <div class="d-flex">
+    <!-- Sidebar -->
+    <%- include('partials/sidebar') %>
+
+    <!-- Main Content -->
+    <div class="flex-grow-1">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+        <div class="flex-grow-1 px-4">
+          <%- include('partials/header.ejs') %>
+          <%- include('partials/searchUserResults.ejs') %>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="container py-4">
+        <ul class="nav nav-tabs mb-4 justify-content-center" id="notificationTabs">
+          <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#comments-tab">Comments & @</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#likes-tab">Likes & Saves</a>
+          </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+          <!-- Comments / Replies -->
+          <div id="comments-tab" class="tab-pane fade show active">
+            <% notifications.forEach(n => { %>
+              <% if (n.type === 'comment' || n.type === 'reply') { %>
+                <div class="message-item d-flex justify-content-between align-items-center mb-3">
+                  <div class="left d-flex align-items-center">
+                    <img src="<%= n.sender.avatar || '/images/user.png' %>" width="40" class="rounded-circle me-3">
+                    <div>
+                      <div class="username fw-semibold">@<%= n.sender.username %></div>
+                      <div class="action text-muted">
+                        <%= n.type === 'comment' ? 'commented on' : 'replied to a comment on' %> your post
+                        <span class="ms-2 time small"><%= n.createdAt.toLocaleDateString() %></span>
+                      </div>
+                      <div class="text-muted small">[<%= n.comment?.text || 'no comment text' %>]</div> 
+                      <!-- debug -->
+                    </div>
+                  </div>
+                  <a href="/posts/<%= n.post._id %>">
+                    <img src="<%= n.post.coverImage || '/images/placeholder.png' %>" width="60" class="preview-img rounded">
+                  </a>
+                </div>
+              <% } %>
+            <% }) %>
+          </div>
+            
+          <!-- Likes / Saves -->
+          <div id="likes-tab" class="tab-pane fade">
+            <% notifications.forEach(n => { %>
+              <% if (n.type === 'like' || n.type === 'bookmark') { %>
+                <div class="message-item d-flex justify-content-between align-items-center mb-3">
+                  <div class="left d-flex align-items-center">
+                    <img src="<%= n.sender.avatar || '/images/user.png' %>" width="40" class="rounded-circle me-3">
+                    <div>
+                      <div class="username fw-semibold">@<%= n.sender.username %></div>
+                      <div class="action text-muted">
+                        <%= n.type === 'like' ? 'liked' : 'saved' %> your post
+                        <span class="ms-2 time small"><%= n.createdAt.toLocaleDateString() %></span>
+                      </div>
+                    </div>
+                  </div>
+                  <a href="/posts/<%= n.post._id %>">
+                    <img src="<%= n.post.coverImage || '/images/placeholder.png' %>" width="60" class="preview-img rounded">
+                  </a>
+                </div>
+              <% } %>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Optional: Tab switch fallback for non-Bootstrap users
+    const tabs = document.querySelectorAll('#notificationTabs .nav-link');
+    const panes = document.querySelectorAll('.tab-pane');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', e => {
+        e.preventDefault();
+        tabs.forEach(t => t.classList.remove('active'));
+        panes.forEach(p => p.classList.remove('show', 'active'));
+        tab.classList.add('active');
+        const target = document.querySelector(tab.getAttribute('href'));
+        target.classList.add('show', 'active');
+      });
+    });
+  </script>
+</body>
+</html>
