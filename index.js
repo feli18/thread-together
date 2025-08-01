@@ -23,6 +23,8 @@ import messageRoutes from "./routes/messages.js";
 import notificationRoutes from "./routes/notifications.js";
 import Notification from './models/Notification.js';
 import Message from './models/Message.js';
+import tagRoutes from './routes/tags.js';
+import exploreRoutes from './routes/explore.js';
 
 
 import mongoose from 'mongoose'; 
@@ -30,7 +32,7 @@ import mongoose from 'mongoose';
 
 const app = express();
 const port = 3000;
-
+const { ObjectId } = mongoose.Types;
 // 设置视图引擎为 EJS
 app.set("view engine", "ejs");
 
@@ -43,6 +45,7 @@ app.use(express.static("public"));
 // 会话中间件（保存登录状态）
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json()); 
 app.use(methodOverride('_method'));
 app.use(session({
   secret: 'threadTogether-secret-key',
@@ -77,18 +80,19 @@ app.use(async (req, res, next) => {
         username: { $regex: query, $options: 'i' }
       })
     : [];
-    // 通知和消息数量
-    if (req.session.userId) {
-      const [notificationCount, messageCount] = await Promise.all([
-        Notification.countDocuments({ recipient: req.session.userId }),
-        Message.countDocuments({ recipient: req.session.userId })
-      ]);
-      res.locals.unreadNotifications = notificationCount;
-      res.locals.unreadMessages = messageCount;
-    } else {
-      res.locals.unreadNotifications = 0;
-      res.locals.unreadMessages = 0;
-    }
+
+  // ✅ 通知和消息数量
+  if (req.session.userId) {
+    const [notificationCount, messageCount] = await Promise.all([
+      Notification.countDocuments({ recipient: req.session.userId, read: false }),
+      Message.countDocuments({ recipient: req.session.userId, read: false })
+    ]);
+    res.locals.unreadNotifications = notificationCount;
+    res.locals.unreadMessages = messageCount;
+  } else {
+    res.locals.unreadNotifications = 0;
+    res.locals.unreadMessages = 0;
+  }
 
   next();
 });
@@ -99,57 +103,10 @@ app.use("/", userRoutes);
 app.use('/posts/:postId/comments', commentRoutes);
 app.use("/messages", messageRoutes);
 app.use("/notifications", notificationRoutes);
-
-// 全局设置 res.locals.user
-// app.use(async (req, res, next) => {
-//   if (req.session.userId) {
-//     res.locals.user = await User.findById(req.session.userId);
-//   } else {
-//     res.locals.user = null;
-//   }
-//   next();
-// });
+app.use('/tags', tagRoutes);
+app.use("/explore", exploreRoutes);
 
 
-// 模拟数据数组（未来可以替换为数据库）
-// const posts = [
-//   {
-//     _id: "12345",
-//     title: "Vintage French Embroidery Blouse",
-//     author: "sewwithjane",
-//     date: "2d",
-//     image: "/images/blouse.png",
-//     description:
-//       "This blouse is inspired by 1950s fashion and made from natural linen, featuring hand embroidery in delicate floral motifs.",
-//     tags: ["French", "Vintage", "Linen"],
-//     steps: [
-//       { type: "image", image: "/images/step1.png", text: "Pinned fabric and hand-embroidered motif." },
-//       { type: "image", image: "/images/step2.png", text: "Cutting out the fabric pieces." },
-//       { type: "image", image: "/images/step3.png", text: "Assembling the final garment." },
-//     ],
-//     comments: [
-//       { user: "sewlover123", text: "Love the neckline detail! How long did it take to make?" },
-//       { user: "handmadecrafts", text: "Can you share the pattern?" },
-//     ],
-//   },
-//   {
-//     _id: "video-demo",
-//     title: "Sewing with Video Steps Only",
-//     author: "videostitcher",
-//     date: "1d",
-//     image: "/images/blouse.png",
-//     description: "This post demonstrates a sewing project where each step is explained through video.",
-//     tags: ["Video", "Tutorial", "Modern"],
-//     steps: [
-//       { type: "video", video: "/videos/step1.mp4", text: "Step 1: Cutting the fabric pieces." },
-//       { type: "video", video: "/videos/step2.mp4", text: "Step 2: Stitching the sides together." },
-//       { type: "video", video: "/videos/step3.mp4", text: "Step 3: Adding finishing touches." },
-//     ],
-//     comments: [
-//       { user: "videoFan88", text: "Video steps make this so clear, thanks!" }
-//     ],
-//   },
-// ];
 
 // upload funcyion
 // ES module 中 __dirname 替代方法
@@ -197,16 +154,22 @@ app.post("/upload", upload.fields([
     };
   });
 
-  // 存储 Post，不把封面图放进 steps
-  const newPost = new Post({
-    title,
-    author: req.session.userId,
-    description,
-    tags: tags.split(",").map(tag => tag.trim()),
-    coverImage: coverImagePath, // <- 独立字段
-    steps,
-    comments: [],
-  });
+    const rawTags = tags || "";
+    const tagsArr = rawTags
+      .split(",")
+      .map(t => t.trim().toLowerCase())
+      .filter(t => t.length > 0);
+
+    // 存储 Post，不把封面图放进 steps
+    const newPost = new Post({
+      title,
+      author: req.session.userId,
+      description,
+      tags: tagsArr,
+      coverImage: coverImagePath,
+      steps,
+      comments: [],
+    });
 
   await newPost.save();
   res.redirect("/explore");
@@ -257,7 +220,11 @@ app.post("/posts/:id/edit", upload.fields([
 
     post.title = req.body.title;
     post.description = req.body.description;
-    post.tags = req.body.tags.split(",").map(tag => tag.trim());
+    const rawTags2 = req.body.tags || "";
+    post.tags = rawTags2
+      .split(",")
+      .map(t => t.trim().toLowerCase())
+      .filter(t => t.length > 0);
 
     //正确更新封面图字段
     if (req.files["coverImage"]?.[0]) {
@@ -271,7 +238,6 @@ app.post("/posts/:id/edit", upload.fields([
   }
 });
 
-
 app.post("/posts/:id/like", async (req, res) => {
   const post = await Post.findById(req.params.id);
   const userId = req.session.userId;
@@ -282,29 +248,34 @@ app.post("/posts/:id/like", async (req, res) => {
   const alreadyLiked = post.likedBy.includes(userId);
 
   if (alreadyLiked) {
-    // 已点赞 → 取消点赞
-    post.likedBy.pull(userId);
+    post.likedBy.pull(userId); // 取消点赞
   } else {
-    // 未点赞 → 添加点赞
     post.likedBy.push(userId);
-  }
-  if (!alreadyLiked) {
-  // 添加点赞
-  post.likedBy.push(userId);
-  if (post.author.toString() !== userId) {
-      await Notification.create({
+
+    if (post.author.toString() !== userId) {
+      // ✅ 检查是否已有通知
+      const existing = await Notification.findOne({
         recipient: post.author,
         sender: userId,
-        type: "like",
-        post: post._id
+        post: post._id,
+        type: "like"
       });
+
+      if (!existing) {
+        await Notification.create({
+          recipient: post.author,
+          sender: userId,
+          type: "like",
+          post: post._id
+        });
+      }
     }
   }
-  
 
   await post.save();
   res.redirect(`/posts/${post._id}`);
 });
+
 
 app.post("/posts/:id/bookmark", async (req, res) => {
   const post = await Post.findById(req.params.id);
@@ -314,25 +285,34 @@ app.post("/posts/:id/bookmark", async (req, res) => {
   if (!userId) return res.redirect("/login");
 
   const alreadyBookmarked = post.bookmarkedBy.includes(userId);
+
   if (alreadyBookmarked) {
-    post.bookmarkedBy.pull(userId); // 取消收藏
+    post.bookmarkedBy.pull(userId);
   } else {
-    post.bookmarkedBy.push(userId); // 添加收藏
-  }
-  if (!alreadyBookmarked) {
-  post.bookmarkedBy.push(userId);
-  if (post.author.toString() !== userId) {
-      await Notification.create({
+    post.bookmarkedBy.push(userId);
+
+    if (post.author.toString() !== userId) {
+      // ✅ 检查是否已有通知
+      const existing = await Notification.findOne({
         recipient: post.author,
         sender: userId,
-        type: "bookmark",
-        post: post._id
+        post: post._id,
+        type: "bookmark"
       });
+
+      if (!existing) {
+        await Notification.create({
+          recipient: post.author,
+          sender: userId,
+          type: "bookmark",
+          post: post._id
+        });
+      }
     }
   }
 
   await post.save();
-  res.redirect(req.get("referer")); // 返回原页面
+  res.redirect(req.get("referer"));
 });
 
 
@@ -341,19 +321,113 @@ app.post("/posts/:id/bookmark", async (req, res) => {
 // 路由：主页
 app.get("/", async (req, res) => {
   try {
-    const posts = await Post.find().sort({ createdAt: -1 }).populate("author");
+    // 1. 贴子列表
+    const posts = await Post.find()
+      .sort({ createdAt: -1 })
+      .populate("author")
+      .lean();
 
-    let user = null;
-    if (req.session.userId) {
-      user = await User.findById(req.session.userId); // 🔁 查询当前登录用户信息
+    // 2. 全站 Hot Tags（总量最多的前 8 个）
+    const hotTags = await Post.aggregate([
+      { $unwind: "$tags" },
+      { $group:   { _id: "$tags", count: { $sum: 1 } } },
+      { $sort:    { count: -1 } },
+      { $limit:   8 },
+      { $project: { name: "$_id", _id: 0 } }
+    ]);
+
+    // 3. 本周（过去 7 天）热门标签，按标签总量前 5
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 6); // 包含今天共 7 天
+    const weeklyTags = await Post.aggregate([
+      { $match:  { createdAt: { $gte: oneWeekAgo } } },
+      { $unwind: "$tags" },
+      { $group:  { _id: "$tags", count: { $sum: 1 } } },
+      { $sort:   { count: -1 } },
+      { $limit:  5 },
+      { $project:{ name: "$_id", count: 1, _id: 0 } }
+    ]);
+
+    // 4. 准备折线图的“天”数组（YYYY-MM-DD）
+    const days = [];
+    for (
+      let d = new Date(oneWeekAgo);
+      d <= new Date();
+      d.setDate(d.getDate() + 1)
+    ) {
+      days.push(d.toISOString().slice(0, 10));
     }
 
-    res.render("index.ejs", { posts});
+    // 5. 按天统计这 5 个标签的每日新增量
+    const tagNames = weeklyTags.map(t => t.name);
+    const dailyCounts = await Post.aggregate([
+      { $match: { 
+          createdAt: { $gte: oneWeekAgo },
+          tags: { $in: tagNames }
+        }
+      },
+      { $unwind: "$tags" },
+      { $match: { tags: { $in: tagNames } } },
+      { $project: {
+          tags: 1,
+          day: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }
+        }
+      },
+      { $group: {
+          _id: { name: "$tags", day: "$day" },
+          count: { $sum: 1 }
+        }
+      },
+      { $project: {
+          name: "$_id.name",
+          day: "$_id.day",
+          count: 1,
+          _id: 0
+        }
+      }
+    ]);
+
+    // 6. 整理成前端好用的结构，并累加成“累计量”
+    const trendMap = {};
+    tagNames.forEach(name => {
+      trendMap[name] = { name, counts: days.map(() => 0) };
+    });
+    // 填入每天的新增量
+    dailyCounts.forEach(({ name, day, count }) => {
+      const idx = days.indexOf(day);
+      if (idx >= 0) trendMap[name].counts[idx] = count;
+    });
+    // **前缀和：把新增量转成累计量**
+    Object.values(trendMap).forEach(entry => {
+      for (let i = 1; i < entry.counts.length; i++) {
+        entry.counts[i] += entry.counts[i - 1];
+      }
+    });
+    const trending = {
+      days,               // ['2025-07-24', …, '2025-07-30']
+      tags: Object.values(trendMap)
+    };
+
+    // 7. 当前登录用户
+    let user = null;
+    if (req.session.userId) {
+      user = await User.findById(req.session.userId);
+    }
+
+    // 8. 渲染模板
+    res.render("index.ejs", {
+      posts,
+      hotTags,
+      weeklyTags,
+      user,
+      trending      // 前端 Chart.js 用它画累计折线图
+    });
   } catch (err) {
     console.error("Failed to load posts:", err);
     res.status(500).send("Server error");
   }
 });
+
 
 
 
@@ -379,21 +453,6 @@ app.get("/notifications", async (req, res) => {
   res.render("notifications.ejs", { notifications });
 });
 
-// 路由：探索页面
-app.get("/explore", async (req, res) => {
-  try {
-    const posts = await Post.find()
-      .sort({ createdAt: -1 })
-      .populate("author")
-      .populate("likedBy")
-      .populate("bookmarkedBy");
-
-    res.render("explore.ejs", { posts });
-  } catch (err) {
-    console.error("Failed to load posts:", err);
-    res.status(500).send("Server error");
-  }
-});
 
 
 // 详情页：查看某个帖子的内容

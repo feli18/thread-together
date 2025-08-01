@@ -1,0 +1,54 @@
+<!-- views/partials/postCard.ejs -->
+<div class="col">
+  <div class="card shadow-sm rounded">
+    <a href="/posts/<%= post._id %>">
+      <img src="<%= post.coverImage || post.steps[0]?.image || '/images/default.jpg' %>"
+           class="card-img-top" alt="Post Image">
+    </a>
+    <div class="card-body">
+      <a href="/posts/<%= post._id %>" class="text-decoration-none text-dark">
+        <h5 class="card-title"><%= post.title %></h5>
+      </a>
+
+      <div class="d-flex flex-wrap gap-2 mb-2">
+        <% post.tags.forEach(tag => { %>
+          <a href="/tags/<%= encodeURIComponent(tag) %>"
+             class="badge bg-light text-dark text-decoration-none">
+            #<%= tag %>
+          </a>
+        <% }) %>
+      </div>
+
+      <% const liked = post.likedBy.some(u => u._id.toString() === currentUser?.toString()); %>
+      <% const bookmarked = post.bookmarkedBy.some(u => u._id.toString() === currentUser?.toString()); %>
+
+      <div class="d-flex justify-content-between">
+        <% if (currentUser) { %>
+          <form action="/posts/<%= post._id %>/like" method="POST" class="like-form">
+            <button type="submit" class="btn btn-light border-0">
+              <i class="<%= liked ? 'bi bi-heart-fill text-danger' : 'bi bi-heart text-secondary' %>"></i>
+              <%= post.likedBy.length %>
+            </button>
+          </form>
+        <% } else { %>
+          <a href="/login" class="btn btn-light border-0">
+            <i class="bi bi-heart text-secondary"></i> <%= post.likedBy.length %>
+          </a>
+        <% } %>
+
+        <% if (currentUser) { %>
+          <form action="/posts/<%= post._id %>/bookmark" method="POST">
+            <button type="submit" class="btn btn-light border-0">
+              <i class="<%= bookmarked ? 'bi bi-bookmark-fill text-primary' : 'bi bi-bookmark text-secondary' %>"></i>
+              <%= post.bookmarkedBy.length %>
+            </button>
+          </form>
+        <% } else { %>
+          <a href="/login" class="btn btn-light border-0">
+            <i class="bi bi-bookmark text-secondary"></i>
+          </a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tag: <%= tagName %></title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="/styles/style.css"/>
+</head>
+<body>
+  <div class="d-flex">
+    <!-- 侧栏 -->
+    <%- include('partials/sidebar') %>
+
+    <div class="flex-grow-1">
+      <!-- 顶部 header/search -->
+      <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+        <div class="flex-grow-1 px-4">
+          <%- include('partials/header') %>
+          <%- include('partials/searchUserResults') %>
+        </div>
+      </div>
+
+      <div class="container py-4">
+        <div class="px-4 pt-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="history.back()">
+                ← Return back
+            </button>
+            </div>
+        <!-- 显示当前标签 -->
+        <h1>Posts tagged “<%= tagName %>”</h1>
+
+        <!-- 帖子网格，复用你的 postCardGrid -->
+        <%- include('partials/postCardGrid', { posts, currentUser }) %>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

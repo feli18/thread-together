@@ -8,10 +8,88 @@ router.get("/", async (req, res) => {
   const notifications = await Notification.find({ recipient: req.session.userId })
     .sort({ createdAt: -1 })
     .populate("sender", "username avatar")
-    .populate("post")
-    .populate("comment");
+    .populate("post", "coverImage")
+    .populate("comment", "text");
 
-  res.render("notifications.ejs", { notifications });
+  const unreadCommentCount = await Notification.countDocuments({
+    recipient: req.session.userId,
+    read: false,
+    type: { $in: ['comment', 'reply'] }
+  });
+
+  const unreadLikeCount = await Notification.countDocuments({
+    recipient: req.session.userId,
+    read: false,
+    type: { $in: ['like', 'bookmark'] }
+  });
+
+  res.render("notifications.ejs", {
+    notifications,
+    unreadCommentCount,
+    unreadLikeCount
+  });
 });
+
+// routes/notifications.js
+
+router.post('/mark-read', async (req, res) => {
+  const { type } = req.body;
+  const query = {
+    recipient: req.session.userId,
+    read: false
+  };
+
+  if (type === 'comments') {
+    query.type = { $in: ['comment', 'reply'] };
+  } else if (type === 'likes') {
+    query.type = { $in: ['like', 'bookmark'] };
+  }
+
+  // 批量标记这类通知为已读
+  await Notification.updateMany(query, { $set: { read: true } });
+
+  // **新增**：重新计算剩余的未读通知总数
+  const totalUnread = await Notification.countDocuments({
+    recipient: req.session.userId,
+    read: false
+  });
+
+  // **返回 JSON** 给前端
+  res.json({ totalUnread });
+});
+
+
+
+router.get('/read/:id', async (req, res) => {
+  const notificationId = req.params.id;
+  const notification = await Notification.findById(notificationId);
+
+  if (!notification) return res.redirect("/notifications");
+
+  // 标记为已读
+  notification.read = true;
+  await notification.save();
+
+  // 跳转到相关帖子
+  if (notification.post) {
+    res.redirect(`/posts/${notification.post}`);
+  } else {
+    res.redirect("/notifications");
+  }
+});
+// 获取当前总未读通知数
+router.get('/count', async (req, res) => {
+  if (!req.session.userId) return res.json({ count: 0 });
+
+  const count = await Notification.countDocuments({
+    recipient: req.session.userId,
+    read: false
+  });
+
+  res.json({ count });
+});
+
+
+
 
 export default router;

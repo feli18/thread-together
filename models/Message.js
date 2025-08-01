@@ -7,6 +7,7 @@ const messageSchema = new mongoose.Schema(
     text: String,
     image: String,
     createdAt: { type: Date, default: Date.now },
+    read: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

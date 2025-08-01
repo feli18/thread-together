@@ -34,19 +34,51 @@ router.get("/", async (req, res) => {
     .populate("sender", "username avatar")
     .populate("recipient", "username avatar");
 
-  const conversationUsers = new Map();
-  messages.forEach((msg) => {
+//   const conversationUsers = new Map();
+//   messages.forEach((msg) => {
+//     const otherUser =
+//       msg.sender._id.toString() === currentUserId
+//         ? msg.recipient
+//         : msg.sender;
+//     // if (!conversationUsers.has(otherUser._id.toString())) {
+//     //     const unreadCount = await Message.countDocuments({
+//     //         sender: otherUser._id,
+//     //         recipient: currentUserId,
+//     //         read: false
+//     //     });
+
+//     //     conversationUsers.set(otherUser._id.toString(), {
+//     //         user: otherUser,
+//     //         lastMessage: msg,
+//     //         unreadCount  // 👈 传入每个用户发来的未读数
+//     //     });
+//     // }
+
+//   });
+
+    const conversationUsers = new Map();
+
+    for (let msg of messages) {
     const otherUser =
-      msg.sender._id.toString() === currentUserId
+        msg.sender._id.toString() === currentUserId
         ? msg.recipient
         : msg.sender;
+
     if (!conversationUsers.has(otherUser._id.toString())) {
-      conversationUsers.set(otherUser._id.toString(), {
+        const unreadCount = await Message.countDocuments({
+        sender: otherUser._id,
+        recipient: currentUserId,
+        read: false
+        });
+
+        conversationUsers.set(otherUser._id.toString(), {
         user: otherUser,
         lastMessage: msg,
-      });
+        unreadCount
+        });
     }
-  });
+    }
+
 
   res.render("messages/index", {
     conversations: Array.from(conversationUsers.values()),
@@ -57,6 +89,15 @@ router.get("/", async (req, res) => {
 router.get("/:userId", async (req, res) => {
   const currentUserId = req.session.userId;
   const targetUserId = req.params.userId;
+
+    await Message.updateMany(
+    {
+        sender: targetUserId,
+        recipient: currentUserId,
+        read: false
+    },
+    { $set: { read: true } }
+    );
 
   const messages = await Message.find({
     $or: [
@@ -74,6 +115,7 @@ router.get("/:userId", async (req, res) => {
     targetUser,
     currentUser: currentUserId,
   });
+
 });
 
 // ✅ POST 发送消息（含图片）

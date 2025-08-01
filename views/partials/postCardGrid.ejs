@@ -4,17 +4,26 @@
       <div class="col">
         <div class="card shadow-sm rounded">
           <a href="/posts/<%= post._id %>">
-            <img src="<%= post.coverImage || post.steps[0]?.image|| '/images/default.jpg' %>" class="card-img-top" alt="Post Image">
+            <img src="<%= post.coverImage || post.steps[0]?.image || '/images/default.jpg' %>" class="card-img-top" alt="Post Image">
           </a>
           <div class="card-body">
             <a href="/posts/<%= post._id %>" style="text-decoration: none; color: inherit;">
               <h5 class="card-title"><%= post.title %></h5>
             </a>
+            
+            <!-- ← 这里是修改后的标签区域 -->
             <div class="d-flex flex-wrap gap-2 mb-2">
               <% post.tags.forEach(tag => { %>
-                <span class="badge bg-light text-dark">#<%= tag %></span>
+                <a 
+                  href="/tags/<%= encodeURIComponent(tag) %>" 
+                  class="badge bg-light text-dark text-decoration-none"
+                >
+                  #<%= tag %>
+                </a>
               <% }) %>
             </div>
+
+            <!-- 标签修改结束 -->
 
             <% const liked = post.likedBy.some(user => user._id.toString() === currentUser?.toString()); %>
             <% const bookmarked = post.bookmarkedBy.some(user => user._id.toString() === currentUser?.toString()); %>
