@@ -1,52 +1,83 @@
-<aside class="sidebar d-flex flex-column justify-content-between p-4 bg-light" style="width: 220px;">
-  <div>
-    <button class="btn btn-primary mb-4"><a href="/" class="nav-link"> Logo</a></button>
-    <ul class="nav flex-column gap-3">
-      <li><a href="/" class="nav-link"><i class="bi bi-compass"></i> Discover</a></li>
-      <li><a href="/upload" class="nav-link"><i class="bi bi-upload"></i> Upload</a></li>
-      <!-- <li><a href="/notifications" class="nav-link"><i class="bi bi-chat"></i> Notifications</a></li>
-      <li>
-        <a href="/messages" class="d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-chat-dots me-2"></i>Messages</span>
-            <% if (user && user.unreadCount && user.unreadCount > 0) { %>
-            <span class="badge bg-danger rounded-pill"><%= user.unreadCount %></span>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sidebar</title>
+
+  <link rel="stylesheet" href="/styles/sidebar.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
+</head>
+<body>
+    <aside class="sidebar d-flex flex-column justify-content-between p-4">
+        <div>
+            <!-- <button class="btn btn-primary mb-4"><a href="/" class="nav-link"> Logo</a></button> -->
+            <a href="/" class="sidebar-logo mb-4"
+            <% if (currentPath === '/') { %> data-active <% } %>
+            >
+                <img src="/images/Logo.png" alt="Site Logo" class="sidebar-logo__img">
+            </a>
+            <ul class="nav flex-column gap-3">
+            <li><a href="/" class="nav-link mb-2<%= currentPath === '/' ? ' active-nav' : '' %>"><i class="bi bi-compass"></i> Discover</a></li>
+            <li><a href="/upload" class="nav-link mb-2<%= currentPath === '/upload' ? ' active-nav' : '' %>"><i class="bi bi-upload"></i> Upload</a></li>
+            <li>
+                <a href="/notifications" class="nav-link mb-2<% if (currentPath === '/notifications') { %> active-nav<% } %>">
+                    <span><i class="bi bi-bell"></i> Notifications</span>
+                    <% if (unreadNotifications > 0) { %>
+                    <span class="badge bg-danger rounded-circle"><%= unreadNotifications %></span>
+                    <% } %>
+                </a>
+            </li>
+            <li>
+                <a href="/messages" class="nav-link mb-2 <%= currentPath === '/messages' ? ' active-nav' : '' %>">
+                    <span><i class="bi bi-chat-dots"></i> Messages</span>
+                    <% if (unreadMessages > 0) { %>
+                    <span class="badge bg-danger rounded-circle"><%= unreadMessages %></span>
+                    <% } %>
+                </a>
+            </li>
+        
+
+            <!-- <li>
+                <a href="/notifications" class="d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-bell"></i> Notifications</span>
+                    <% if (unreadNotifications > 0) { %>
+                    <span class="badge bg-danger rounded-circle"><%= unreadNotifications %></span>
+                    <% } %>
+                </a>
+            </li> -->
+
+            <!-- <li>
+                <a href="/messages" class="d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-chat-dots"></i> Messages</span>
+                    <% if (unreadMessages > 0) { %>
+                    <span class="badge bg-danger rounded-circle"><%= unreadMessages %></span>
+                    <% } %>
+                </a>
+            </li> -->
+
+
+            <li><a href="/explore" class="nav-link mb-2<%= currentPath === '/explore' ? ' active-nav' : '' %>"><i class="bi bi-tag"></i> Explore Tags</a></li>
+            </ul>
+        </div>
+
+        <div class="mt-4">
+            <% if (currentUser) { %>
+            <a href="/profile" class="d-flex align-items-center gap-2 text-dark text-decoration-none mb-2 <%= currentPath.startsWith('/profile') ? ' active-nav' : '' %>">
+                <img src="<%= user?.avatar || '/images/default.jpg' %>" width="35" height="35" alt="Avatar"
+                class="rounded-circle mb-2 border border-3">
+                <span>Me</span>
+            </a>
+            <a href="/logout" class="btn btn-outline-secondary w-100">Logout</a>
+            <% } else { %>
+            <a href="/login" class="btn btn-primary w-100">Login</a>
             <% } %>
-        </a>
-      </li> -->
-
-      <li>
-        <a href="/notifications" class="d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-bell"></i> Notifications</span>
-            <% if (unreadNotifications > 0) { %>
-            <span class="badge bg-danger rounded-circle"><%= unreadNotifications %></span>
-            <% } %>
-        </a>
-        </li>
-
-        <li>
-        <a href="/messages" class="d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-chat-dots"></i> Messages</span>
-            <% if (unreadMessages > 0) { %>
-            <span class="badge bg-danger rounded-circle"><%= unreadMessages %></span>
-            <% } %>
-        </a>
-      </li>
+        </div>
+    </aside>
 
 
-      <li><a href="/explore" class="nav-link"><i class="bi bi-tag"></i> Explore Tags</a></li>
-    </ul>
-  </div>
+</body>
+</html>
 
-  <div class="mt-4">
-    <% if (currentUser) { %>
-      <a href="/profile" class="d-flex align-items-center gap-2 text-dark text-decoration-none mb-2">
-        <img src="<%= user?.avatar || '/images/default.jpg' %>" width="35" height="35" alt="Avatar"
-          class="rounded-circle mb-2 border border-3">
-        <span>Me</span>
-      </a>
-      <a href="/logout" class="btn btn-outline-secondary w-100">Logout</a>
-    <% } else { %>
-      <a href="/login" class="btn btn-primary w-100">Login</a>
-    <% } %>
-  </div>
-</aside>

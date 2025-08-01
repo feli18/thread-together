@@ -1,0 +1,57 @@
+/* public/styles/sidebar.css */
+
+/* 1) 宽度控制 */
+.sidebar {
+  width: 220px;                          /* 之前写在 inline style */
+  background-color: var(--bg-light) !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem !important;             /* 保持 p-4 相近内边距 */
+}
+
+/* 2) 链接文字 & 图标 */
+.sidebar .nav-link,
+.sidebar a span {
+  color: var(--text-default) !important;
+  text-decoration: none !important;
+}
+
+/* BootStrap 会给 <i> 图标默认 color，要 override */
+.sidebar i {
+  color: var(--text-default) !important;
+}
+
+/* 3) Link 悬浮态 */
+.sidebar .nav-link:hover,
+.sidebar a:hover {
+  background-color: var(--bg-muted) !important;
+}
+
+/* 4) Badge 保持不变，如果需要也可改 */
+.sidebar .badge {
+  /* 比如想让 badge border 也是 --color-primary，就写这里 */
+}
+
+/* 5) Login / Logout 按钮 */
+.sidebar .btn-primary {
+  background-color: var(--color-primary) !important;  /* Login 按钮 */
+  border-color: var(--color-primary) !important;
+}
+.sidebar .btn-outline-secondary {
+  /* Logout 按钮如果想改也可以 */
+  color: var(--text-default) !important;
+  border-color: var(--text-default) !important;
+}
+.sidebar .btn-outline-secondary:hover {
+  background-color: var(--bg-muted) !important;
+}
+
+
+
+.sidebar-logo__img {
+  max-width: 100%;        /* 不要超过容器宽度 */
+  height: auto;
+  /* 或者定死一个宽度，比如： */
+  width: 120px;
+}

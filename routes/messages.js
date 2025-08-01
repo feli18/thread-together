@@ -80,7 +80,7 @@ router.get("/", async (req, res) => {
     }
 
 
-  res.render("messages/index", {
+  res.render("message", {
     conversations: Array.from(conversationUsers.values()),
   });
 });
@@ -110,7 +110,7 @@ router.get("/:userId", async (req, res) => {
 
   const targetUser = await User.findById(targetUserId);
 
-  res.render("messages/chat", {
+  res.render("chat", {
     messages,
     targetUser,
     currentUser: currentUserId,

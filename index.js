@@ -25,6 +25,7 @@ import Notification from './models/Notification.js';
 import Message from './models/Message.js';
 import tagRoutes from './routes/tags.js';
 import exploreRoutes from './routes/explore.js';
+import TagView from './models/TagView.js';
 
 
 import mongoose from 'mongoose'; 
@@ -61,6 +62,7 @@ app.use(flash());
 app.use("/generate-tags", generateTags);
 
 app.use(async (req, res, next) => {
+  res.locals.currentPath = req.path;
   const query = req.query.q || '';
 
   // 登录状态
@@ -320,8 +322,9 @@ app.post("/posts/:id/bookmark", async (req, res) => {
 
 // 路由：主页
 app.get("/", async (req, res) => {
+  
   try {
-    // 1. 贴子列表
+    // 1. 最新帖子（主页下方那一块）
     const posts = await Post.find()
       .sort({ createdAt: -1 })
       .populate("author")
@@ -330,102 +333,133 @@ app.get("/", async (req, res) => {
     // 2. 全站 Hot Tags（总量最多的前 8 个）
     const hotTags = await Post.aggregate([
       { $unwind: "$tags" },
-      { $group:   { _id: "$tags", count: { $sum: 1 } } },
-      { $sort:    { count: -1 } },
-      { $limit:   8 },
+      { $group: { _id: "$tags", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 8 },
       { $project: { name: "$_id", _id: 0 } }
     ]);
 
-    // 3. 本周（过去 7 天）热门标签，按标签总量前 5
+    // 3. 过去 7 天出现次数最多的前 5 个标签 —— 用来渲染 “Popular This Week” 按钮
     const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 6); // 包含今天共 7 天
-    const weeklyTags = await Post.aggregate([
-      { $match:  { createdAt: { $gte: oneWeekAgo } } },
+    oneWeekAgo.setHours(0,0,0,0);
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 6);
+    const weeklyTagsAgg = await Post.aggregate([
+      { $match: { createdAt: { $gte: oneWeekAgo } } },
       { $unwind: "$tags" },
-      { $group:  { _id: "$tags", count: { $sum: 1 } } },
-      { $sort:   { count: -1 } },
-      { $limit:  5 },
-      { $project:{ name: "$_id", count: 1, _id: 0 } }
+      { $group: { _id: "$tags", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+      { $project: { name: "$_id", count: 1, _id: 0 } }
     ]);
+    // 传给模板：按钮用
+    const weeklyTags = weeklyTagsAgg.map(t => t.name);
 
-    // 4. 准备折线图的“天”数组（YYYY-MM-DD）
+    // 4. 为折线图准备“过去 7 天”的每天日期
     const days = [];
-    for (
-      let d = new Date(oneWeekAgo);
-      d <= new Date();
-      d.setDate(d.getDate() + 1)
-    ) {
-      days.push(d.toISOString().slice(0, 10));
+    for (let d = new Date(oneWeekAgo); d <= new Date(); d.setDate(d.getDate()+1)) {
+      days.push(
+        d.toLocaleDateString('en-CA', { timeZone: 'Europe/London' })
+      );
     }
 
-    // 5. 按天统计这 5 个标签的每日新增量
-    const tagNames = weeklyTags.map(t => t.name);
-    const dailyCounts = await Post.aggregate([
-      { $match: { 
-          createdAt: { $gte: oneWeekAgo },
-          tags: { $in: tagNames }
-        }
-      },
-      { $unwind: "$tags" },
-      { $match: { tags: { $in: tagNames } } },
+    // 5. 从 TagView 里先找出“过去 7 天访问量最高的前 5 个标签”
+    const popularAgg = await TagView.aggregate([
+      { $match: { viewedAt: { $gte: oneWeekAgo } } },
+      { $group:   { _id: "$tag", views: { $sum: 1 } } },
+      { $sort:    { views: -1 } },
+      { $limit:   5 },
+      { $project: { name: "$_id", _id: 0 } }
+    ]);
+    const popularTags = popularAgg.map(t => t.name);
+
+    // 6. 再按天统计这 5 个标签的每日访问量
+    // const dailyViewsAgg = await TagView.aggregate([
+    //   { $match: {
+    //       viewedAt: { $gte: oneWeekAgo },
+    //       tag: { $in: popularTags }
+    //   }},
+    //   { $project: {
+    //       tag: 1,
+    //       day: { $dateToString: { format: "%Y-%m-%d", date: "$viewedAt" } }
+    //   }},
+    //   { $group: {
+    //       _id: { tag: "$tag", day: "$day" },
+    //       count: { $sum: 1 }
+    //   }},
+    //   { $project: {
+    //       tag: "$_id.tag",
+    //       day: "$_id.day",
+    //       count: 1,
+    //       _id: 0
+    //   }}
+    // ]);
+
+
+      const dailyViewsAgg = await TagView.aggregate([
+      { $match: {
+          viewedAt: { $gte: oneWeekAgo },
+          tag: { $in: popularTags }
+      }},
       { $project: {
-          tags: 1,
-          day: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }
-        }
-      },
+          tag: 1,
+          day: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$viewedAt",
+              timezone: "Europe/London"
+            }
+          }
+      }},
       { $group: {
-          _id: { name: "$tags", day: "$day" },
+          _id: { tag: "$tag", day: "$day" },
           count: { $sum: 1 }
-        }
-      },
+      }},
       { $project: {
-          name: "$_id.name",
+          tag: "$_id.tag",
           day: "$_id.day",
           count: 1,
           _id: 0
-        }
-      }
+      }}
     ]);
 
-    // 6. 整理成前端好用的结构，并累加成“累计量”
+
+    // 7. 组装成 front-end 需要的 { name, counts } 结构
     const trendMap = {};
-    tagNames.forEach(name => {
-      trendMap[name] = { name, counts: days.map(() => 0) };
+    popularTags.forEach(tag => {
+      trendMap[tag] = { name: tag, counts: days.map(() => 0) };
     });
-    // 填入每天的新增量
-    dailyCounts.forEach(({ name, day, count }) => {
+    dailyViewsAgg.forEach(({ tag, day, count }) => {
       const idx = days.indexOf(day);
-      if (idx >= 0) trendMap[name].counts[idx] = count;
+      if (idx >= 0) trendMap[tag].counts[idx] = count;
     });
-    // **前缀和：把新增量转成累计量**
-    Object.values(trendMap).forEach(entry => {
-      for (let i = 1; i < entry.counts.length; i++) {
-        entry.counts[i] += entry.counts[i - 1];
-      }
-    });
-    const trending = {
-      days,               // ['2025-07-24', …, '2025-07-30']
+    const trendingViews = {
+      days,
       tags: Object.values(trendMap)
     };
+     console.log("Days:", days);
+    console.log("Trending tags:", trendingViews.tags);
+    console.log('dailyViewsAgg raw:', dailyViewsAgg);
+
 
     // 7. 当前登录用户
-    let user = null;
-    if (req.session.userId) {
-      user = await User.findById(req.session.userId);
-    }
+    const currentUser = req.session.userId
+      ? await User.findById(req.session.userId)
+      : null;
 
-    // 8. 渲染模板
+    // 8. 渲染
     res.render("index.ejs", {
       posts,
       hotTags,
-      weeklyTags,
-      user,
-      trending      // 前端 Chart.js 用它画累计折线图
+      weeklyTags,       // “Popular This Week” 按钮用
+      trendingViews,    // Chart.js 画访问量
+      currentUser
     });
+
   } catch (err) {
-    console.error("Failed to load posts:", err);
+    console.error("Failed to load homepage:", err);
     res.status(500).send("Server error");
   }
+  
 });
 
 
@@ -459,21 +493,36 @@ app.get("/notifications", async (req, res) => {
 app.get("/posts/:id", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate('author')
+      .populate("author")
       .populate({
-        path: 'comments',
-        populate: { path: 'user', select: 'username' }
+        path: "comments",
+        populate: { path: "user", select: "username" }
       })
-      .populate('likedBy'); 
+      .populate("likedBy");
 
     if (!post) return res.status(404).send("Post not found");
 
+    // ----------- 记录标签访问 -----------
+    // 对 post.tags 数组里的每个标签，都插入一条日志
+    const now = new Date();
+    const views = post.tags.map(tag => ({
+      tag,
+      post: post._id,
+      user: req.session.userId || null,
+      viewedAt: now
+    }));
+    console.log('即将插入 TagView 记录：', views);
+    await TagView.insertMany(views);
+    console.log("插入成功")
+    // -------------------------------------
+
     res.render("post.ejs", { post });
   } catch (err) {
-    console.error("Error fetching post:", err);
+    console.error("详情页加载失败：", err);
     res.status(500).send("Server error");
   }
 });
+
 
 app.post("/posts/:id/comments", async (req, res) => {
   const post = await Post.findById(req.params.id);

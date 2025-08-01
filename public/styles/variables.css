@@ -1,0 +1,17 @@
+:root {
+  /* 主要操作色 */
+  --color-primary: #5976BA;
+  --my-secondary: #3498db;
+  --my-success: #1abc9c;
+  --my-danger: #e74c3c;
+
+  /* 辅助操作色（上传、筛选按钮如果后面替换） */
+  --color-accent: #1ABC9C;
+
+  /* 侧边栏文字/图标色 */
+  --text-default: #000000;
+
+  /* 背景色 */
+  --bg-light: #FFFFFF;
+  --bg-muted: #F7F7F7;
+}

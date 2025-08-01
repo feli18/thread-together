@@ -80,6 +80,35 @@ stepsContainer.addEventListener('change', function (e) {
   }
 });
 
+const changeBtn = document.getElementById('changeCoverBtn');
+
+coverInput.addEventListener('change', () => {
+  const file = coverInput.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    coverPreview.src = e.target.result;
+    coverPreview.style.display = 'block';
+
+    // 隐藏 label 提示，或改为“已选择”
+    coverLabel.style.display = 'none';
+
+    // 显示“Change Cover”按钮
+    changeBtn.style.display = 'inline-block';
+  };
+  reader.readAsDataURL(file);
+});
+
+changeBtn.addEventListener('click', () => {
+  
+  coverInput.value = '';
+  coverPreview.src = '';
+  coverPreview.style.display = 'none';
+  coverLabel.style.display = 'inline-block';
+  changeBtn.style.display = 'none';
+});
+
 // AI 
 const getTagsBtn = document.getElementById("getTagsBtn");
 if (getTagsBtn) {

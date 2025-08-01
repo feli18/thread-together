@@ -1,0 +1,18 @@
+/* custom-chart.css */
+
+.chart-wrapper {
+  max-width: 800px;          /* 图表最大的宽度，可按需调整 */
+  margin: 0 auto;            /* 水平居中 */
+  padding: 1rem;
+  background: #fff;           /* 白色底 */
+  border-radius: 0.5rem;      /* 圆角 */
+  box-shadow: 
+    0 2px 6px rgba(0,0,0,0.08),
+    0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* Canvas 自适应容器宽度 */
+.chart-wrapper canvas {
+  width: 100% !important;
+  height: auto !important;
+}

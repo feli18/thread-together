@@ -1,3 +1,11 @@
+body{
+  /* background-color: #E5CC96 !important; */
+  background-color: #EDDDBA !important;
+}
+.sidebar .nav-link.active-nav {
+  background-color: #eef3fc !important;
+  color: #1a237e !important;
+}
 .tag-list button,
 .tag-boxes button {
   display: inline-block;
@@ -42,3 +50,45 @@ h2 {
   width: 100%;
   margin-bottom: 10px;
 }
+
+/* 在 /public/styles/style.css 或 /public/styles/tags.css 最后追加 */
+
+.tag-list .btn {
+  /* 默认状态：+ 你想要的背景/边框/文字色 */
+  background-color: transparent;       /* 保持 outline 效果 */
+  border-color: #5976BA;     /* 浅灰 */
+  color: #5976BA;          /* 深灰/黑 */
+}
+
+/* 改变 outline-secondary 的 hover 效果 */
+.tag-list .btn.btn-outline-secondary:hover {
+  background-color: #C9D9FF;           
+  border-color:     #5976BA;            /* 浅紫边框 */
+  color:            #3B09BA;            /* 深紫文字 */
+}
+
+/* 如果你想要点击后也有激活态，可以加： */
+/* .tag-list .btn.btn-outline-secondary.active,
+.tag-list .btn.btn-outline-secondary:focus {
+  background-color: #CEA8BD;
+  border-color:     #CEA8BD;
+  color:            #fff;
+} */
+
+
+.sidebar .nav-link.active-nav {
+  background-color: #eef3fc;   
+  color: #1a237e !important;   /* 深色文字，更醒目 */
+}
+/* 3. 鼠标 hover 在 nav-link 上时也可以稍微有个轻微背景 */
+.sidebar .nav-link:hover {
+  background-color: #f5f7fa;
+}
+
+aside.sidebar a.sidebar-logo,
+aside.sidebar a.sidebar-logo:hover,
+aside.sidebar a.sidebar-logo:focus {
+  background: transparent !important;
+  box-shadow: none      !important;
+}
+

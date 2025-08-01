@@ -2,6 +2,7 @@
 
 import express from 'express';
 import Post    from '../models/Post.js';
+import TagView from '../models/TagView.js';
 const router = express.Router();
 
 router.get('/:tagName', async (req, res) => {
@@ -9,6 +10,8 @@ router.get('/:tagName', async (req, res) => {
     const { tagName } = req.params;
     // 构造一个不区分大小写的正则
     const regex = new RegExp(`^${tagName}$`, 'i');
+    const tag = req.params.tagName;
+    await TagView.create({ tag });
 
     // 查询所有包含该 tag 的帖子
     const posts = await Post.find({ tags: regex })

@@ -17,7 +17,7 @@ body {
     
   }
 
-  .tag-list button,
+  /* .tag-list button,
   .tag-boxes button {
     display: inline-block;
     margin: 5px 8px 5px 0;
@@ -29,7 +29,8 @@ body {
     color: #333;
     cursor: pointer;
     transition: background-color 0.2s;
-  }
+  } */
+
 
   .post-actions button {
     border: none;
@@ -61,4 +62,9 @@ body {
   margin-left: 4px;
   font-size: 0.9em;
   color: #555;
+}
+.tag-list .btn.btn-outline-secondary:hover {
+  background-color: #EBEDD8 !important;
+  border-color:     #CEA8BD !important;
+  color:            #3B09BA !important;
 }

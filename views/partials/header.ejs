@@ -1,4 +1,6 @@
-<!-- Flash  -->
+<!-- views/partials/header.ejs -->
+
+<!-- Flash Messages（保持原样） -->
 <div class="container mt-3">
   <% if (success && success.length > 0) { %>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -6,7 +8,6 @@
       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
   <% } %>
-
   <% if (error && error.length > 0) { %>
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
       <%= error[0] %>
@@ -15,20 +16,18 @@
   <% } %>
 </div>
 
-<!-- Search -->
-<!-- <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-  <form method="GET" action="/explore" class="flex-grow-1 px-4">
-    <input type="search" name="q" class="form-control" placeholder="Search users..." value="<%= query || '' %>">
-  </form>
-  <div class="px-4">
-    <a href="#">Create Center</a>
+<!-- 统一 Header 区 -->
+<header class="header">
+  <div class="container-fluid container-header">
+    <form method="GET" action="/search-users" class="search-form">
+      <input
+        type="search"
+        name="q"
+        class="search-input"
+        placeholder="Search users by username..."
+        value="<%= query || '' %>"
+      />
+    </form>
+    <a href="#" class="create-center-link">Create Center</a>
   </div>
-</div> -->
-<div class="container-fluid d-flex justify-content-between align-items-center px-4 py-2">
-  <form method="GET" action="/search-users">
-    <input type="search" name="q" class="form-control" placeholder="Search users by username..." value="<%= query %>">
-   </form>
-  <a href="#" class="text-decoration-none">Create Center</a>
-</div>
-
-
+</header>

@@ -1,0 +1,36 @@
+/* public/styles/header.css */
+
+.header {
+  background-color: var(--bg-light);
+  border-bottom: 1px solid var(--bg-muted);
+}
+
+.header .container-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+}
+
+.header .search-form {
+  flex: 1;
+  margin-right: 1rem;
+}
+
+.header .search-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--text-muted);
+  border-radius: 0.375rem;
+  color: var(--text-default);
+}
+
+.header .create-center-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.header .create-center-link:hover {
+  text-decoration: underline;
+}

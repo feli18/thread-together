@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
       { $unwind: '$tags' },
       { $group:   { _id: '$tags', count: { $sum: 1 } } },
       { $sort:    { count: -1 } },
-      { $limit:   8 },
+      { $limit:   5 },
       { $project: { name: '$_id', _id: 0 } }
     ]);
     const hotTags = hotAgg.map(t => t.name);
