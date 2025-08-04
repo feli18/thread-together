@@ -1,0 +1,88 @@
+<%
+/** 🔁 统计应该被折叠的回复数（只折叠顶楼评论下第 2 条及其后代） */
+function countHiddenReplies(comment, level) {
+  if (!comment.children || comment.children.length === 0) return 0;
+
+  let count = 0;
+  comment.children.forEach((child, index) => {
+    if (level === 1 && index === 0) {
+      // 第一条子评论不折叠
+      count += countHiddenReplies(child, level + 1);
+    } else {
+      // 第二条起及其后代折叠
+      count += 1 + countHiddenReplies(child, level + 1);
+    }
+  });
+
+  return count;
+}
+%>
+
+<div class="ps-<%= level * 4 %> mt-3 comment-block" data-level="<%= level %>" data-root="<%= rootId %>">
+  <div class="d-flex justify-content-between align-items-start">
+    <div class="d-flex">
+      <img src="<%= comment.user.avatar || '/images/default-avatar.png' %>" class="rounded-circle me-2" style="width: 32px; height: 32px;" />
+      <div>
+        <p class="mb-1 fw-semibold"><%= comment.user.username %></p>
+        <p class="mb-1"><%= comment.text %></p>
+        <div class="text-muted small d-flex gap-3">
+          <span><%= comment.createdAt.toLocaleDateString() %></span>
+          <a href="#" class="reply-btn text-decoration-none" data-reply-id="<%= comment._id %>"><i class="bi bi-chat-left-text"></i> 回复</a>
+        </div>
+
+        <!-- 隐藏回复框 -->
+        <form action="/posts/<%= post._id %>/comments" method="POST" class="reply-form d-none mt-2" data-parent-id="<%= comment._id %>">
+            <input type="hidden" name="replyTo" value="<%= comment._id %>" />
+            <div class="input-group">
+                <input type="text" name="comment" class="form-control form-control-sm" placeholder="回复 <%= comment.user.username %>" required />
+                <button type="submit" class="btn btn-sm btn-outline-primary">发送</button>
+            </div>
+        </form>
+      </div>
+    </div>
+
+    <% if (currentUser && comment.user._id.toString() === currentUser.toString()) { %>
+      <div class="dropdown">
+        <button class="btn btn-sm text-muted border-0" type="button" data-bs-toggle="dropdown">
+          <i class="bi bi-three-dots-vertical"></i>
+        </button>
+        <ul class="dropdown-menu">
+          <li>
+            <form action="/posts/<%= post._id %>/comments/<%= comment._id %>?_method=DELETE" method="POST">
+              <button type="submit" class="dropdown-item text-danger">删除</button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- 子评论递归渲染 -->
+<% if (comment.children && comment.children.length > 0) {
+  const nextLevel = level + 1;
+  comment.children.forEach((child, index) => {
+    // 如果是顶楼的第2个 child 起，或者是这些 child 的子孙，都应该折叠
+    const shouldCollapse = (index > 0 && level === 0) || rootId !== comment._id;
+%>
+  <div class="nested-comment <%= shouldCollapse ? 'd-none' : '' %>" data-root="<%= rootId %>">
+    <%- include('../partials/commentItem', {
+      comment: child,
+      post: post,
+      currentUser: currentUser,
+      level: nextLevel,
+      rootId: rootId  // 不再改变 rootId，永远用顶楼那一层的 id
+    }) %>
+  </div>
+<% }); %>
+
+
+  <% if (level === 0) {
+       const hiddenCount = countHiddenReplies(comment, 1);
+       if (hiddenCount > 0) { %>
+    <button class="btn btn-sm btn-link text-primary toggle-replies-btn px-0 mt-1"
+            data-root-id="<%= comment._id %>">
+      展开 <%= hiddenCount %> 条回复
+    </button>
+  <% }} %>
+  <% } %>
+</div>

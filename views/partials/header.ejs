@@ -1,33 +1,50 @@
 <!-- views/partials/header.ejs -->
+<% /* —————— Flash Messages —————— */ %>
+<% if ((success && success.length) || (error && error.length)) { %>
+  <div class="container mb-2">
+    <% if (success && success.length) { %>
+      <div class="alert alert-success alert-dismissible fade show">
+        <%= success[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>
+    <% if (error && error.length) { %>
+      <div class="alert alert-danger alert-dismissible fade show">
+        <%= error[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <% } %>
+  </div>
+<% } %>
 
-<!-- Flash Messages（保持原样） -->
-<div class="container mt-3">
-  <% if (success && success.length > 0) { %>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-      <%= success[0] %>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  <% } %>
-  <% if (error && error.length > 0) { %>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-      <%= error[0] %>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  <% } %>
-</div>
+<header class="py-3 border-bottom">
+  <div class="container d-flex align-items-center">
+   
 
-<!-- 统一 Header 区 -->
-<header class="header">
-  <div class="container-fluid container-header">
-    <form method="GET" action="/search-users" class="search-form">
-      <input
-        type="search"
-        name="q"
-        class="search-input"
-        placeholder="Search users by username..."
-        value="<%= query || '' %>"
-      />
+    <!-- 中：搜索框，flex-grow 让它尽可能往中间撑开 -->
+    <form action="/search" method="GET"
+          class="me-4 flex-grow-1"
+          style="max-width:7000px;">
+      <div class="input-group shadow-sm">
+        <span class="input-group-text bg-white border-end-0">
+          <i class="bi bi-search"></i>
+        </span>
+        <input
+          type="search"
+          name="q"
+          class="form-control border-start-0"
+          placeholder="Search users, posts or tags…"
+          value="<%= query||'' %>"
+          style="border-radius:0 .25rem .25rem 0;"
+        />
+      </div>
     </form>
-    <a href="#" class="create-center-link">Create Center</a>
+
+    <!-- 右：Create Center 按钮，自定义颜色与圆角 -->
+    <!-- <a href="/create"
+       class="btn btn-primary"
+       style="border-radius:20px; padding: .5rem 1rem;">
+      Create Center
+    </a> -->
   </div>
 </header>

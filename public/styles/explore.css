@@ -17,20 +17,6 @@ body {
     
   }
 
-  /* .tag-list button,
-  .tag-boxes button {
-    display: inline-block;
-    margin: 5px 8px 5px 0;
-    padding: 6px 14px;
-    border: 1px solid #ccc;
-    background-color: white;
-    border-radius: 20px;
-    font-size: 14px;
-    color: #333;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  } */
-
 
   .post-actions button {
     border: none;

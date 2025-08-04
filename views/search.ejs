@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Search: "<%= q %>"</title>
+  <link rel="stylesheet" href="/styles/style.css" />
+  <link rel="stylesheet" href="/styles/search.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body class="d-flex m-0 p-0" style="height:100vh;">
+  <!-- Sidebar -->
+  <%- include('partials/sidebar') %>
+
+  <!-- Main Content -->
+  <div class="flex-grow-1 overflow-auto">
+    <!-- Header -->
+    <div class="p-3 border-bottom">
+      <%- include('partials/header') %>
+      
+    </div>
+
+    <div class="container py-4">
+        <!-- <a href="javascript:history.back()" class="btn btn-outline-secondary">← Return</a> -->
+      <h2>Search Results for "<%= q %>"</h2>
+
+      <!-- Users -->
+      <section class="mt-4">
+        <h4>Users</h4>
+        <% if (users.length === 0) { %>
+          <p class="text-muted">No users found.</p>
+        <% } else { %>
+          <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+            <% users.forEach(u => { %>
+              <div class="col">
+                <a href="/users/<%= u._id %>" class="card h-100 text-decoration-none text-dark shadow-sm">
+                  <div class="card-body d-flex align-items-center gap-3">
+                    <img src="<%= u.avatar || '/images/default.jpg' %>"
+                         width="48" height="48"
+                         class="rounded-circle flex-shrink-0">
+                    <div>
+                      <strong><%= u.username %></strong><br>
+                      <small class="text-muted"><%= u.bio || '' %></small>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </section>
+
+      <!-- Posts -->
+      <section class="mt-5">
+        <h4>Posts</h4>
+        <% if (posts.length === 0) { %>
+          <p class="text-muted">No posts found.</p>
+        <% } else { %>
+          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+            <% posts.forEach(post => { %>
+              <div class="col">
+                <div class="card h-100 shadow-sm">
+                  <a href="/posts/<%= post._id %>">
+                    <img src="<%= post.coverImage || '/images/default.jpg' %>"
+                         class="card-img-top" alt="">
+                  </a>
+                  <div class="card-body">
+                    <h5 class="card-title mb-1">
+                      <a href="/posts/<%= post._id %>"
+                         class="text-decoration-none text-dark">
+                        <%= post.title.length > 30
+                            ? post.title.slice(0, 30) + '…'
+                            : post.title %>
+                      </a>
+                    </h5>
+                    <div class="d-flex flex-wrap gap-1">
+                      <% post.tags.forEach(t => { %>
+                        <a href="/tags/<%= encodeURIComponent(t) %>"
+                           class="badge bg-light text-dark text-decoration-none">
+                          #<%= t %>
+                        </a>
+                      <% }) %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

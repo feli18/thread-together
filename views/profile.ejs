@@ -13,19 +13,19 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
 </head>
 
-<body>
-  <div class="d-flex">
+<body class="m-0 p-0">
+  <div class="d-flex" style="height: 100vh;">
     <!-- Sidebar -->
     <%- include('partials/sidebar') %>
 
 
     <!-- Main Content -->
-    <div class="flex-grow-1">
+    <div class="flex-grow-1  d-flex flex-column" style="overflow-y: auto;">
       <!-- Header -->
       <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
         <div class="flex-grow-1 px-4">
           <%- include('partials/header.ejs') %>
-          <%- include('partials/searchUserResults.ejs') %>
+          <%# include('partials/searchUserResults.ejs') %>
         </div>
         <div class="px-4">
           <!-- <a href="#">Create Center</a> -->

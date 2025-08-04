@@ -27,13 +27,43 @@
 }
 
 .steps-row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  /* flex-wrap: wrap; */
   gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* .step-box {
+  flex: 1 1 250px;
+} */
+@media (max-width: 768px) {
+  /* 窄屏时变成两列或者一列，你自己调 */
+  .steps-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .steps-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .step-box {
-  flex: 1 1 250px;
+  display: flex;
+  flex-direction: column;
+}
+.step-box p:first-child {
+  margin-bottom: 0.5rem;
+}
+.step-box img,
+.step-box video {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+}
+.step-box p:last-child {
+  margin-top: auto; /* 如果你想让文字往下对齐 */
 }
 
 .step-image {
@@ -55,3 +85,37 @@
   margin-right: 4px;
 }
 
+.post-header .d-flex.flex-column{
+  /* flex-wrap: wrap; */
+  align-items: flex-end;
+}
+
+/* 标题 */
+.post-title {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+/* 按钮组 */
+.post-actions {
+  /* 保证按钮不压缩 */
+  flex-shrink: 0;
+  gap: 0.5rem;
+}
+.post-editor-actions{
+  flex-shrink:0;
+}
+
+@media (max-width: 576px) {
+  .post-header {
+    flex-direction: column;
+  }
+  .post-header .d-flex.flex-column {
+    width: 100%;
+    align-items: flex-start;
+    margin-top: 1rem;
+  }
+  .post-editor-actions {
+    margin-top: 0.5rem;
+  }
+}

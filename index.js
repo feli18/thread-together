@@ -26,6 +26,8 @@ import Message from './models/Message.js';
 import tagRoutes from './routes/tags.js';
 import exploreRoutes from './routes/explore.js';
 import TagView from './models/TagView.js';
+import { buildCommentTree } from './utils/buildCommentTree.js';
+import searchRoutes from './routes/search.js';
 
 
 import mongoose from 'mongoose'; 
@@ -107,6 +109,7 @@ app.use("/messages", messageRoutes);
 app.use("/notifications", notificationRoutes);
 app.use('/tags', tagRoutes);
 app.use("/explore", exploreRoutes);
+app.use('/',searchRoutes);
 
 
 
@@ -496,9 +499,11 @@ app.get("/posts/:id", async (req, res) => {
       .populate("author")
       .populate({
         path: "comments",
-        populate: { path: "user", select: "username" }
+        populate: { path: "user", select: "username avatar" }
       })
       .populate("likedBy");
+
+      const commentTree=buildCommentTree(post.comments);
 
     if (!post) return res.status(404).send("Post not found");
 
@@ -516,7 +521,8 @@ app.get("/posts/:id", async (req, res) => {
     console.log("插入成功")
     // -------------------------------------
 
-    res.render("post.ejs", { post });
+    // res.render("post.ejs", { post });
+    res.render("post.ejs", { post ,commentTree,currentUser:req.session.userId});
   } catch (err) {
     console.error("详情页加载失败：", err);
     res.status(500).send("Server error");
@@ -571,17 +577,6 @@ app.post("/posts/:id/comments", async (req, res) => {
 });
 
 
-app.get("/search-users", async (req, res) => {
-  const query = req.query.q || '';
-  const matchedUsers = await User.find({
-    username: { $regex: query, $options: "i" }
-  });
-
-  res.render("searchUsers.ejs", {
-    matchedUsers,
-    query
-  });
-});
 
 
 async function testComments() {

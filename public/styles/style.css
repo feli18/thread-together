@@ -1,9 +1,10 @@
 body{
   /* background-color: #E5CC96 !important; */
-  background-color: #EDDDBA !important;
+  /* background-color: #EDDDBA !important; */
+  /* background-color: #59669d !important; */
 }
 .sidebar .nav-link.active-nav {
-  background-color: #eef3fc !important;
+  background-color: #A5BDF5 !important;
   color: #1a237e !important;
 }
 .tag-list button,
@@ -92,3 +93,44 @@ aside.sidebar a.sidebar-logo:focus {
   box-shadow: none      !important;
 }
 
+/* header 搜索条风格 */
+.header {
+  background-color: #fff; /* 或自己想要的轻微灰/淡米色 */
+}
+
+.logo-img {
+  height: 40px;
+  width: auto;
+  transition: opacity .2s;
+}
+
+.logo-img:hover {
+  opacity: 0.8;
+}
+
+.search-form .input-group {
+  max-width: 600px; /* 最大宽度，超出时居中 */
+}
+
+.search-form .search-input {
+  border-radius: 999px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.search-form .input-group-text {
+  border-radius: 999px 0 0 999px;
+  border-color: #ddd;
+  color: #888;
+}
+
+.search-form .search-input {
+  border-radius: 0 999px 999px 0;
+  border-color: #ddd;
+}
+
+/* 响应式：屏幕变窄时把 Create Center 按钮隐藏或者收进菜单 */
+@media (max-width: 768px) {
+  .search-form {
+    display: none; /* 手机端可换成一个放大镜图标打开搜索 */
+  }
+}

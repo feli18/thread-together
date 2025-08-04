@@ -4,7 +4,8 @@ const commentSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   post: { type: mongoose.Schema.Types.ObjectId, ref: 'Post', required: true },
   text: { type: String, required: true },
-  replyTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  // replyTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+  replyTo: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment', default: null },
   createdAt: { type: Date, default: Date.now }
 });
 
