@@ -21,7 +21,6 @@
     </div>
 
     <div class="container py-4">
-        <!-- <a href="javascript:history.back()" class="btn btn-outline-secondary">← Return</a> -->
       <h2>Search Results for "<%= q %>"</h2>
 
       <!-- Users -->
@@ -56,39 +55,54 @@
         <% if (posts.length === 0) { %>
           <p class="text-muted">No posts found.</p>
         <% } else { %>
-          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-4">
             <% posts.forEach(post => { %>
-              <div class="col">
-                <div class="card h-100 shadow-sm">
-                  <a href="/posts/<%= post._id %>">
-                    <img src="<%= post.coverImage || '/images/default.jpg' %>"
-                         class="card-img-top" alt="">
-                  </a>
-                  <div class="card-body">
-                    <h5 class="card-title mb-1">
-                      <a href="/posts/<%= post._id %>"
-                         class="text-decoration-none text-dark">
-                        <%= post.title.length > 30
-                            ? post.title.slice(0, 30) + '…'
-                            : post.title %>
-                      </a>
-                    </h5>
-                    <div class="d-flex flex-wrap gap-1">
-                      <% post.tags.forEach(t => { %>
-                        <a href="/tags/<%= encodeURIComponent(t) %>"
-                           class="badge bg-light text-dark text-decoration-none">
-                          #<%= t %>
-                        </a>
-                      <% }) %>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              
+               <%- include('partials/postCardGrid', { post }) %>
             <% }) %>
           </div>
         <% } %>
       </section>
     </div>
   </div>
+  <script>
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('liked');
+        btn.querySelector('i').classList.toggle('bi-heart');
+        btn.querySelector('i').classList.toggle('bi-heart-fill');
+      });
+    });
+
+    document.querySelectorAll('.save-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('saved');
+        btn.querySelector('i').classList.toggle('bi-bookmark');
+        btn.querySelector('i').classList.toggle('bi-bookmark-fill');
+      });
+    });
+
+    document.querySelectorAll('.comment-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        alert("Comment feature coming soon!");
+      });
+    });
+    document.querySelectorAll('.like-form').forEach(form => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const postId = form.dataset.postId;
+
+        const res = await fetch(`/posts/${postId}/like`, {
+          method: 'POST'
+        });
+
+        if (res.ok) {
+          
+          window.location.reload(); 
+        }
+      });
+    });
+  </script>
 </body>
 </html>

@@ -3,21 +3,6 @@ body {
     padding: 0;
   }
 
-  .sidebar {
-    width: 220px;
-    height: 100vh;
-    background-color: #f8f9fa;
-    padding: 20px;
-  }
-
-  .sidebar .btn,
-  .sidebar .nav-link {
-    width: 100%;
-    margin-bottom: 10px;
-    
-  }
-
-
   .post-actions button {
     border: none;
     background: none;
@@ -53,4 +38,63 @@ body {
   background-color: #EBEDD8 !important;
   border-color:     #CEA8BD !important;
   color:            #3B09BA !important;
+}
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.col-md-3 {
+  border-right: 1px dashed #ccc;
+}
+.tag-list button {
+  flex: 0 0 calc(33.33% - 10px); 
+.cards-container {
+  column-count: 4;
+  column-gap: 1.5rem;
+}
+
+.cards-container .col {
+  margin-bottom: 1.5rem; 
+}
+
+@media (max-width: 1200px) {
+  .cards-container {
+    column-count: 3;
+  }
+}
+@media (max-width: 992px) {
+  .cards-container {
+    column-count: 2;
+  }
+}
+@media (max-width: 576px) {
+  .cards-container {
+    column-count: 1;
+  }
+}.cards-container .card-wrapper {
+  break-inside: avoid;
+  margin-bottom: 1.5rem;
+  
+}
+
+
+
+.masonry {
+  column-count: 4 !important;
+  column-gap: 16px !important;
+  padding-left: 1rem; 
+}
+
+.masonry .col {
+  display: inline-block !important;
+  width: 100% !important;
+  break-inside: avoid !important;
+  margin: 0 0 16px !important; 
+  vertical-align: top; 
+}
+
+.masonry .col .post-card {
+  width: 100% !important;
 }

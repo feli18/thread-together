@@ -9,9 +9,10 @@
 </head>
 <body>
 
-  <%- include('../partials/header.ejs') %>
+  <%# include('../partials/header.ejs') %>
 
   <div class="container py-5">
+    <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm mb-3">← Back to Profile</a>
     <h2 class="mb-4">Edit Your Profile</h2>
 
     <form action="/profile/edit" method="POST" enctype="multipart/form-data">
@@ -40,7 +41,7 @@
         <input type="url" class="form-control" name="website" value="<%= user.website %>">
       </div>
 
-      <button type="submit" class="btn btn-primary">Save</button>
+      <button type="submit" class="btn btn-primary btn-sm">Save</button>
     </form>
   </div>
 

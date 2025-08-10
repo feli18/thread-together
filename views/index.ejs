@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Discover</title>
   <link rel="stylesheet" href="/styles/style.css" />
-  <link rel="stylesheet" href="/styles/variables.css" />
-  <link rel="stylesheet" href="/styles/custom-chart.css">
+  <link rel="stylesheet" href="/styles/sidebar.css" />
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
@@ -22,14 +20,11 @@
     <!-- Main Content -->
     <div class="flex-grow-1 d-flex flex-column" style="overflow-y: auto;">
       <!-- Top Bar -->
-      <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-        <!-- <div class="flex-grow-1 px-4">
-          <input type="search" class="form-control" placeholder="Login for more content..." />
-        </div> -->
+      <div class="d-flex justify-content-between align-items-center p-3 ">
+        
         <div class="flex-grow-1 px-4">
         <%- include('partials/header.ejs') %>
         </div>
-        <%# include('partials/searchUserResults.ejs') %>
 
         <div class="px-4">
           <!-- <a href="#">Create Center</a> -->
@@ -40,23 +35,26 @@
       <div class="container py-4">
         <!-- Hot Tags -->
        
-        <section class="mb-5">
+        <section class="mb-4">
           <h2>Hot Tags</h2>
           <div class="tag-list">
             <% hotTags.forEach(t => { %>
-              <button
+              
+                <button
                 type="button"
-                class="btn btn-outline-secondary btn-sm me-2 mb-2"
+                class="btn btn-outline-secondary  btn-sm me-2 mb-2  "
                 onclick="location.href='/tags/<%= encodeURIComponent(t.name) %>'"
               >
                 #<%= t.name %>
               </button>
+            
+              
             <% }) %>
           </div>
         </section>
 
       <!-- Trending & Popular This Week -->
-<section class="mb-5">
+<section class="mb-3">
   <div class="row g-4">
 
 
@@ -74,7 +72,6 @@
           <% }) %>
         </div>
     </div>
-    <!-- 1. Trending Tags：表格+“小条” -->
     <div class="col-md-6">
       <h2>Trending Tags</h2>
       <p class="text-muted">Tag clicks over the past 7 days</p>
@@ -90,27 +87,15 @@
   </div>
 </section>
 
-
-
-
-
-      
-        <!-- Featured Posts -->
-        <section>
           <h2>Featured Posts</h2>
-          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
-            <% if (posts && posts.length > 0) { %>
-            <% posts.forEach(post => { %>
-              <%- include('partials/postCardGrid', { post, currentUser }) %>
-            <% }) %>
-          <% } else { %>
-            <div class="col">
-              <p>No posts yet. Upload your first sewing project!</p>
-            </div>
-          <% } %>
+          <div class="masonry1">
+            
+          <% posts.forEach(post => { %>
+                  <%- include('partials/postCardGrid', { post }) %>
+                <% }) %>
           </div>
           
-        </section>
+        
       </div>
     </div>
   </div>
@@ -120,37 +105,112 @@
   <!-- <script src="/public/js/router.js"></script> -->
   <!-- <script src="../js/router.js"></script> -->
   <script src="/js/index.js"></script>
-  <script>
+<script>
   const days = <%- JSON.stringify(trendingViews.days) %>;
-  const datasets = <%- JSON.stringify(
-    trendingViews.tags.map((t,i) => ({
-      label: `#${t.name}`,
-      data: t.counts,
-      borderColor: ['#E89DA0','#88CEE6','#F6C8A8','#B2D3A4','#B696B6'][i],
-      fill: false,
-      tension: 0.3
-    }))
-  ) %>;
+const datasets = <%- JSON.stringify(
+  trendingViews.tags.map((t,i) => ({
+    label: `#${t.name}`,
+    data: t.counts,
+    borderColor: ['#E89DA0','#88CEE6','#F6C8A8','#B2D3A4','#B696B6'][i],
+    fill: false,
+    tension: 0.3,
+    borderWidth: 4
+  }))
+) %>;
 
-  new Chart(document.getElementById('trendChart').getContext('2d'), {
-    type: 'line',
-    data: { labels: days, datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      layout: { padding: 20 },
-      plugins: {
-        legend: { position: 'right' },
-        tooltip: { mode: 'index', intersect: false }
+const allValues = datasets.flatMap(d => d.data);
+const maxVal = Math.max(...allValues, 0);
+const niceMax = Math.ceil((maxVal * 1.2) / 10) * 10; 
+
+new Chart(document.getElementById('trendChart').getContext('2d'), {
+  type: 'line',
+  data: { labels: days, datasets },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: { padding: 20 },
+    plugins: {
+      legend: {
+        position: 'right',
+        labels: {
+          usePointStyle: true,
+          boxWidth: 40,
+          padding: 20,
+        }
       },
-      scales: {
-        x: { grid:{ color:'#eee' }, ticks:{ color:'#555' } },
-        y: { grid:{ color:'#eee' }, ticks:{ color:'#555', beginAtZero:true } }
+      tooltip: { mode: 'index', intersect: false }
+    },
+    scales: {
+      x: {
+        grid: { color: '#eee' },
+        ticks: {
+          color: '#555',
+          callback: function(value, index, ticks) {
+            const date = new Date(this.getLabelForValue(value));
+            return date.toLocaleDateString('en-GB', { 
+              day: '2-digit',
+              month: '2-digit',
+              // year: '2-digit'
+            });
+          }
+        }
       },
-      elements: { line:{ borderWidth:2 }, point:{ radius:4 } }
+      y: {
+        grid: { color: '#eee' },
+        ticks: {
+          color: '#555',
+          maxTicksLimit: 4, 
+          beginAtZero: true
+        }
+      }
+    },
+    elements: {
+      line: { borderWidth: 4 },
+      point: { radius: 0, pointStyle: 'line' }
     }
-  });
+  }
+});
+
+
+ document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('liked');
+        btn.querySelector('i').classList.toggle('bi-heart');
+        btn.querySelector('i').classList.toggle('bi-heart-fill');
+      });
+    });
+
+    document.querySelectorAll('.save-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('saved');
+        btn.querySelector('i').classList.toggle('bi-bookmark');
+        btn.querySelector('i').classList.toggle('bi-bookmark-fill');
+      });
+    });
+
+    document.querySelectorAll('.comment-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        alert("Comment feature coming soon!");
+      });
+    });
+    document.querySelectorAll('.like-form').forEach(form => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const postId = form.dataset.postId;
+
+        const res = await fetch(`/posts/${postId}/like`, {
+          method: 'POST'
+        });
+
+        if (res.ok) {
+          
+          window.location.reload(); 
+        }
+      });
+    });
 </script>
+
 
 </body>
 </html>

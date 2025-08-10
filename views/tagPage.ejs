@@ -16,16 +16,13 @@
 </head>
 <body class="m-0 p-0">
   <div class="d-flex" style="height: 100vh;">
-    <!-- 侧栏 -->
     <%- include('partials/sidebar') %>
 
     <div class="flex-grow-1 d-flex flex-column" style="overflow-y: auto;">
-      <!-- 顶部 header/search -->
       <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
         
           <%- include('partials/header') %>
-          <%- include('partials/searchUserResults') %>
-        
+          
       </div>
 
       <div class="container py-4">
@@ -38,11 +35,8 @@
             ← Return back
           </button>
         </div>
-
-        <!-- 显示当前标签 -->
         <h1 class="mb-4">Posts tagged “<%= tagName %>”</h1>
 
-        <!-- 帖子网格，复用 postCardGrid -->
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
           <% posts.forEach(post => { %>
             <%- include('partials/postCardGrid', { post, currentUser }) %>

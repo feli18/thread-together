@@ -1,5 +1,3 @@
-// public/js/notifications.js
-
 document.addEventListener("DOMContentLoaded", () => {
   const tabs = document.querySelectorAll('#notificationTabs .nav-link');
   const panes = document.querySelectorAll('.tab-pane');
@@ -41,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch(console.error);
   };
 
-  // 默认 tab（评论）加载后也批量已读
+
   setTimeout(() => {
     const defaultTab = document.querySelector('#notificationTabs .nav-link.active');
     if (defaultTab) {
@@ -50,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, 300);
 
-  // 切换 tab 时批量 mark-read
+
   tabs.forEach(tab => {
     tab.addEventListener('click', e => {
       e.preventDefault();

@@ -2,96 +2,284 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Chat with <%= targetUser.username %></title>
-  <link rel="stylesheet" href="/styles/style.css" />
+  <title>Chat with @<%= targetUser.username %></title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
+  <link rel="stylesheet" href="/styles/style.css" />
   <style>
-    .chat-container {
-      padding: 2rem;
+    .messages-header{
+      background: #f2e2f3 !important;
+      font-size: 80px !important;
+    }
+    .messages-header h4 {
+      font-size: 2rem !important;
+      /* color: #006d6d; */
+      margin-bottom: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .chat-list {
+      height: calc(100vh - 56px); 
+      overflow-y: auto;
+      /* border-right: 3px dashed #fffade ; */
+      background-color: #F2E2F3;
+      padding-top: .5rem;
+    }
+    .chat-list a {
+      display: block;
+      padding: .75rem 1rem;
+      color: #333;
+      text-decoration: none;
+      /* background-color: #F2E2F3; */
+    }
+    .chat-list a.active-conv {
+      background-color: #fffade ;
+      font-weight: 500;
+    }
+    .chat-list .message-item {
+      border-radius: 12px;
+      margin: 0.5rem 0.75rem;
+      padding: 0.75rem;
+      /* transition: background 0.2s; */
+    }
+    .chat-list .message-item:hover {
+      background: #fffade;
+    }
+        
+
+   
+    .chat-header {
+      border-bottom: 3px solid #eee;
+      /* border-top: 5px dashed #fffade; */
+      padding: .75rem 1rem;
+      flex: 0 0 auto;
+      background-color: #fff7ff;
+    }
+    .chat-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 56px); 
+      padding: 8px;      
+      box-sizing: border-box;
+      border: 3px dashed #fffade;
+      border-radius: 16px;
+    }
+    .chat-content {
+      display: flex;
+      flex-direction: column;
+      flex: 1;              
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;    
+    }
+
+    .chat-wrapper .chat-content {
+      background: #fff;         
+      border-radius: 12px;      
+      height: calc(100hv-56px);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
     .chat-box {
-      height: 70vh;
+      flex: 1 1 auto;
       overflow-y: auto;
       padding: 1rem;
-      background: #f9f9f9;
-      border-radius: 10px;
-      border: 1px solid #ddd;
+      background: transparent;
+      border-radius: 0;
     }
     .chat-bubble {
-      max-width: 75%;
-      padding: 10px 15px;
-      border-radius: 15px;
-      margin-bottom: 10px;
-      display: inline-block;
+      max-width: 70%;
+      /* padding: .5rem .75rem; */
+      padding-bottom: 0.04rem;
+      padding-top: 0.5rem;
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+      border-radius: 16px;
+      margin: .5rem 0;
+      position: relative;
     }
     .chat-bubble.left {
-      background-color: #e0e0e0;
-      text-align: left;
+      background: #fff7d0;
+      align-self: flex-start;
     }
     .chat-bubble.right {
-      background-color: #d1e7dd;
-      text-align: right;
+      background: #dcf8c6;
+      align-self: flex-end;
     }
-    .chat-image {
-      max-width: 100%;
-      border-radius: 10px;
-      margin-top: 6px;
+    .chat-input {
+      flex: 0 0 auto;
+      border-top: 1px solid #eee;
+      padding: .75rem 1rem;
+    }
+    .splitter {
+      width: 3px;
+      cursor: col-resize;
+      background: #f2e2f3;
+      position: relative;
+      z-index: 10;
     }
   </style>
 </head>
+<body class="m-0 p-0">
+  <div class="d-flex" style="height: 100vh;">
+    
+      <%- include('partials/sidebar') %>
+      <div class="flex-grow-1 d-flex flex-column" style="overflow-y: auto;">
 
-<body>
-  <div class="d-flex">
-    <!-- Sidebar -->
-    <%- include('partials/sidebar') %>
-
-    <!-- Main Chat Content -->
-    <div class="flex-grow-1 px-5 py-4 ">
-      <!-- Header -->
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="mb-0">Chat with @<%= targetUser.username %></h5>
-        <a href="/messages" class="btn btn-sm btn-outline-secondary">← Back to Messages</a>
-      </div>
-
-      <!-- Chat messages -->
-      <div class="chat-box mb-3">
-        <% messages.forEach(msg => { %>
-          <div class="d-flex <%= msg.sender._id.toString() === currentUser ? 'justify-content-end' : 'justify-content-start' %>">
-            <div class="chat-bubble <%= msg.sender._id.toString() === currentUser ? 'right' : 'left' %>">
-              <% if (msg.text) { %>
-                <div><%= msg.text %></div>
-              <% } %>
-              <% if (msg.image) { %>
-                <img src="<%= msg.image %>" class="chat-image"/>
-              <% } %>
-              <div class="text-muted small mt-1 text-end">
-                <%= new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) %>
+        <div class="messages-header px-3 py-2">
+         <h4 class="mb-0">Messages</h4>
+    </div>
+    <div class="flex-grow-1 d-flex">
+      <div class="row g-0 flex-grow-1">
+        
+        <div class="col-3 chat-list ">
+          <% conversations.forEach(conv => { %>
+            <a href="/messages/<%= conv._id %>"
+          class="message-item <%= conv._id.toString()===currentConvId ? 'active-conv' : '' %>">
+              <div class="d-flex align-items-center">
+                <img src="<%= conv.avatar || '/images/default.jpg' %>" 
+                     width="32" height="32" class="rounded-circle me-2">
+                <div>
+                  <div><strong><%= conv.withUsername %></strong></div>
+                  <div class="text-truncate" style="max-width:120px; font-size:.85rem;">
+                    <%= conv.lastMessage %>
+                  </div>
+                </div>
+                <% if (conv.unreadCount>0) { %>
+                  <span class="badge bg-danger ms-auto"><%= conv.unreadCount %></span>
+                <% } %>
               </div>
+            </a>
+          <% }) %>
+        </div>
+
+         <div class="col-auto p-0">
+            <div class="splitter h-100"></div>
+          </div>
+          <div class="col">
+
+            <div class="chat-wrapper">
+
+            <div class="chat-content bg-white">
+          
+              <!-- <div class="chat-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Chat with @<%= targetUser.username %></h6>
+                
+                <a href="/messages" class="btn btn-sm btn-outline-secondary">
+                  ← Back to Conversations
+                </a>
+              </div> -->
+              <div class="chat-header d-flex align-items-center px-3 py-2">
+                <a href="/users/<%= targetUser._id %>" class="d-flex align-items-center text-decoration-none">
+                  <img src="<%= targetUser.avatar || '/images/default-avatar.png' %>"
+                  width="32" height="32" class="rounded-circle me-2" />
+                <span class="h6 mb-0 text-dark">@<%= targetUser.username %></span>
+                  </a>
+                </div>
+
+              <div class="chat-box">
+                <% messages.forEach(msg => { %>
+                  <div class="d-flex <%= msg.sender._id.toString()===currentUser ? 'justify-content-end' : 'justify-content-start' %>">
+                    <div class="chat-bubble <%= msg.sender._id.toString()===currentUser ? 'right' : 'left' %>">
+                      <% if (msg.text) { %>
+                        <div><%= msg.text %></div>
+                      <% } %>
+                      <% if (msg.image) { %>
+                        <img src="<%= msg.image %>" class="img-fluid rounded mt-1" style="max-width:200px;">
+                      <% } %>
+                      <div class="text-muted small mt-1 text-end" style="font-size:.75rem">
+                        <%= new Date(msg.createdAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) %>
+                      </div>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+
+              <form method="POST" action="/messages/<%= targetUser._id %>" 
+                    enctype="multipart/form-data" class="chat-input">
+                <div class="input-group">
+                  <label for="file-input" class="input-group-text border-end-0 btn-outline-secondary btn-sm" style="cursor: pointer;">
+                    <i class="bi bi-paperclip"></i>
+                  </label>
+                  <input id="file-input" type="file" name="image" accept="image/*" 
+                        style="display: none;" />
+
+                  <input type="text" name="text" class="form-control" 
+                        placeholder="Type your message…" autocomplete="off">
+
+                  <button class="btn btn-primary btn-sm">
+                    <i class="bi bi-send-fill"></i>
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
-        <% }) %>
-      </div>
 
-      <!-- Send message -->
-      <form method="POST" action="/messages/<%= targetUser._id %>" enctype="multipart/form-data">
-        <div class="input-group">
-          <input type="text" name="text" class="form-control" placeholder="Type your message...">
-          <input type="file" name="image" class="form-control" accept="image/*">
-          <button class="btn btn-primary"><i class="bi bi-send"></i></button>
-        </div>
-      </form>
+          </div>
+          
+        
+      </div>
     </div>
+
+      </div>
+   
+    
+
+
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-  // 进入聊天页后，动态移除 sidebar 中的消息红点
-    const sidebarMsgBadge = document.querySelector('a[href="/messages"] .badge');
-    if (sidebarMsgBadge) sidebarMsgBadge.remove();
-    });
+    const badge = document.querySelector('a[href="/messages"] .badge');
+    if (badge) badge.remove();
 
+
+    //  const splitter = document.querySelector('.splitter');
+  // const leftPane = document.querySelector('.chat-list');
+  // const rightPane = document.querySelector('.chat-content');
+
+  // let isDragging = false;
+  // splitter.addEventListener('mousedown', () => { isDragging = true; });
+  // document.addEventListener('mouseup', () => { isDragging = false; });
+  // document.addEventListener('mousemove', e => {
+  //   if (!isDragging) return;
+  //   // 限制最小宽度为 150px，最大为窗口宽度的一半
+  //   let newLeftW = Math.max(150, Math.min(e.clientX, window.innerWidth * 0.5));
+  //   leftPane.style.width = newLeftW + 'px';
+  // });
   </script>
+  <script>
+  const splitter = document.querySelector('.splitter');
+  const leftPane = document.querySelector('.chat-list');
+  let isDragging = false;
+  let startX, startWidth;
+
+  splitter.addEventListener('mousedown', e => {
+    isDragging = true;
+    startX = e.clientX;
+    startWidth = leftPane.getBoundingClientRect().width;
+    document.body.style.userSelect = 'none';  
+    document.body.style.cursor = 'col-resize';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const delta = e.clientX - startX;
+    let newWidth = startWidth + delta;
+    const min = 150;
+    const max = window.innerWidth * 0.6;
+    newWidth = Math.max(min, Math.min(newWidth, max));
+    leftPane.style.width = newWidth + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    document.body.style.userSelect = '';
+    document.body.style.cursor = '';
+  });
+</script>
+
 </body>
 </html>

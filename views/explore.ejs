@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Discover</title>
+  <title>Explore</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   
-  <link rel="stylesheet" href="/styles/variables.css" />
+  <!-- <link rel="stylesheet" href="/styles/variables.css" /> -->
   <link rel="stylesheet" href="/styles/style.css" />
   <link rel="stylesheet" href="/styles/sidebar.css" />
   <link rel="stylesheet" href="/styles/exploree.css" />
@@ -23,89 +23,95 @@
     <!-- Main Content -->
     <div class="flex-grow-1  d-flex flex-column" style="overflow-y: auto;">
       <!-- Header -->
-      <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+      <div class="d-flex justify-content-between align-items-center p-3 ">
         <div class="flex-grow-1 px-4">
+
+          <%- include('partials/header.ejs') %>
+        </div>
           
-        <%- include('partials/header.ejs') %>
-        <%# include('partials/searchUserResults.ejs') %>
-      </div>
-        <div class="px-4">
-          <!-- <a href="#">Create Center</a> -->
-        </div>
-      </div>
-
-      <!-- Tags Group Section -->
-      <div class="container py-4">
-
-        <!-- 🔥 Hot Tags -->
-   
-        <section class="mb-2">
-          <h2>Hot Tags</h2>
-          <div class="tag-list">
-            <% hotTags.forEach(tag => { %>
-              <button type="button"
-                      class="btn btn-outline-secondary btn-sm me-2 mb-2"
-                      onclick="location.href='/tags/<%= encodeURIComponent(tag) %>'">
-                #<%= tag %>
-              </button>
-            <% }) %>
-          </div>
-        </section>
-
-        <section class="mb-2">
-          <h2>Material</h2>
-          <div class="tag-list">
-            <% materialTags.forEach(tag => { %>
-              <button type="button"
-                      class="btn btn-outline-secondary btn-sm me-2 mb-2"
-                      onclick="location.href='/tags/<%= encodeURIComponent(tag) %>'">
-                #<%= tag %>
-              </button>
-            <% }) %>
-          </div>
-        </section>
-
-
-         <section class="mb-2">
-          <h2>Style</h2>
-          <div class="tag-list">
-            <% styleTags.forEach(tag => { %>
-              <button type="button"
-              class="btn btn-outline-secondary btn-sm me-2 mb-2"
-                      onclick="location.href='/tags/<%= encodeURIComponent(tag) %>'">
-                #<%= tag %>
-              </button>
-            <% }) %>
-          </div>
-        </section>
-
-
-         <section class="mb-5">
-          <h2>Technique</h2>
-          <div class="tag-list">
-            <% techniqueTags.forEach(tag => { %>
-              <button type="button"
-                      class="btn btn-outline-secondary btn-sm me-2 mb-2"
-                      onclick="location.href='/tags/<%= encodeURIComponent(tag) %>'">
-                #<%= tag %>
-              </button>
-            <% }) %>
-          </div>
-        </section>
-
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
-          <% posts.forEach(post => { %>
-            <%- include('partials/postCardGrid', { post }) %>
-          <% }) %>
         </div>
 
+        <!-- Tags Group Section -->
+        <div class="container py-4">
+        <div class="row">
+          
+        
+          <!-- 左侧标签 -->
+          <div class="col-12 col-lg-3 px-4 ">
+              <section class="mb-4">
+                <h2>Hot Tags</h2>
+                <div class="tag-list d-flex flex-wrap gap-2">
+                  <% hotTags.forEach(tag => { %>
+                    <button type="button"
+                      class="btn btn-outline-secondary btn-sm"
+                      onclick="location.href='/tags/<%= encodeURIComponent(tag) %>'">
+                      #<%= tag %>
+                    </button>
+                  <% }) %>
+                </div>
+              </section>
+
+              <section class="mb-4">
+                <h2>Material</h2>
+                <div class="tag-list  d-flex flex-wrap gap-2">
+                  <% materialTags.forEach(tag => { %>
+                      <button type="button"
+                            class="btn btn-outline-secondary btn-sm  "
+                            onclick="location.href='/tags/<%= encodeURIComponent(tag) %>'">
+                      #<%= tag %>
+                    </button>
+                    
+                    
+                  <% }) %>
+                </div>
+              </section>
+
+              <section class="mb-4">
+                <h2>Style</h2>
+                <div class="tag-list d-flex flex-wrap gap-2">
+                  <% styleTags.forEach(tag => { %>
+                    <button type="button"
+                            class="btn btn-outline-secondary btn-sm "
+                            onclick="location.href='/tags/<%= encodeURIComponent(tag) %>'">
+                      #<%= tag %>
+                    </button>
+                  <% }) %>
+                </div>
+              </section>
+
+              <section class="mb-4">
+                <h2>Technique</h2>
+                <div class="tag-list d-flex flex-wrap gap-2">
+                  <% techniqueTags.forEach(tag => { %>
+                    <button type="button"
+                            class="btn btn-outline-secondary btn-sm "
+                            onclick="location.href='/tags/<%= encodeURIComponent(tag) %>'">
+                      #<%= tag %>
+                    </button>
+                  <% }) %>
+                </div>
+              </section>
+            </div>
+            <!-- Right cards-->
+            <div class="col-12 col-lg-9">
+              <!-- <div class=" cards-container row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4"> -->
+                <div class="masonry">
+                <% posts.forEach(post => { %>
+                  <%- include('partials/postCardGrid', { post }) %>
+                <% }) %>
+              </div>
+            </div>
 
 
+        
       </div>
+    </div>
 
 
-          </div>
-        </div>
+
+
+    </div>
+  </div>
 
   <script>
     document.querySelectorAll('.like-btn').forEach(btn => {
@@ -131,7 +137,7 @@
     });
     document.querySelectorAll('.like-form').forEach(form => {
       form.addEventListener('submit', async (e) => {
-        e.preventDefault(); // 阻止页面跳转
+        e.preventDefault();
 
         const postId = form.dataset.postId;
 
@@ -140,8 +146,8 @@
         });
 
         if (res.ok) {
-          // 选择更新 UI（最简单方式是刷新整个页面）
-          window.location.reload(); // 或你可以只更新那个按钮状态
+          
+          window.location.reload(); 
         }
       });
     });

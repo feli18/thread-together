@@ -20,15 +20,19 @@
     <!-- Main Content -->
     <div class="flex-grow-1 d-flex flex-column" style="overflow-y: auto;">
       
-      <div class="d-flex justify-content-between align-items-center p-3 border-bottom mt-2">
+      <div class="d-flex justify-content-between align-items-center p-3 mt-2">
         
         <button
           type="button"
           class="btn btn-outline-secondary btn-sm"
           onclick="history.back()"
         >← Back</button>
-        <h2 class="m-0">Upload Process Step</h2>
       </div>
+      <div class="text-center my-4">
+      <h2 class="fw-bold" style="font-size: 2rem;">Upload Your Project Here 🪡</h2>
+    </div>
+      
+
       <div class="container py-4 upload-page">
 
         <form action="/upload" method="POST" enctype="multipart/form-data">
@@ -46,7 +50,7 @@
                 style="top: 0.5rem; right: 0.5rem; display: none;"
                 title="Change Cover"
               >
-                <i class="bi bi-pencil"></i>
+                <i class="bi bi-trash"></i>
               </button>
             </div>
 
@@ -64,13 +68,45 @@
           </div>
 
           <!-- Right -->
-          <div class="col-md-6">
+          <!-- <div class="col-md-6">
             <h4>STEPS</h4>
             <div id="stepsContainer"></div>
-            <button type="button" class="btn btn-outline-primary mt-2 " id="addStepBtn">+ Add next step</button>
+            <button type="button" class="btn btn-outline-primary mt-2 " id="addStepBtn">+ Add step</button>
             
 
+          </div> -->
+          <div class="col-md-6">
+            <h4>STEPS</h4>
+
+            <template id="stepTpl">
+              <div class="step-card mb-3" data-step>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <p class="m-0 fw-bold">Step <span data-step-index></span></p>
+                  <div class="custom-upload d-flex gap-2">
+                    <label class="btn btn-outline-secondary btn-sm m-0">
+                      <input type="file" accept="image/*,video/*" hidden data-file name="stepFiles">
+                      Choose File
+                    </label>
+                    <button type="button" class="btn btn-outline-danger btn-sm" data-delete>Delete</button>
+                  </div>
+                </div>
+
+                <div class="preview-wrap mb-2 d-none" data-preview-wrap>
+                  <img data-img class="w-100 rounded d-none" />
+                  <video data-video class="w-100 rounded d-none" controls></video>
+                </div>
+
+                <textarea class="form-control" rows="2" placeholder="Add description ..." name="stepDescriptions"></textarea>
+              </div>
+            </template>
+
+            <div id="stepsContainer"></div>
+            <button type="button" class="btn btn-outline-primary mt-2" id="addStepBtn">+ Add step</button>
           </div>
+
+
+
+          
         </div>
 
         <button type="submit" class="btn btn-primary mt-4 w-100 ">Post</button>

@@ -7,7 +7,6 @@ import User from "../models/User.js";
 
 const router = express.Router({ mergeParams: true });
 
-// 添加评论
 router.post('/', async (req, res) => {
   const { postId } = req.params;
   const post = await Post.findById(postId);
@@ -23,7 +22,6 @@ router.post('/', async (req, res) => {
   await comment.save();
   post.comments.push(comment._id);
   await post.save();
-    // 发通知给帖子作者
   if (post.author.toString() !== req.session.userId) {
     await Notification.create({
       recipient: post.author,
@@ -33,8 +31,6 @@ router.post('/', async (req, res) => {
       comment: comment._id,
     });
   }
-
-  // 如果是回复别人，也发给被回复者
   if (req.body.replyTo) {
     const parentComment = await Comment.findById(req.body.replyTo).populate("user");
     if (parentComment && parentComment.user._id.toString() !== req.session.userId) {
@@ -52,7 +48,6 @@ router.post('/', async (req, res) => {
   res.redirect(`/posts/${postId}`);
 });
 
-// 删除评论
 router.delete('/:commentId', async (req, res) => {
   const { postId, commentId } = req.params;
   const comment = await Comment.findById(commentId);

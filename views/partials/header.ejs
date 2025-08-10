@@ -1,4 +1,28 @@
-<!-- views/partials/header.ejs -->
+
+<style>
+  .input-group-text {
+  border-radius: 999px 0 0 999px !important; 
+  border: none !important;
+  background-color: white !important;
+  padding-left: 1rem;
+  padding-right: 0.75rem;
+}
+
+.form-control {
+  border-radius: 0 999px 999px 0 !important; 
+  border: none !important;
+  background-color: white !important;
+  padding-left: 0;
+}
+
+.input-group {
+  overflow: hidden;
+  border-radius: 999px;
+  background-color: white;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.05); 
+}
+
+</style>
 <% /* —————— Flash Messages —————— */ %>
 <% if ((success && success.length) || (error && error.length)) { %>
   <div class="container mb-2">
@@ -17,11 +41,10 @@
   </div>
 <% } %>
 
-<header class="py-3 border-bottom">
+<header class="py-3 ">
   <div class="container d-flex align-items-center">
    
 
-    <!-- 中：搜索框，flex-grow 让它尽可能往中间撑开 -->
     <form action="/search" method="GET"
           class="me-4 flex-grow-1"
           style="max-width:7000px;">
@@ -35,16 +58,12 @@
           class="form-control border-start-0"
           placeholder="Search users, posts or tags…"
           value="<%= query||'' %>"
-          style="border-radius:0 .25rem .25rem 0;"
+          
+          
         />
       </div>
     </form>
 
-    <!-- 右：Create Center 按钮，自定义颜色与圆角 -->
-    <!-- <a href="/create"
-       class="btn btn-primary"
-       style="border-radius:20px; padding: .5rem 1rem;">
-      Create Center
-    </a> -->
+
   </div>
 </header>

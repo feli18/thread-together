@@ -30,7 +30,7 @@ router.get("/", async (req, res) => {
   });
 });
 
-// routes/notifications.js
+
 
 router.post('/mark-read', async (req, res) => {
   const { type } = req.body;
@@ -45,16 +45,15 @@ router.post('/mark-read', async (req, res) => {
     query.type = { $in: ['like', 'bookmark'] };
   }
 
-  // 批量标记这类通知为已读
+
   await Notification.updateMany(query, { $set: { read: true } });
 
-  // **新增**：重新计算剩余的未读通知总数
+
   const totalUnread = await Notification.countDocuments({
     recipient: req.session.userId,
     read: false
   });
 
-  // **返回 JSON** 给前端
   res.json({ totalUnread });
 });
 
@@ -66,18 +65,17 @@ router.get('/read/:id', async (req, res) => {
 
   if (!notification) return res.redirect("/notifications");
 
-  // 标记为已读
+
   notification.read = true;
   await notification.save();
 
-  // 跳转到相关帖子
+
   if (notification.post) {
     res.redirect(`/posts/${notification.post}`);
   } else {
     res.redirect("/notifications");
   }
 });
-// 获取当前总未读通知数
 router.get('/count', async (req, res) => {
   if (!req.session.userId) return res.json({ count: 0 });
 

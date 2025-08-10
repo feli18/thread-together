@@ -28,16 +28,13 @@
 
 .steps-row {
   display: grid;
-  /* flex-wrap: wrap; */
   gap: 20px;
   grid-template-columns: repeat(3, 1fr);
 }
 
-/* .step-box {
-  flex: 1 1 250px;
-} */
+
 @media (max-width: 768px) {
-  /* 窄屏时变成两列或者一列，你自己调 */
+
   .steps-row {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -48,6 +45,11 @@
   }
 }
 
+.custom-step-box{
+
+  border: 3.5px dashed #f7f1ec;
+  
+}
 .step-box {
   display: flex;
   flex-direction: column;
@@ -63,7 +65,7 @@
   border-radius: 4px;
 }
 .step-box p:last-child {
-  margin-top: auto; /* 如果你想让文字往下对齐 */
+  margin-top: auto;
 }
 
 .step-image {
@@ -72,33 +74,27 @@
 }
 
 .tag {
-  background-color: #eee;
-  border-radius: 12px;
+  background-color: #f7f1ec!important;
+  border-radius: 32px;
   padding: 4px 10px;
   margin-right: 6px;
-  font-size: 14px;
-  display: inline-block;
+  font-size: 14px !important;
+  /* display: inline-block; */
 }
-.like-btn i {
-  transition: color 0.3s ease;
-  font-size: 1.3rem;
-  margin-right: 4px;
-}
-
 .post-header .d-flex.flex-column{
-  /* flex-wrap: wrap; */
   align-items: flex-end;
+  margin-bottom:6px !important;
 }
 
-/* 标题 */
+
 .post-title {
   font-size: 2.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 5px;
 }
 
-/* 按钮组 */
+
 .post-actions {
-  /* 保证按钮不压缩 */
+
   flex-shrink: 0;
   gap: 0.5rem;
 }
@@ -118,4 +114,63 @@
   .post-editor-actions {
     margin-top: 0.5rem;
   }
+}
+.icon-btn {
+  background: none !important;
+  border: 2px solid yellow !important;  
+  padding: 0 !important;                
+  margin: 0 !important;
+  cursor: pointer !important;
+}
+
+.icon-btn i {
+  font-size: 1.5rem !important;        
+  line-height: 1 !important;           
+  /* border: 2px solid yellow */
+}
+
+
+.icon-btn .like-count,
+.icon-btn .bookmark-count {
+  font-size: 0.9rem !important;
+  color: #333 !important;
+}
+
+.like-btn i.bi-heart {
+  -webkit-text-fill-color: transparent !important;
+  -webkit-text-stroke-width: 2px !important;
+  -webkit-text-stroke-color: #9f0026 !important;
+  font-size: 1.5rem !important;
+}
+
+.like-btn i.bi-heart-fill {
+  color: #9f0026 !important;
+  -webkit-text-stroke-width: 1px !important;
+  -webkit-text-stroke-color: #9f0026!important;
+  font-size: 1.5rem !important;
+}
+.save-btn .bi-bookmark{
+   -webkit-text-fill-color: transparent !important;
+  -webkit-text-stroke-width: 2px !important;
+  -webkit-text-stroke-color: #71a1cc !important;
+  font-size: 1.5rem !important;
+}
+.save-btn i.bi-bookmark-fill{
+  color: #71a1cc !important;
+  -webkit-text-stroke-width: 1px !important;
+  -webkit-text-stroke-color: #71a1cc !important;
+  font-size: 1.5rem !important;
+}
+.info{
+  border-bottom:4px dashed #f7f1ec;
+  padding: 5px 0;
+  margin-bottom:9px;
+}
+.cover-img{
+  margin-bottom:5px !important;
+  width:100%;
+  border-radius:10px;
+}
+.tags{
+  margin-bottom:9px;
 }

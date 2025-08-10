@@ -6,6 +6,20 @@
   <link rel="stylesheet" href="/styles/style.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    
+    hr.my-4 {
+
+      /* background-color: transparent; */
+      border: 0;
+      border-top: 5px dashed #f7f1ec!important;  
+      opacity: .75; 
+
+      margin: 2rem 0;
+    }
+    
+
+    </style>
 </head>
 <body class="m-0 p-0">
   <div class="d-flex" style="height: 100vh;">
@@ -18,7 +32,7 @@
       <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
         <!-- <h4 class="ms-4 mb-0"><%= user.username %>'s Profile</h4> -->
         <div class="me-4">
-          <a href="javascript:history.back()" class="btn btn-outline-secondary">← Return</a>
+          <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">← Return</a>
         </div>
       </div>
 
@@ -40,22 +54,22 @@
           <% if (currentUser && currentUser !== user._id.toString()) { %>
             <% const isFollowing = user.followers.some(f => f.toString() === currentUser); %>
             <form method="POST" action="/users/<%= user._id %>/<%= isFollowing ? 'unfollow' : 'follow' %>">
-              <button class="btn <%= isFollowing ? 'btn-secondary' : 'btn-primary' %>">
+              <button class="btn btn-outline-secondary btn-sm <%= isFollowing ? 'btn-unfollow' : 'btn-follow' %>">
                 <%= isFollowing ? 'Unfollow' : 'Follow' %>
               </button>
             </form>
           <% } %>
         </div>
         <% if (currentUser && currentUser !== user._id.toString()) { %>
-          <a href="/messages/<%= user._id %>" class="btn btn-outline-dark btn-sm">Send Message</a>
+          <a href="/messages/<%= user._id %>" class="btn btn-1 btn-sm mt-3">Send Message</a>
         <% } %>
 
 
         <!-- Posts -->
-        <hr class="my-4">
-        <h5 class="mb-3">Sewing Projects by <%= user.username %></h5>
+        <hr class="my-4 wave">
+        <h4 class="mb-3">Sewing Projects by <%= user.username %></h4>
 
-        <div class="row row-cols-1 row-cols-md-3 g-4">
+        <!-- <div class="row row-cols-1 row-cols-md-3 g-4">
           <% if (userPosts.length > 0) { %>
             <% userPosts.forEach(post => { %>
               <div class="col">
@@ -73,6 +87,16 @@
                   </div>
                 </div>
               </div>
+            <% }) %>
+          <% } else { %>
+            <p class="text-muted">This user hasn’t posted anything yet.</p>
+          <% } %>
+        </div> -->
+
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+          <% if (userPosts.length > 0) { %>
+            <% userPosts.forEach(post => { %>
+              <%- include('../partials/postCardGrid', { post, currentUser }) %>
             <% }) %>
           <% } else { %>
             <p class="text-muted">This user hasn’t posted anything yet.</p>

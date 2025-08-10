@@ -11,7 +11,7 @@ import User from "../models/User.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 设置上传配置
+
 const chatStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, path.join(__dirname, '../public/uploads'));
@@ -23,7 +23,7 @@ const chatStorage = multer.diskStorage({
 });
 const chatUpload = multer({ storage: chatStorage });
 
-// ✅ 必须添加：GET /messages 聊天列表页
+
 router.get("/", async (req, res) => {
   const currentUserId = req.session.userId;
 
@@ -34,27 +34,6 @@ router.get("/", async (req, res) => {
     .populate("sender", "username avatar")
     .populate("recipient", "username avatar");
 
-//   const conversationUsers = new Map();
-//   messages.forEach((msg) => {
-//     const otherUser =
-//       msg.sender._id.toString() === currentUserId
-//         ? msg.recipient
-//         : msg.sender;
-//     // if (!conversationUsers.has(otherUser._id.toString())) {
-//     //     const unreadCount = await Message.countDocuments({
-//     //         sender: otherUser._id,
-//     //         recipient: currentUserId,
-//     //         read: false
-//     //     });
-
-//     //     conversationUsers.set(otherUser._id.toString(), {
-//     //         user: otherUser,
-//     //         lastMessage: msg,
-//     //         unreadCount  // 👈 传入每个用户发来的未读数
-//     //     });
-//     // }
-
-//   });
 
     const conversationUsers = new Map();
 
@@ -85,7 +64,7 @@ router.get("/", async (req, res) => {
   });
 });
 
-// ✅ 私聊页面（不需要变）
+
 router.get("/:userId", async (req, res) => {
   const currentUserId = req.session.userId;
   const targetUserId = req.params.userId;
@@ -108,17 +87,47 @@ router.get("/:userId", async (req, res) => {
     .sort({ createdAt: 1 })
     .populate("sender", "username");
 
+    const allMsgs = await Message.find({
+    $or: [{ sender: currentUserId }, { recipient: currentUserId }]
+  })
+  .sort({ createdAt: -1 })
+  .populate("sender",    "username avatar")
+  .populate("recipient", "username avatar");
+
+  const convMap = new Map();
+  for (let msg of allMsgs) {
+    const other = msg.sender._id.toString() === currentUserId
+                  ? msg.recipient
+                  : msg.sender;
+    if (!convMap.has(other._id.toString())) {
+      const unread = await Message.countDocuments({
+        sender: other._id,
+        recipient: currentUserId,
+        read: false
+      });
+      convMap.set(other._id.toString(), {
+        _id:         other._id,
+        withUsername: other.username,
+        avatar:      other.avatar,
+        lastMessage: msg.text || (msg.image ? "📷 Image" : ""),
+        unreadCount: unread
+      });
+    }
+  }
+  const conversations = Array.from(convMap.values());
+
   const targetUser = await User.findById(targetUserId);
 
   res.render("chat", {
     messages,
     targetUser,
     currentUser: currentUserId,
+    conversations,
+    currentConvId: targetUserId
   });
 
 });
 
-// ✅ POST 发送消息（含图片）
 router.post("/:userId", chatUpload.single("image"), async (req, res) => {
   const currentUserId = req.session.userId;
   const targetUserId = req.params.userId;

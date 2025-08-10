@@ -4,24 +4,60 @@
   <meta charset="UTF-8" />
   <title><%= post.title %> - ThreadTogether</title>
   <link rel="stylesheet" href="/styles/style.css" />
+  <link rel="stylesheet" href="/styles/sidebar.css" />
   <link rel="stylesheet" href="/styles/post.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
-<body class="container py-4">
+<body class="m-0 p-0">
+ <div class="d-flex" style="height: 100vh;">
+    <!-- Sidebar -->
+    <%- include('partials/sidebar') %>
+    <div class="container py-4" style="overflow-y: auto;">
+      <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm mb-4">← Return</a>
 
-  
-  <a href="javascript:history.back()" class="btn btn-outline-primary mb-4">← Return</a>
+  <div class="post-detail-container d-flex flex-wrap gap-4" >
 
-  <div class="post-detail-container d-flex flex-wrap gap-4">
-
-    <!-- Left Column -->
    <!-- Left Column -->
     <div class="left-column" style="flex: 1; min-width: 300px;">
-      <img src="<%= post.coverImage || post.steps[0]?.image || '/images/default.jpg' %>" alt="<%= post.title %>" class="w-100 rounded mb-4" />
+      <img src="<%= post.coverImage || post.steps[0]?.image || '/images/default.jpg' %>" alt="<%= post.title %>" class="cover-img " />
+      <div class="info">
+        
+        <h1 class="post-title" style="font-size: 25px; "><%= post.title %></h1>
+        <p class="text-muted d-flex align-items-center gap-2">
+              <a href="/users/<%= post.author._id %>">
+                <img
+                  src="<%= post.author.avatar || '/images/default-avatar.png' %>"
+                  alt="<%= post.author.username %>"
+                  width="32"
+                  height="32"
+                  class="rounded-circle"
+                />
+              </a>
 
-      <h5 class="fw-semibold mb-3">评论区</h5>
+              <a
+                href="/users/<%= post.author._id %>"
+                class="text-decoration-none text-dark fw-semibold"
+              >
+                <%= post.author.username %>
+              </a>
+
+              <span class="text-muted">&middot; <%= post.createdAt.toLocaleDateString() %></span>
+            </p>
+            <div class="tags ">
+              <% post.tags.forEach(tag => { %>
+                <a
+                  href="/tags/<%= encodeURIComponent(tag) %>"
+                  class="badge tag text-decoration-none me-1"
+                >
+                  #<%= tag %>
+                </a>
+              <% }) %>
+            </div>
+      
+         </div>
+      <h5 class="fw-semibold mb-3" style="font-size: 25px; ">Comments</h5>
 
       <div class="comment-section mt-4">
         <% commentTree.forEach(comment => { %>
@@ -37,64 +73,37 @@
 
 
 
-      <!-- 发布评论 -->
       <% if (currentUser) { %>
         <form action="/posts/<%= post._id %>/comments" method="POST" class="mt-4">
           <div class="input-group">
-            <input type="text" name="comment" class="form-control" placeholder="说点什么..." required />
-            <button type="submit" class="btn btn-primary">发布</button>
+            <input type="text" name="comment" class="form-control" placeholder="Say something..." required />
+            <button type="submit" class="btn btn-primary btn-sm">Sent</button>
           </div>
         </form>
       <% } else { %>
-        <p class="text-muted mt-3">你需要 <a href="/login">登录</a> 才能评论</p>
+        <p class="text-muted mt-3">You need to <a href="/login">login</a> to comment</p>
       <% } %>
     </div>
 
     <!-- Right Column -->
     <div class="right-column" style="flex: 1.5; min-width: 400px;">
-      <div class="post-header d-flex justify-content-between align-items-start mb-4 flex-wrap">
-
-        <div>
-            <h1 class="post-title"><%= post.title %></h1>
-            <p class="text-muted d-flex align-items-center gap-2">
-              <!-- 头像，圆形，40px -->
-              <a href="/users/<%= post.author._id %>">
-                <img
-                  src="<%= post.author.avatar || '/images/default-avatar.png' %>"
-                  alt="<%= post.author.username %>"
-                  width="32"
-                  height="32"
-                  class="rounded-circle"
-                />
-              </a>
-
-              <!-- 点击用户名也跳转 -->
-              <a
-                href="/users/<%= post.author._id %>"
-                class="text-decoration-none text-dark fw-semibold"
-              >
-                <%= post.author.username %>
-              </a>
-
-              <span class="text-muted">&middot; <%= post.createdAt.toLocaleDateString() %></span>
-            </p>
-        </div>
-
+      <div class="post-header d-flex justify-content-between align-items-start  flex-wrap">
+        <div class="d-flex gap-2 mt-2 mt-sm-0 align-items-center"><h1 class="post-title" style="font-size: 70px;"><%= post.title %></h1></div>
+        
+      
         <div class="d-flex flex-column align-items-end">
            <div class="post-actions d-flex gap-2 mt-2 mt-sm-0 align-items-center">
             <% const liked = post.likedBy.some(user => user._id.toString() === currentUser?.toString()); %>
 
             <% if (currentUser) { %>
-                <!-- 登录用户点赞表单 -->
                 <form action="/posts/<%= post._id %>/like" method="POST" class="like-form" data-post-id="<%= post._id %>">
-                <button type="submit" class="btn btn-light like-btn border-0">
+                <button type="submit" class="icon-btn btn btn-light like-btn border-0">
                     <i class="<%= liked ? 'bi bi-heart-fill text-danger' : 'bi bi-heart text-secondary' %>"></i>
                     <span class="like-count"><%= post.likedBy.length %></span>
                 </button>
                 </form>
             <% } else { %>
-                <!-- 未登录用户：点击跳转登录 -->
-                <a href="/login" class="btn btn-light border-0">
+                <a href="/login" class="icon-btn btn btn-light border-0">
                 <i class="bi bi-heart text-secondary"></i>
                 <span class="like-count"><%= post.likedBy.length %></span>
                 </a>
@@ -103,13 +112,13 @@
             <% const bookmarked = post.bookmarkedBy.some(user => user._id.toString() === currentUser?.toString()); %>
                 <% if (currentUser) { %>
                 <form action="/posts/<%= post._id %>/bookmark" method="POST" style="display:inline;">
-                    <button type="submit" class="btn btn-light save-btn border-0">
+                    <button type="submit" class="icon-btn btn btn-light save-btn border-0">
                     <i class="<%= bookmarked ? 'bi bi-bookmark-fill text-primary' : 'bi bi-bookmark text-secondary' %>"></i>
                     <span class="bookmark-count"><%= post.bookmarkedBy.length %></span>
                     </button>
                 </form>
                 <% } else { %>
-                <a href="/login" class="btn btn-light save-btn border-0">
+                <a href="/login" class="icon-btn btn btn-light save-btn border-0">
                     <i class="bi bi-bookmark text-secondary"></i>
                 </a>
                 <% } %>
@@ -128,31 +137,15 @@
 
         </div>
 
-       
-
-                  
-      </div>
-
-
-
-      <div class="mb-3">
-        <% post.tags.forEach(tag => { %>
-          <a
-            href="/tags/<%= encodeURIComponent(tag) %>"
-            class="badge bg-secondary text-decoration-none me-1"
-          >
-            #<%= tag %>
-          </a>
-        <% }) %>
       </div>
 
       <p><%= post.description %></p>
 
-      <h4 class="mt-4">Step-by-Step Process</h4>
+      <!-- <h4 class="mt-4">Step-by-Step Process</h4> -->
       <div class="steps-row d-flex flex-wrap gap-3">
         <% post.steps.forEach((step, index) => { %>
-          <div class="step-box border rounded p-2" style="width: 300px;">
-            <p><strong>Step <%= index + 1 %></strong></p>
+          <div class="step-box shadow-sm custom-step-box  rounded p-2" style="width: 300px; ">
+            <h5><strong>Step <%= index + 1 %></strong></h5>
             <% if (step.type === 'image') { %>
               <img src="<%= step.image %>" class="img-fluid rounded" />
             <% } else if (step.type === 'video') { %>
@@ -169,6 +162,11 @@
 
   </div>
 
+    </div>
+  </div>
+
+  
+  
 <script>
   document.querySelectorAll('.reply-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {

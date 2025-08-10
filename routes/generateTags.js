@@ -1,6 +1,5 @@
 import express from "express";
 import multer from "multer";
-// import { execFile } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
 import fetch from 'node-fetch';
@@ -13,7 +12,6 @@ const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 上传临时图片目录
 const upload = multer({ dest: path.join(__dirname, "../temp") });
 
 router.post("/", upload.single("image"), async (req, res) => {
@@ -30,7 +28,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     }); 
 
     const data = await response.json();
-    fs.unlinkSync(imagePath); // 删除上传的临时图片
+    fs.unlinkSync(imagePath);
     res.json({ tags: data.tags });
   } catch (err) {
     console.error("调用 FastAPI 出错：", err);

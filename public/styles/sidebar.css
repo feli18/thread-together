@@ -1,61 +1,53 @@
-/* public/styles/sidebar.css */
 
-/* 1) 宽度控制 */
 .sidebar {
-  width: 220px;                          /* 之前写在 inline style */
-  /* background-color: #ddb6bb !important; */
+  width: 220px;                          
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1rem !important;             /* 保持 p-4 相近内边距 */
+  padding: 1rem !important;  
+  background:#cbc7e0 !important;
+  border-right: 3px dashed #f7f1ec;     
+  /* border-radius: 999px;   */
 }
 
-/* 2) 链接文字 & 图标 */
-.sidebar .nav-link,
-.sidebar a span {
-  color: var(--text-default) !important;
-  text-decoration: none !important;
-}
-
-/* BootStrap 会给 <i> 图标默认 color，要 override */
-.sidebar i {
-  color: var(--text-default) !important;
-}
-
-/* 3) Link 悬浮态 */
 .sidebar .nav-link:hover,
 .sidebar a:hover {
-  background-color: #F7F7F7 !important;
+  background-color: #fffade !important;
+  border-radius: 999px; 
 }
 
-/* 4) Badge 保持不变，如果需要也可改 */
 .sidebar .badge {
-  /* 比如想让 badge border 也是 --color-primary，就写这里 */
+  /* border-radius: 999px;  */
 }
 
-/* 5) Login / Logout 按钮 */
-.sidebar .btn-primary {
-  background-color: #5976BA!important;  /* Login 按钮 */
-  border-color: #5976BA !important;
-}
+
 .sidebar .btn-primary:hover {
-  background-color: #7493DC!important;  /* Login 按钮 */
-  border-color: #7493DC !important;
+  /* background-color: #bea5aa!important; */
+  background-color: #fffade !important;
+  border-radius: 999px;  
+  /* border-color: #7493DC !important; */
 }
 .sidebar .btn-outline-secondary {
-  /* Logout 按钮如果想改也可以 */
-  color: #5976BA !important;
-  border-color: #5976BA !important;
+  border-radius: 999px; 
+  color: #00766dimportant;
+  border-color: #00766d!important;
+  border-width: 2px !important;
 }
 .sidebar .btn-outline-secondary:hover {
-  background-color: #A5BDF5 !important;
+  background-color: #fffade  !important;
+  border-radius: 999px; 
+  
+}
+.sidebar .me-text {
+  color: #00766d !important;  
+  font-weight: bold;          
 }
 
-
-
 .sidebar-logo__img {
-  max-width: 100%;        /* 不要超过容器宽度 */
+  max-width: 100%;       
   height: auto;
-  /* 或者定死一个宽度，比如： */
-  width: 120px;
+  width: 350px;
+  /* border-radius: 499px;  */
+  margin-bottom: 3rem;
+  margin-top: 0.5rem;
 }

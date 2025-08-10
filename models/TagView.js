@@ -3,6 +3,6 @@ const tagViewSchema = new mongoose.Schema({
   tag:      { type: String, required: true },
   viewedAt: { type: Date,   default: Date.now },
   post:     { type: mongoose.Schema.Types.ObjectId, ref: 'Post' },
-  user:     { type: mongoose.Schema.Types.ObjectId, ref: 'User' }  // 可选
+  user:     { type: mongoose.Schema.Types.ObjectId, ref: 'User' } 
 });
 export default mongoose.model('TagView', tagViewSchema);

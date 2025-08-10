@@ -5,7 +5,11 @@ import torch
 from transformers import CLIPProcessor, CLIPModel
 
 
-labels = ["vintage", "boho", "modern", "cute", "cotton", "linen", "denim", "minimalist", "hemp","bamboo","wool","silk","polyester","nylon","rayon","acrylic","knitted fabric","pocket","bag","dress","skirt","pants","leather",]
+labels = [
+    "vintage", "boho", "modern", "cute", "cotton", "linen", "denim", "minimalist", "hemp", "bamboo",
+    "wool", "silk", "polyester", "nylon", "rayon", "acrylic", "knitted fabric", "pocket", "bag",
+    "dress", "skirt", "pants", "leather", "blouse", "bow", "white", "black", "red", "blue", "green", "yellow"
+]
 
 model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
 processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")

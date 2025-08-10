@@ -1,175 +1,205 @@
-
 const coverInput = document.getElementById('coverInput');
 const coverPreview = document.getElementById('coverPreview');
 const coverLabel = document.getElementById('coverLabel');
+const changeBtn = document.getElementById('changeCoverBtn');
 
-coverInput.addEventListener('change', () => {
-  const file = coverInput.files[0];
-  if (file) {
+if (coverInput) {
+  coverInput.addEventListener('change', () => {
+    const file = coverInput.files[0];
+    if (!file) return;
     const reader = new FileReader();
     reader.onload = e => {
       coverPreview.src = e.target.result;
       coverPreview.style.display = 'block';
       coverLabel.style.display = 'none';
+      changeBtn.style.display = 'inline-block';
     };
     reader.readAsDataURL(file);
-  }
-});
+  });
+}
 
-// Add step logic
-let stepIndex = 1;
+if (changeBtn) {
+  changeBtn.addEventListener('click', () => {
+    coverInput.value = '';
+    coverPreview.src = '';
+    coverPreview.style.display = 'none';
+    coverLabel.style.display = 'inline-block';
+    changeBtn.style.display = 'none';
+  });
+}
+
 const stepsContainer = document.getElementById('stepsContainer');
 const addStepBtn = document.getElementById('addStepBtn');
 
 function createStepBox(index) {
-  const stepId = `step-${Date.now()}-${index}`;
+  const id = `step-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   return `
-    <div class="step-box mt-3" id="${stepId}">
-      <div class="d-flex justify-content-between align-items-center mb-1">
-        <p class="mb-0"><strong>Step ${index}</strong></p>
-        <button type="button" class="btn btn-sm btn-outline-danger remove-step" data-step-id="${stepId}">
-          <i class="bi bi-trash"></i> Delete
+    <div class="step-card mt-2" id="${id}">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <strong class="step-title">Step ${index}</strong>
+        <button type="button" class="btn btn-sm btn-outline-danger remove-step">Delete</button>
+      </div>
+
+      <!-- 与封面一致的上传框结构 -->
+      <div class="upload-like mb-2" data-upload-like>
+        <input type="file" accept="image/*,video/*" class="d-none step-input" />
+        <label class="upload-like__label step-label">+ Upload Step Media</label>
+
+        <img class="preview-media step-img d-none" alt="step image preview" />
+        <video class="preview-media step-video d-none" controls></video>
+
+        <button type="button" class="btn btn-sm change-btn step-change-btn" title="Change / Remove">
+          <i class="bi bi-trash"></i>
         </button>
       </div>
-      <input type="file" name="stepFiles" accept="image/*,video/*" class="form-control step-file mb-2" />
-      <div class="step-preview mb-2"></div>
-      <textarea name="stepDescriptions" class="form-control" placeholder="Add description ..." required></textarea>
-    </div>
-  `;
+
+      <div class="text-muted step-filename small mb-2"></div>
+      <textarea name="stepDescriptions" class="form-control" rows="2" placeholder="Add description ..." required></textarea>
+    </div>`;
+}
+
+function renumberSteps() {
+  stepsContainer.querySelectorAll('.step-card').forEach((box, idx) => {
+    box.querySelector('.step-title').textContent = `Step ${idx + 1}`;
+  });
 }
 
 function addStep() {
-  const newStep = createStepBox(stepIndex);
-  stepsContainer.insertAdjacentHTML('beforeend', newStep);
-  stepIndex++;
+  const count = stepsContainer.querySelectorAll('.step-card').length;
+  stepsContainer.insertAdjacentHTML('beforeend', createStepBox(count + 1));
 }
 
-addStepBtn.addEventListener('click', addStep);
-window.addEventListener('load', () => {
-  addStep(); // 初始加载一个 step
-});
-
-// 删除 step
-stepsContainer.addEventListener("click", function (e) {
-  if (e.target.closest(".remove-step")) {
-    const stepId = e.target.closest(".remove-step").dataset.stepId;
-    const stepDiv = document.getElementById(stepId);
-    if (stepDiv) stepDiv.remove();
-  }
-});
-
-// Step 预览图逻辑
-stepsContainer.addEventListener('change', function (e) {
-  if (e.target.classList.contains('step-file')) {
-    const container = e.target.closest('.step-box');
-    const preview = container.querySelector('.step-preview');
-    const file = e.target.files[0];
-    preview.innerHTML = "";
-
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = event => {
-        if (file.type.startsWith("video/")) {
-          preview.innerHTML = `<video controls class="step-media"><source src="${event.target.result}" type="${file.type}"/></video>`;
-        } else if (file.type.startsWith("image/")) {
-          preview.innerHTML = `<img src="${event.target.result}" class="step-media" />`;
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-});
-
-const changeBtn = document.getElementById('changeCoverBtn');
-
-coverInput.addEventListener('change', () => {
-  const file = coverInput.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = e => {
-    coverPreview.src = e.target.result;
-    coverPreview.style.display = 'block';
-
-    // 隐藏 label 提示，或改为“已选择”
-    coverLabel.style.display = 'none';
-
-    // 显示“Change Cover”按钮
-    changeBtn.style.display = 'inline-block';
-  };
-  reader.readAsDataURL(file);
-});
-
-changeBtn.addEventListener('click', () => {
-  
-  coverInput.value = '';
-  coverPreview.src = '';
-  coverPreview.style.display = 'none';
-  coverLabel.style.display = 'inline-block';
-  changeBtn.style.display = 'none';
-});
-
-// AI 
-const getTagsBtn = document.getElementById("getTagsBtn");
-if (getTagsBtn) {
-  getTagsBtn.addEventListener("click", async () => {
-    const file = coverInput.files[0];
-    if (!file) {
-      alert("请先上传封面图！");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("image", file);
-
-    const res = await fetch("/generate-tags", {
-      method: "POST",
-      body: formData
-    });
-
-    const data = await res.json();
-    const tagInput = document.getElementById("tagsInput");
-    const tagDisplay = document.getElementById("tagDisplayArea");
-
-    if (data.tags && data.tags.length > 0) {
-      tagDisplay.innerHTML = "推荐标签：" + data.tags.map(tag => `<span class="badge bg-primary me-1">${tag}</span>`).join("");
-      tagInput.value = data.tags.join(", ");
-    } else {
-      tagDisplay.innerHTML = "<span class='text-muted'>无推荐结果</span>";
-    }
+if (stepsContainer) {
+  window.addEventListener('load', () => {
+    stepsContainer.classList.add('steps-grid');
+    if (stepsContainer.children.length === 0) addStep();
   });
+
+  if (addStepBtn) addStepBtn.addEventListener('click', addStep);
+
+
+  function resetStepBox(box) {
+  const input = box.querySelector('.step-input');
+  const label = box.querySelector('.step-label');
+  const img = box.querySelector('.step-img');
+  const video = box.querySelector('.step-video');
+  const changeBtn = box.querySelector('.step-change-btn');
+  const nameEl = box.querySelector('.step-filename');
+
+  // 清空文件
+  if (input) {
+    // 如改用 URL.createObjectURL，请在此 revoke
+    input.value = '';
+  }
+
+  // 还原 UI
+  if (img) { img.src = ''; img.classList.add('d-none'); }
+  if (video) { video.src = ''; video.load(); video.classList.add('d-none'); }
+  if (label) label.style.display = 'inline-block';
+  if (changeBtn) changeBtn.style.display = 'none';
+  if (nameEl) nameEl.textContent = '';
 }
-getTagsBtn.addEventListener("click", async () => {
-  const file = coverInput.files[0];
+
+function setStepPreview(box, file) {
+  const label = box.querySelector('.step-label');
+  const img = box.querySelector('.step-img');
+  const video = box.querySelector('.step-video');
+  const changeBtn = box.querySelector('.step-change-btn');
+  const nameEl = box.querySelector('.step-filename');
+
   if (!file) {
-    alert("请先上传封面图！");
+    resetStepBox(box);
     return;
   }
 
-  const tagDisplay = document.getElementById("tagDisplayArea");
-  tagDisplay.innerHTML = "<span class='text-muted'>Generating tags, please wait......</span>"; 
+  if (nameEl) nameEl.textContent = file.name;
 
-  const formData = new FormData();
-  formData.append("image", file);
+  const reader = new FileReader();
+  reader.onload = ({ target }) => {
+    const url = target.result;
 
-  try {
-    const res = await fetch("/generate-tags", {
-      method: "POST",
-      body: formData
-    });
+    if (img) { img.classList.add('d-none'); img.src = ''; }
+    if (video) { video.classList.add('d-none'); video.src = ''; }
 
-    const data = await res.json();
-    const tagInput = document.getElementById("tagsInput");
-
-    if (data.tags && data.tags.length > 0) {
-      tagDisplay.innerHTML = "推荐标签：" + data.tags.map(tag => `<span class="badge bg-primary me-1">${tag}</span>`).join("");
-      tagInput.value = data.tags.join(", ");
+    if (file.type.startsWith('video/')) {
+      if (video) {
+        video.src = url;
+        video.classList.remove('d-none');
+        video.load();
+      }
     } else {
-      tagDisplay.innerHTML = "<span class='text-muted'>无推荐结果</span>";
+      if (img) {
+        img.src = url;
+        img.classList.remove('d-none');
+      }
     }
-  } catch (err) {
-    tagDisplay.innerHTML = "<span class='text-danger'>生成标签失败</span>";
-    console.error("标签生成失败", err);
-  }
-});
 
+    if (label) label.style.display = 'none';
+    if (changeBtn) changeBtn.style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+if (stepsContainer) {
+  stepsContainer.addEventListener('click', (e) => {
+    const box = e.target.closest('.step-card');
+    if (!box) return;
+    if (e.target.closest('.remove-step')) {
+      box.remove();
+      renumberSteps();
+      return;
+    }
+
+    if (e.target.closest('.step-label')) {
+      box.querySelector('.step-input').click();
+      return;
+    }
+
+    if (e.target.closest('.step-change-btn')) {
+      resetStepBox(box);
+      return;
+    }
+  });
+
+  stepsContainer.addEventListener('change', (e) => {
+    if (!e.target.classList.contains('step-input')) return;
+    const box = e.target.closest('.step-card');
+    const file = e.target.files && e.target.files[0];
+    setStepPreview(box, file);
+  });
+}
+
+}
+
+const getTagsBtn = document.getElementById('getTagsBtn');
+if (getTagsBtn) {
+  getTagsBtn.addEventListener('click', async () => {
+    const file = coverInput?.files?.[0];
+    if (!file) {
+      alert('Please upload a pic first!');
+      return;
+    }
+    const tagDisplay = document.getElementById('tagDisplayArea');
+    const tagInput = document.getElementById('tagsInput');
+
+    tagDisplay.innerHTML = "<span class='text-muted'>Generating tags, please wait......</span>";
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const res = await fetch('/generate-tags', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (data.tags?.length) {
+        tagDisplay.innerHTML = 'Recommendation tags：' + data.tags.map(t => `<span class="badge tag me-1">${t}</span>`).join('');
+        if (tagInput) tagInput.value = data.tags.join(', ');
+      } else {
+        tagDisplay.innerHTML = "<span class='text-muted'>No recommendation tags generated.</span>";
+      }
+    } catch (err) {
+      tagDisplay.innerHTML = "<span class='text-danger'>生成标签失败</span>";
+      console.error('❌ Failed to generate tags:', err);
+    }
+  });
+}

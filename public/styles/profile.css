@@ -1,68 +1,28 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: Arial, sans-serif;
+    /* font-family: Arial, sans-serif; */
   }
   
-  /* .sidebar {
-    width: 220px;
-    height: 100vh;
-    background-color: #EDDDBA;
-    padding: 20px;
-  } */
-  
-  .sidebar .btn,
-  .sidebar .nav-link {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-  
-  .sidebar .nav-link {
-    color: #333;
-  }
-  
-  .sidebar .nav-link:hover {
-    font-weight: bold;
-  }
-  
-  img.rounded-circle {
-    object-fit: cover;
-  }
-  
-  .tag-list button {
-    display: inline-block;
-    margin: 5px 8px 5px 0;
-    padding: 6px 14px;
-    border: 1px solid #ccc;
-    background-color: white;
-    border-radius: 20px;
-    font-size: 14px;
-    color: #333;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .tag-list button:hover {
-    background-color: #eee;
-  }
-  
-  .card-title {
-    font-size: 16px;
-    margin-bottom: 10px;
-  }
-  
-  .nav-tabs .nav-link {
-    border: none;
-    border-radius: 25px;
-    padding: 8px 20px;
-    color: #000;
-  }
-  
-  .nav-tabs .nav-link.active {
-    background-color: #eee;
-    font-weight: 600;
-  }
-  .follow-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
-}
+.nav-tabs {
+  --bs-nav-tabs-border-color: #fffade !important;
+  --bs-nav-tabs-link-hover-border-color: #dcbebe !important;
+
+  --bs-nav-tabs-link-active-color: #0f5c5c !important;
+  --bs-nav-tabs-link-active-bg: #fff7ff !important;
+  --bs-nav-tabs-link-active-border-color: #fffade !important;
+}  
+.follow-card{
+      position: relative;            
+      margin-bottom: 16px;           
+      padding: 12px 16px;           
+      background-color: #fff6ff !important;       
+      border: 2px dashed #F2E2F3 !important;     
+      border-radius: 86px;          
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);  
+      transition: transform .2s, box-shadow .2s;
+    }
+.follow-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }

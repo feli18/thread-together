@@ -1,7 +1,123 @@
+<style>
+  .card-title {
+  color: #222 !important; 
+  font-size: 1.3rem;
+}
+  .post-card {
+  width: 100%;
+  height: auto;
+  background-color: #f7f1ec !important;
+  border: 1px dashed #DCBEBE;
+}
 
-  <% /* views/partials/postCardGrid.ejs */ %>
-<div class="col">
-  <div class="card shadow-sm rounded">
+.post-card img {
+  height:80%;
+  object-fit: cover;
+}
+.icon-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+ 
+@media (max-width: 1200px) {
+  .post-card {
+    width: 220px;
+  }
+  .post-card img {
+    height: 220px;
+  }
+}
+
+@media (max-width: 992px) {
+  .post-card {
+    width: 200px;
+  }
+  .post-card img {
+    height: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .post-card {
+    width: 100%;
+  }
+  .post-card img {
+    height: auto;
+  }
+}
+.masonry {
+  column-count: 4;
+  column-gap: 16px !important;
+  padding-left: 1rem; 
+}
+
+.masonry .col {
+  display: inline-block !important;
+  width: 100% !important;
+  break-inside: avoid !important;
+  margin: 0 0 16px !important; 
+  vertical-align: top; 
+}
+
+.masonry .col .post-card {
+  width: 100% !important;
+}
+
+
+.masonry1 {
+  /* column-width: 240px !important; */
+  column-count: 5;
+  column-gap: 16px !important;
+  padding-left: 1rem;
+}
+
+.masonry1 .col {
+  display: inline-block !important;
+  width: 100% !important;
+  break-inside: avoid !important;
+  margin: 0 0 16px !important;
+  vertical-align: top; 
+}
+
+.masonry1 .col .post-card {
+  width: 100% !important;
+}
+.like-btn i.bi-heart {
+  -webkit-text-fill-color: transparent !important;
+  -webkit-text-stroke-width: 1px !important;
+  -webkit-text-stroke-color: #9f0026 !important;
+  font-size: 1rem !important;
+}
+
+.like-btn i.bi-heart-fill {
+  color: #9f0026 !important;
+  /* -webkit-text-stroke-width: 1px !important; */
+  -webkit-text-stroke-color: #9f0026!important;
+  font-size: 1rem !important;
+}
+.save-btn .bi-bookmark{
+   -webkit-text-fill-color: transparent !important;
+  -webkit-text-stroke-width: 1px !important;
+  -webkit-text-stroke-color: #71a1cc !important;
+  font-size: 1rem !important;
+}
+.save-btn i.bi-bookmark-fill{
+  color: #71a1cc !important;
+  /* -webkit-text-stroke-width: 1px !important; */
+  -webkit-text-stroke-color: #71a1cc !important;
+  font-size: 1rem !important;
+}
+
+
+
+
+</style>
+<div class=" col">
+  <!-- <div class="card-wrapper"> -->
+  <div class="card shadow-sm rounded post-card">
     <a href="/posts/<%= post._id %>">
       <img
         src="<%= post.coverImage || post.steps[0]?.image || '/images/default.jpg' %>"
@@ -26,17 +142,23 @@
       </div>
 
       <div class="d-flex justify-content-between">
-        <% const liked = post.likedBy.some(u => u._id.toString() === currentUser?.toString()); %>
+        <% 
+  const currentUserId = typeof currentUser === 'object' ? currentUser?._id?.toString() : currentUser?.toString();
+  const liked = post.likedBy.some(u => u._id.toString() === currentUserId);
+  const bookmarked = post.bookmarkedBy.some(u => u._id.toString() === currentUserId);
+%>
+
+        <%# const liked = post.likedBy.some(u => u._id.toString() === currentUser?.toString()); %>
         <form action="/posts/<%= post._id %>/like" method="POST" class="like-form" data-post-id="<%= post._id %>">
-          <button type="submit" class="btn btn-light border-0">
+          <button type="submit" class="icon-btn btn btn-light like-btn border-0">
             <i class="<%= liked ? 'bi bi-heart-fill text-danger' : 'bi bi-heart text-secondary' %>"></i>
             <span class="like-count"><%= post.likedBy.length %></span>
           </button>
         </form>
 
-        <% const bookmarked = post.bookmarkedBy.some(u => u._id.toString() === currentUser?.toString()); %>
+        <%# const bookmarked = post.bookmarkedBy.some(u => u._id.toString() === currentUser?.toString()); %>
         <form action="/posts/<%= post._id %>/bookmark" method="POST">
-          <button type="submit" class="btn btn-light border-0">
+          <button type="submit" class="icon-btn btn save-btn btn-light border-0">
             <i class="<%= bookmarked ? 'bi bi-bookmark-fill text-primary' : 'bi bi-bookmark text-secondary' %>"></i>
           </button>
         </form>

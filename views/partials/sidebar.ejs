@@ -39,26 +39,6 @@
                 </a>
             </li>
         
-
-            <!-- <li>
-                <a href="/notifications" class="d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-bell"></i> Notifications</span>
-                    <% if (unreadNotifications > 0) { %>
-                    <span class="badge bg-danger rounded-circle"><%= unreadNotifications %></span>
-                    <% } %>
-                </a>
-            </li> -->
-
-            <!-- <li>
-                <a href="/messages" class="d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-chat-dots"></i> Messages</span>
-                    <% if (unreadMessages > 0) { %>
-                    <span class="badge bg-danger rounded-circle"><%= unreadMessages %></span>
-                    <% } %>
-                </a>
-            </li> -->
-
-
             <li><a href="/explore" class="nav-link mb-2<%= currentPath === '/explore' ? ' active-nav' : '' %>"><i class="bi bi-tag"></i> Explore Tags</a></li>
             </ul>
         </div>
@@ -66,13 +46,14 @@
         <div class="mt-4">
             <% if (currentUser) { %>
             <a href="/profile" class="d-flex align-items-center gap-2 text-dark text-decoration-none mb-2 <%= currentPath.startsWith('/profile') ? ' active-nav' : '' %>">
-                <img src="<%= user?.avatar || '/images/default.jpg' %>" width="35" height="35" alt="Avatar"
-                class="rounded-circle mb-2 border border-3">
-                <span>Me</span>
+                <!-- <img src="<%#= user?.avatar || '/images/default.jpg' %>" width="35" height="35" alt="Avatar" -->
+                <img src="<%= currentUser?.avatar|| '/images/default.jpg' %>" width="35" height="35" alt="Avatar"
+                class=" rounded-circle mb-2 border border-3 ">
+                <span class="me-text">Me</span>
             </a>
             <a href="/logout" class="btn btn-outline-secondary w-100">Logout</a>
             <% } else { %>
-            <a href="/login" class="btn btn-primary w-100">Login</a>
+            <a href="/login" class="btn btn-primary btn-sm w-100">Login</a>
             <% } %>
         </div>
     </aside>

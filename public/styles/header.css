@@ -1,8 +1,9 @@
-/* public/styles/header.css */
+
 
 .header {
   background-color: var(--bg-light);
-  border-bottom: 1px solid var(--bg-muted);
+  /* border-bottom: 1px solid var(--bg-muted); */
+  /* border-right: 2px dashed #f3e8dc;  */
 }
 
 .header .container-header {
