@@ -203,3 +203,4 @@ logs/
 
 # Local Python virtual environment / dependencies for ai_api
 ai_api/thread/
+ai_api/thread/lib/
