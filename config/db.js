@@ -1,11 +1,35 @@
-
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 
-dotenv.config();
+let cached = globalThis._mongooseCached;
+if (!cached) {
+  cached = globalThis._mongooseCached = { conn: null, promise: null };
+}
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB Atlas'))
-  .catch(err => console.error('MongoDB connection error:', err));
+export async function connectDB() {
+  if (cached.conn) return cached.conn;
 
-// export default db;
+  if (!cached.promise) {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) throw new Error('MONGODB_URI is missing');
+
+    mongoose.set('bufferCommands', false);
+
+    cached.promise = mongoose
+      .connect(uri, {
+        serverSelectionTimeoutMS: 10_000, 
+        maxPoolSize: 5,                   
+        retryWrites: true,
+      })
+      .then((m) => {
+        console.log('Connected to MongoDB Atlas');
+        return m;
+      })
+      .catch((err) => {
+        cached.promise = null; 
+        throw err;
+      });
+  }
+
+  cached.conn = await cached.promise;
+  return cached.conn;
+}

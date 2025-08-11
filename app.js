@@ -9,7 +9,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import mongoose from "mongoose";
 
-import "./config/db.js";
 
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js";
