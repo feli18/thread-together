@@ -7,6 +7,26 @@ import { followUser, unfollowUser } from '../controllers/userController.js';
 
 const router = express.Router();
 
+router.get('/profile', isLoggedIn, async (req, res, next) => {
+  try {
+    const userId = req.session.userId;
+
+    const user = await User.findById(userId)
+      .populate('followers')
+      .populate('following');
+
+    const [userPosts, likedPosts, collectedPosts] = await Promise.all([
+      Post.find({ author: userId }).sort({ createdAt: -1 }),
+      Post.find({ likedBy: userId }).sort({ createdAt: -1 }),
+      Post.find({ bookmarkedBy: userId }).sort({ createdAt: -1 }),
+    ]);
+
+    res.render('profile.ejs', { user, userPosts, likedPosts, collectedPosts });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post('/profile/edit', isLoggedIn, upload.single('avatar'), async (req, res) => {
   const { username, bio, website } = req.body;
   const user = await User.findById(req.session.userId);
