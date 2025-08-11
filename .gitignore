@@ -200,3 +200,6 @@ logs/
 *.swp
 *.bak
 *.orig
+
+# Local Python virtual environment / dependencies for ai_api
+ai_api/thread/
