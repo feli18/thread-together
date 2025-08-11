@@ -43,6 +43,8 @@ build/Release
 
 # Dependency directories
 node_modules/
+node_modules
+**/node_modules
 jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)
@@ -71,7 +73,6 @@ web_modules/
 
 # dotenv environment variable files
 .env
-.env.*
 !.env.example
 
 # parcel-bundler cache (https://parceljs.org/)
@@ -200,7 +201,11 @@ logs/
 *.swp
 *.bak
 *.orig
+*.log
 
 # Local Python virtual environment / dependencies for ai_api
 ai_api/thread/
 ai_api/thread/lib/
+.vercel
+.git
+uploads/*
