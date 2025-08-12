@@ -14,6 +14,7 @@ The main reasons for 404 errors on Vercel are:
 10. **Configuration conflicts**
 11. **Deprecated Node.js version**
 12. **File system permission errors (EROFS)**
+13. **Static file loading issues (logo, avatars)**
 
 ## Recent Fixes (Latest)
 - **Removed invalid `regions` property** from functions configuration
@@ -24,6 +25,21 @@ The main reasons for 404 errors on Vercel are:
 - **Cleaned up .vercel directory** to avoid conflicts
 - **Updated Node.js version** from 18.x to 22.x (Vercel requirement)
 - **Fixed file system permission errors** by using memory storage in Vercel
+- **Fixed static file loading issues** by adding dedicated static file routes
+
+## Static File Loading Fixes
+**Issue**: Logo and avatar images not loading in Vercel deployment
+
+### What was fixed:
+- **Added dedicated static file routes** in `routes/static.js`
+- **Enhanced static file handling** for images, favicon, and other assets
+- **Added explicit image handling** for logo and avatar files
+- **Fixed favicon loading** issues
+
+### Why this happened:
+- Vercel's static file handling can be inconsistent
+- Express static middleware may not work properly in serverless environment
+- Need explicit routes for critical static files
 
 ## File System Permission Fixes
 **Critical Issue**: Vercel serverless environment has a read-only file system (`EROFS: read-only file system`)
@@ -81,7 +97,7 @@ rm -rf .vercel
 
 # Commit changes
 git add .
-git commit -m "Fix file system permission errors for Vercel deployment"
+git commit -m "Fix static file loading issues for Vercel deployment"
 git push
 
 # Vercel will automatically redeploy
@@ -93,6 +109,7 @@ After deployment, check if these routes work properly:
 - `/profile` - User profile page
 - `/login` - Login page
 - `/register` - Registration page
+- **Static files**: Logo, avatars, CSS, JS files
 
 ## Troubleshooting
 
@@ -111,6 +128,15 @@ If Vercel build fails:
 4. Check that `package.json` has correct `main` field (`app.js`)
 5. Ensure `type: "module"` is set
 6. Check for syntax errors in code
+
+### Static File Issues:
+**Problem**: Logo, avatars, CSS, JS files not loading
+
+**Solutions**:
+1. **Check static file routes** in `routes/static.js`
+2. **Verify file paths** in `public` directory
+3. **Check vercel.json** routing configuration
+4. **Use explicit file routes** for critical assets
 
 ### File System Errors (EROFS):
 **Error**: `EROFS: read-only file system, mkdir '/var/task/temp'`
@@ -183,6 +209,12 @@ In Vercel environment, file uploads use memory storage and won't persist to disk
 - **Local**: Uses `multer.diskStorage()` and `req.file.path`
 - **Environment detection**: Automatically switches based on `process.env.VERCEL`
 
+### Static File Handling
+- **Dedicated routes**: Explicit handling for images, CSS, JS, videos
+- **Fallback images**: Default avatar if image not found
+- **Favicon support**: Proper favicon.ico and favicon.png handling
+- **Error handling**: Graceful fallbacks for missing files
+
 ## Support
 If issues persist, please:
 1. Check Vercel function logs
@@ -194,4 +226,5 @@ If issues persist, please:
 7. **Remove .vercel directory** if conflicts persist
 8. **Verify Node.js version is 22.x**
 9. **Check for file system permission errors**
-10. **Consider upgrading Vercel plan** if hitting resource limits
+10. **Verify static file routes are working**
+11. **Consider upgrading Vercel plan** if hitting resource limits

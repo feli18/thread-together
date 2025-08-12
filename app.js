@@ -132,6 +132,9 @@ app.use(async (req, res, next) => {
   next();
 });
 
+import staticRoutes from "./routes/static.js";
+app.use("/", staticRoutes);
+
 app.use("/", authRoutes);
 app.use("/", userRoutes);
 app.use("/posts/:postId/comments", commentRoutes);
