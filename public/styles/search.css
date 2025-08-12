@@ -2,3 +2,14 @@
   color: #007bff;
   text-decoration: underline;
 }
+.custom-card{
+  background-color:#fff6ff !important;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+}
+.custom-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
