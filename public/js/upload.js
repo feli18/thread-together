@@ -198,7 +198,7 @@ if (getTagsBtn) {
         tagDisplay.innerHTML = "<span class='text-muted'>No recommendation tags generated.</span>";
       }
     } catch (err) {
-      tagDisplay.innerHTML = "<span class='text-danger'>生成标签失败</span>";
+      tagDisplay.innerHTML = "<span class='text-danger'>Faild to generate tags</span>";
       console.error('❌ Failed to generate tags:', err);
     }
   });

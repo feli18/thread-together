@@ -8,6 +8,7 @@ import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 import mongoose from "mongoose";
+import 'dotenv/config';
 
 
 import authRoutes from "./routes/auth.js";
@@ -27,12 +28,14 @@ import Notification from "./models/Notification.js";
 import Message from "./models/Message.js";
 import TagView from "./models/TagView.js";
 import { buildCommentTree } from "./utils/buildCommentTree.js";
+import { connectDB, getMongoClient } from './config/db.js';
 
 const app = express();
 const { ObjectId } = mongoose.Types;
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(__filename);await connectDB();
+await connectDB();
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 app.set('trust proxy', 1);
@@ -55,6 +58,7 @@ app.use(session({
   },
   store: MongoStore.create({
     mongoUrl: process.env.MONGODB_URI,
+    clientPromise:getMongoClient(),
     collectionName: 'sessions',
     ttl: 60 * 60 * 24 * 7,                       
     touchAfter: 24 * 3600                        
