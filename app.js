@@ -56,7 +56,8 @@ app.use(session({
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
     // domain: process.env.VERCEL ? '.vercel.app' : undefined,
-    path: '/'
+    path: '/',
+    expires: new Date(Date.now() + 1000 * 60 * 60 * 24)
   },
   store: MongoStore.create({
     mongoUrl: process.env.MONGODB_URI,

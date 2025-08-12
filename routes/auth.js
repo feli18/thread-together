@@ -76,7 +76,11 @@ router.post("/login", async (req, res) => {
       }
       console.log('Session saved successfully');
       console.log('Redirecting to /profile');
-      res.redirect("/profile");
+      // res.redirect("/profile");
+
+      setTimeout(() => {
+        res.redirect("/profile");
+      }, 100);
     });
   } catch (error) {
     console.error('Login error:', error);
