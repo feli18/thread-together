@@ -179,15 +179,15 @@ coverage/
 .coverage
 htmlcov/
 
-# Images
-uploads/
-ai_outputs/
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.webp
-*.svg
+# # Images
+# uploads/
+# ai_outputs/
+# *.jpg
+# *.jpeg
+# *.png
+# *.gif
+# *.webp
+# *.svg
 
 # Editor
 .vscode/

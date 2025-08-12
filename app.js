@@ -39,7 +39,6 @@ app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 app.set('trust proxy', 1);
 
-// 恢复静态文件中间件，确保CSS、JS、图片能正确加载
 app.use(express.static(path.join(process.cwd(), "public")));
 
 app.use(bodyParser.urlencoded({ extended: true }));
