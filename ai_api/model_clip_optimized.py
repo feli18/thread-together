@@ -12,17 +12,17 @@ _model = None
 _processor = None
 
 def get_model_and_processor():
-    """懒加载模型和处理器"""
+    """lazy load model and processor"""
     global _model, _processor
     
     if _model is None or _processor is None:
         try:
-            logger.info("正在加载CLIP模型...")
+            logger.info("loading CLIP model...")
             _processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
             _model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-            logger.info("CLIP模型加载完成！")
+            logger.info("CLIP model loaded")
         except Exception as e:
-            logger.error(f"模型加载失败: {e}")
+            logger.error(f"model loading failed: {e}")
             raise
     
     return _model, _processor
@@ -45,11 +45,10 @@ def predict_tags(image: Image.Image, top_k=3):
         # 懒加载模型
         model, processor = get_model_and_processor()
         
-        # 处理输入
         inputs = processor(text=labels, images=image, return_tensors="pt", padding=True)
         
         # 推理
-        with torch.no_grad():  # 不计算梯度，节省内存
+        with torch.no_grad():  
             outputs = model(**inputs)
         
         # 计算概率

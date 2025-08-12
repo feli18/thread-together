@@ -30,13 +30,13 @@ def main():
     if not run_command("pip install --upgrade pip", "Upgrading pip"):
         print("⚠️  Warning: pip upgrade failed, continuing...")
     
-    # Install/upgrade PyTorch 2.6+
-    if not run_command("pip install torch>=2.6.0 torchvision>=0.21.0 --index-url https://download.pytorch.org/whl/cpu", "Installing PyTorch 2.6+"):
+    # Install compatible PyTorch version
+    if not run_command("pip install torch==2.2.2 torchvision==0.17.2", "Installing PyTorch 2.2.2"):
         print("❌ PyTorch installation failed!")
         sys.exit(1)
     
-    # Install/upgrade transformers
-    if not run_command("pip install transformers>=4.40.0", "Installing transformers 4.40+"):
+    # Install compatible transformers version
+    if not run_command("pip install transformers==4.49.0", "Installing transformers 4.49.0"):
         print("❌ Transformers installation failed!")
         sys.exit(1)
     
