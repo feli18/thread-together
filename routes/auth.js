@@ -25,10 +25,18 @@ router.post("/register", async (req, res) => {
 });
 
 router.get("/login", (req, res) => {
+ 
+  console.log('visit login page');
+  console.log('  - Session ID:', req.sessionID);
+  console.log('  - Session存在:', !!req.session);
+  console.log('  - User ID:', req.session?.userId);
+  
   if (req.session && req.session.userId) {
-    console.log('User already logged in, redirecting to profile');
+    console.log(' User already logged in, redirecting to profile');
     return res.redirect("/profile");
   }
+  
+  console.log('show login page');
   res.render("login.ejs");
 });
 
@@ -42,7 +50,13 @@ router.post("/login", async (req, res) => {
   if (!match) return res.send("⚠️ Wrong password");
 
   req.session.userId = user._id;
-  console.log('✅ Login successful, redirecting to profile');
+  
+  console.log('login success');
+  console.log('  - Session ID:', req.sessionID);
+  console.log('  - User ID:', req.session.userId);
+  console.log('  - Session:', !!req.session);
+  console.log('  - redirect to /profile');
+  
   res.redirect("/profile");
 });
 
