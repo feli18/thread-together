@@ -16,6 +16,7 @@ The main reasons for 404 errors on Vercel are:
 12. **File system permission errors (EROFS)**
 13. **Static file loading issues (logo, avatars)**
 14. **Vercel routing configuration problems**
+15. **Vercel runtime timeout errors (504)**
 
 ## Recent Fixes (Latest)
 - **Removed invalid `regions` property** from functions configuration
@@ -28,6 +29,23 @@ The main reasons for 404 errors on Vercel are:
 - **Fixed file system permission errors** by using memory storage in Vercel
 - **Fixed static file loading issues** by adding dedicated static file routes
 - **Enhanced Vercel routing configuration** for better static file handling
+- **Fixed Vercel runtime timeout errors** by optimizing static file routes
+
+## Vercel Runtime Timeout Fixes
+**Critical Issue**: Static file requests were timing out with 504 Gateway Timeout errors
+
+### What was fixed:
+- **Optimized static file routes** to reduce execution time
+- **Added image path caching** to avoid repeated file system operations
+- **Reordered middleware** to prioritize custom static routes
+- **Removed unnecessary logging** that was slowing down responses
+- **Added proper Content-Type headers** for faster browser processing
+
+### Why this happened:
+- Vercel has strict timeout limits (usually 10-30 seconds)
+- File system operations were too slow in serverless environment
+- Middleware order was causing conflicts between static handlers
+- Excessive logging was adding overhead to responses
 
 ## Vercel Routing Configuration Fixes
 **Critical Issue**: Vercel's catch-all route `"/(.*)"` was interfering with static file handling
@@ -51,11 +69,13 @@ The main reasons for 404 errors on Vercel are:
 - **Added explicit image handling** for logo and avatar files
 - **Fixed favicon loading** issues
 - **Added smart fallback logic** for missing images
+- **Optimized for Vercel performance** with caching and minimal operations
 
 ### Why this happened:
 - Vercel's static file handling can be inconsistent
 - Express static middleware may not work properly in serverless environment
 - Need explicit routes for critical static files
+- Performance optimization is critical in serverless environments
 
 ## File System Permission Fixes
 **Critical Issue**: Vercel serverless environment has a read-only file system (`EROFS: read-only file system`)
@@ -94,6 +114,12 @@ The main reasons for 404 errors on Vercel are:
 - Added error handling for timeouts
 - Disabled heavy operations in production
 
+### 4. Static File Optimization
+- **Path caching**: Pre-load image paths to avoid repeated calculations
+- **Minimal operations**: Reduce file system calls during requests
+- **Proper headers**: Set correct Content-Type for faster processing
+- **Smart fallbacks**: Quick fallback logic without complex operations
+
 ## Deployment Steps
 
 ### 1. Environment Variables Configuration
@@ -108,12 +134,11 @@ VERCEL=true
 
 ### 2. Clean Deployment
 ```bash
-# Remove any conflicting configuration
 rm -rf .vercel
 
 # Commit changes
 git add .
-git commit -m "Fix Vercel routing configuration for static files"
+git commit -m "Fix Vercel runtime timeout errors and optimize static file handling"
 git push
 
 # Vercel will automatically redeploy
@@ -146,6 +171,16 @@ If Vercel build fails:
 5. Ensure `type: "module"` is set
 6. Check for syntax errors in code
 
+### Runtime Timeout Errors (504):
+**Problem**: Vercel functions timing out during execution
+
+**Solutions**:
+1. **Optimize static file routes** - reduce file system operations
+2. **Add caching mechanisms** - avoid repeated calculations
+3. **Reorder middleware** - prioritize fast routes first
+4. **Remove excessive logging** - reduce overhead
+5. **Set proper timeouts** - ensure operations complete quickly
+
 ### Static File Issues:
 **Problem**: Logo, avatars, CSS, JS files not loading
 
@@ -155,6 +190,7 @@ If Vercel build fails:
 3. **Check vercel.json** routing configuration
 4. **Use explicit file routes** for critical assets
 5. **Test with `/test-static`** route to debug
+6. **Check for timeout errors** in Vercel logs
 
 ### Vercel Routing Issues:
 **Problem**: Static files not being served correctly
@@ -164,6 +200,7 @@ If Vercel build fails:
 2. **Ensure specific routes** come before catch-all
 3. **Verify route patterns** match file paths
 4. **Test individual routes** for debugging
+5. **Check middleware order** in app.js
 
 ### File System Errors (EROFS):
 **Error**: `EROFS: read-only file system, mkdir '/var/task/temp'`
@@ -242,6 +279,7 @@ In Vercel environment, file uploads use memory storage and won't persist to disk
 - **Favicon support**: Proper favicon.ico and favicon.png handling
 - **Error handling**: Graceful fallbacks for missing files
 - **Smart routing**: Vercel-specific route configuration
+- **Performance optimization**: Path caching and minimal operations
 
 ## Support
 If issues persist, please:
@@ -256,4 +294,5 @@ If issues persist, please:
 9. **Check for file system permission errors**
 10. **Verify static file routes are working**
 11. **Test Vercel routing configuration**
-12. **Consider upgrading Vercel plan** if hitting resource limits
+12. **Check for timeout errors** in function logs
+13. **Consider upgrading Vercel plan** if hitting resource limits

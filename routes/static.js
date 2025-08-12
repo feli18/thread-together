@@ -6,38 +6,51 @@ import fs from "fs";
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const imageCache = new Map();
+const publicImagesPath = path.join(process.cwd(), "public", "images");
+
+
+try {
+  const files = fs.readdirSync(publicImagesPath);
+  files.forEach(file => {
+    imageCache.set(file, path.join(publicImagesPath, file));
+  });
+} catch (error) {
+  console.error("Failed to preload image paths:", error);
+}
 
 router.get("/images/:filename", (req, res) => {
   try {
     const filename = req.params.filename;
-    const imagePath = path.join(process.cwd(), "public", "images", filename);
     
-    console.log(`Static file request: /images/${filename}`);
-    console.log(`Looking for file at: ${imagePath}`);
+    let imagePath = imageCache.get(filename);
+    
+    if (!imagePath) {
+
+      imagePath = path.join(publicImagesPath, filename);
+    }
     
     if (fs.existsSync(imagePath)) {
-      console.log(`File found, sending: ${filename}`);
+      const ext = path.extname(filename).toLowerCase();
+      if (ext === '.png') res.setHeader('Content-Type', 'image/png');
+      else if (ext === '.jpg' || ext === '.jpeg') res.setHeader('Content-Type', 'image/jpeg');
+      else if (ext === '.gif') res.setHeader('Content-Type', 'image/gif');
+      
       res.sendFile(imagePath);
     } else {
-      console.log(`File not found: ${filename}`);
-      
-      let defaultImage = null;
+      let fallbackImage = null;
       
       if (filename.includes('avatar') || filename.includes('default')) {
-        defaultImage = path.join(process.cwd(), "public", "images", "user.png");
+        fallbackImage = imageCache.get('user.png') || path.join(publicImagesPath, 'user.png');
       } else if (filename.includes('logo') || filename.includes('Logo')) {
-        defaultImage = path.join(process.cwd(), "public", "images", "Logo.png");
+        fallbackImage = imageCache.get('Logo.png') || path.join(publicImagesPath, 'Logo.png');
       } else if (filename.includes('post') || filename.includes('cover')) {
-        defaultImage = path.join(process.cwd(), "public", "images", "post1.jpg");
-      } else if (filename.includes('placeholder')) {
-        defaultImage = path.join(process.cwd(), "public", "images", "post1.jpg");
+        fallbackImage = imageCache.get('post1.jpg') || path.join(publicImagesPath, 'post1.jpg');
       }
       
-      if (defaultImage && fs.existsSync(defaultImage)) {
-        console.log(`Sending default image: ${defaultImage}`);
-        res.sendFile(defaultImage);
+      if (fallbackImage && fs.existsSync(fallbackImage)) {
+        res.sendFile(fallbackImage);
       } else {
-        console.log(`No default image found, returning 404`);
         res.status(404).send("Image not found");
       }
     }
@@ -49,7 +62,7 @@ router.get("/images/:filename", (req, res) => {
   
 router.get("/favicon.ico", (req, res) => {
   try {
-    const faviconPath = path.join(process.cwd(), "public", "images", "Logo.png");
+    const faviconPath = imageCache.get('Logo.png') || path.join(publicImagesPath, 'Logo.png');
     if (fs.existsSync(faviconPath)) {
       res.setHeader("Content-Type", "image/x-icon");
       res.sendFile(faviconPath);
@@ -64,7 +77,7 @@ router.get("/favicon.ico", (req, res) => {
 
 router.get("/favicon.png", (req, res) => {
   try {
-    const faviconPath = path.join(process.cwd(), "public", "images", "Logo.png");
+    const faviconPath = imageCache.get('Logo.png') || path.join(publicImagesPath, 'Logo.png');
     if (fs.existsSync(faviconPath)) {
       res.setHeader("Content-Type", "image/png");
       res.sendFile(faviconPath);
@@ -79,17 +92,12 @@ router.get("/favicon.png", (req, res) => {
 
 router.get("/test-static", (req, res) => {
   try {
-    const imagesDir = path.join(process.cwd(), "public", "images");
-    const files = fs.readdirSync(imagesDir);
-    
     res.json({ 
       message: "Static routes are working",
       timestamp: new Date().toISOString(),
-      cwd: process.cwd(),
-      publicPath: imagesDir,
-      availableFiles: files,
-      logoExists: fs.existsSync(path.join(imagesDir, "Logo.png")),
-      userExists: fs.existsSync(path.join(imagesDir, "user.png"))
+      cacheSize: imageCache.size,
+      logoExists: imageCache.has('Logo.png'),
+      userExists: imageCache.has('user.png')
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

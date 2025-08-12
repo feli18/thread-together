@@ -39,10 +39,10 @@ app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 app.set('trust proxy', 1);
 
-app.use(express.static(path.join(process.cwd(), "public")));
-
 import staticRoutes from "./routes/static.js";
 app.use("/", staticRoutes);
+
+app.use(express.static(path.join(process.cwd(), "public")));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
@@ -93,14 +93,13 @@ app.use(async (req, res, next) => {
   const query = req.query.q || "";
   const userId = req.session.userId || null;
 
-  // 只在需要时查询用户信息
   let currentUser = null;
   if (userId) {
     try {
       currentUser = await User.findById(userId)
         .select("_id username avatar")
         .lean()
-        .maxTimeMS(5000); // 5秒超时
+        .maxTimeMS(5000); 
     } catch (err) {
       console.error('User query timeout:', err);
       currentUser = null;
@@ -112,10 +111,8 @@ app.use(async (req, res, next) => {
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
 
-  // 延迟加载用户搜索，减少CPU使用
   res.locals.matchedUsers = [];
 
-  // 只在需要时查询通知和消息计数
   if (userId) {
     try {
       const [notificationCount, messageCount] = await Promise.all([
