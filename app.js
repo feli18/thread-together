@@ -352,7 +352,7 @@ app.get("/posts/:id/edit", async (req, res) => {
 
 app.post(
   "/posts/:id/edit",
-  upload.fields([{ name: "coverImage", maxCount: 1 }]),
+  upload.fields([{ name: "coverImage", maxCount: 1 }, { name: "newStepFiles" }]),
   async (req, res) => {
     try {
       const post = await Post.findById(req.params.id);
@@ -367,8 +367,8 @@ app.post(
         .split(",")
         .map((t) => t.trim().toLowerCase())
         .filter((t) => t.length > 0);
-        // if (req.files?.["coverImage"]?.[0] && !process.env.VERCEL) {
-        //   post.coverImage = "/uploads/" + req.files["coverImage"][0].filename;
+
+      // cover image
       const newCover = req.files?.["coverImage"]?.[0];
       if (newCover) {
         if (newCover.filename && !process.env.VERCEL) {
@@ -378,9 +378,58 @@ app.post(
           post.coverImage = `data:${newCover.mimetype};base64,${base64}`;
         }
       }
+
+      // existing steps update/delete
+      const delIdx = new Set((Array.isArray(req.body.existingStepDelete) ? req.body.existingStepDelete : [req.body.existingStepDelete]).filter(Boolean).map(Number));
+      const newStepsArr = [];
+      const texts = Array.isArray(req.body.existingStepTexts) ? req.body.existingStepTexts : (req.body.existingStepTexts ? [req.body.existingStepTexts] : []);
+      const types = Array.isArray(req.body.existingStepTypes) ? req.body.existingStepTypes : (req.body.existingStepTypes ? [req.body.existingStepTypes] : []);
+      const imgKeep = Array.isArray(req.body.existingStepImage) ? req.body.existingStepImage : (req.body.existingStepImage ? [req.body.existingStepImage] : []);
+      const vidKeep = Array.isArray(req.body.existingStepVideo) ? req.body.existingStepVideo : (req.body.existingStepVideo ? [req.body.existingStepVideo] : []);
+
+      const existingFiles = Object.keys(req.files || {}).filter(k => k.startsWith('existingStepFile_'));
+
+      for (let i = 0; i < post.steps.length; i++) {
+        if (delIdx.has(i)) continue; // delete
+        let step = { type: types[i] || post.steps[i].type, image: imgKeep[i] || '', video: vidKeep[i] || '', text: texts[i] || '' };
+        // replacement file?
+        const key = `existingStepFile_${i}`;
+        const f = req.files?.[key]?.[0];
+        if (f) {
+          const isVideo = f.mimetype?.startsWith('video/');
+          if (f.filename && !process.env.VERCEL) {
+            if (isVideo) { step.video = "/uploads/" + f.filename; step.type = 'video'; step.image=''; }
+            else { step.image = "/uploads/" + f.filename; step.type = 'image'; step.video=''; }
+          } else if (f.buffer && f.mimetype) {
+            const base64 = f.buffer.toString('base64');
+            if (isVideo) { step.video = `data:${f.mimetype};base64,${base64}`; step.type='video'; step.image=''; }
+            else { step.image = `data:${f.mimetype};base64,${base64}`; step.type='image'; step.video=''; }
+          }
+        }
+        newStepsArr.push(step);
+      }
+
+      // add new steps
+      const newFiles = req.files?.['newStepFiles'] || [];
+      const newTexts = Array.isArray(req.body.newStepTexts) ? req.body.newStepTexts : (req.body.newStepTexts ? [req.body.newStepTexts] : []);
+      newFiles.forEach((f, idx) => {
+        const isVideo = f.mimetype?.startsWith('video/');
+        let mediaValue = '';
+        if (f.filename && !process.env.VERCEL) {
+          mediaValue = "/uploads/" + f.filename;
+        } else if (f.buffer && f.mimetype) {
+          const base64 = f.buffer.toString('base64');
+          mediaValue = `data:${f.mimetype};base64,${base64}`;
+        }
+        newStepsArr.push({ type: isVideo ? 'video' : 'image', [isVideo ? 'video' : 'image']: mediaValue, text: newTexts[idx] || '' });
+      });
+
+      post.steps = newStepsArr;
+
       await post.save();
       res.redirect(303, "/posts/" + post._id);
-    } catch {
+    } catch (e) {
+      console.error(e);
       res.status(500).send("Server error");
     }
   }
