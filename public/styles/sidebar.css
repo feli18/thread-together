@@ -17,7 +17,10 @@
 }
 
 .sidebar .badge {
-  /* border-radius: 999px;  */
+  background-color: #F2E2F3 !important; /* 柔和的薄荷绿 */
+  color: #ffffff !important;
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px #cbc7e0; /* 与侧栏底色柔和过渡 */
 }
 
 
