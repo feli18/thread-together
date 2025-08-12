@@ -51,8 +51,11 @@
             </div>
           </div>
 
-          <% if (currentUser && currentUser !== user._id.toString()) { %>
-            <% const isFollowing = user.followers.some(f => f.toString() === currentUser); %>
+          <% 
+            const viewerId = (currentUser && currentUser._id) ? currentUser._id.toString() : null;
+          %>
+          <% if (viewerId && viewerId !== user._id.toString()) { %>
+            <% const isFollowing = user.followers.some(f => f.toString() === viewerId); %>
             <form method="POST" action="/users/<%= user._id %>/<%= isFollowing ? 'unfollow' : 'follow' %>">
               <button class="btn btn-outline-secondary btn-sm <%= isFollowing ? 'btn-unfollow' : 'btn-follow' %>">
                 <%= isFollowing ? 'Unfollow' : 'Follow' %>
@@ -60,7 +63,7 @@
             </form>
           <% } %>
         </div>
-        <% if (currentUser && currentUser !== user._id.toString()) { %>
+        <% if (viewerId && viewerId !== user._id.toString()) { %>
           <a href="/messages/<%= user._id %>" class="btn btn-1 btn-sm mt-3">Send Message</a>
         <% } %>
 
