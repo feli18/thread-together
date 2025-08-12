@@ -93,9 +93,10 @@
       
         <div class="d-flex flex-column align-items-end">
            <div class="post-actions d-flex gap-2 mt-2 mt-sm-0 align-items-center">
-            <% const liked = post.likedBy.some(user => user._id.toString() === currentUser?.toString()); %>
+            <% const viewerId = currentUser && currentUser._id ? currentUser._id.toString() : null; %>
+            <% const liked = viewerId ? post.likedBy.some(user => user._id.toString() === viewerId) : false; %>
 
-            <% if (currentUser) { %>
+            <% if (viewerId) { %>
                 <form action="/posts/<%= post._id %>/like" method="POST" class="like-form" data-post-id="<%= post._id %>">
                 <button type="submit" class="icon-btn btn btn-light like-btn border-0">
                     <i class="<%= liked ? 'bi bi-heart-fill text-danger' : 'bi bi-heart text-secondary' %>"></i>
@@ -109,8 +110,8 @@
                 </a>
             <% } %>
         
-            <% const bookmarked = post.bookmarkedBy.some(user => user._id.toString() === currentUser?.toString()); %>
-                <% if (currentUser) { %>
+            <% const bookmarked = viewerId ? post.bookmarkedBy.some(user => user._id.toString() === viewerId) : false; %>
+                <% if (viewerId) { %>
                 <form action="/posts/<%= post._id %>/bookmark" method="POST" style="display:inline;">
                     <button type="submit" class="icon-btn btn btn-light save-btn border-0">
                     <i class="<%= bookmarked ? 'bi bi-bookmark-fill text-primary' : 'bi bi-bookmark text-secondary' %>"></i>
@@ -125,7 +126,7 @@
            </div>
 
           <div class="post-editor-actions d-flex gap-2 mt-2">
-            <% if (currentUser && post.author && currentUser.toString() === post.author._id.toString()) { %>
+            <% if (viewerId && post.author && viewerId === post.author._id.toString()) { %>
               <div class="mb-3">
                   <form action="/posts/<%= post._id %>/delete" method="POST" style="display:inline;">
                   <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
