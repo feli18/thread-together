@@ -41,7 +41,7 @@
 
       <div class="mb-3">
         <% post.steps.forEach((s, idx) => { %>
-          <div class="card mb-3">
+          <div class="card mb-3" data-step-card="<%= idx %>">
             <div class="card-body">
               <div class="d-flex gap-3 align-items-start">
                 <div style="width:180px;">
@@ -61,10 +61,7 @@
                   <input type="hidden" name="existingStepTypes[]" value="<%= s.type %>">
                   <input type="hidden" name="existingStepImage[]" value="<%= s.image || '' %>">
                   <input type="hidden" name="existingStepVideo[]" value="<%= s.video || '' %>">
-                  <div class="form-check mt-2">
-                    <input class="form-check-input" type="checkbox" name="existingStepDelete[]" value="<%= idx %>" id="del_<%= idx %>">
-                    <label class="form-check-label" for="del_<%= idx %>">Delete this step</label>
-                  </div>
+                  <button type="button" class="btn btn-outline-danger btn-sm mt-2" data-del-step="<%= idx %>">Delete this step</button>
                 </div>
               </div>
             </div>
@@ -95,6 +92,20 @@
           <textarea name="newStepTexts[]" class="form-control" rows="2" placeholder="Add description..."></textarea>
         </div>`;
       newSteps.appendChild(wrapper);
+    });
+
+    // delete existing step immediately
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-del-step]');
+      if (!btn) return;
+      const idx = btn.getAttribute('data-del-step');
+      const hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = 'existingStepDelete[]';
+      hidden.value = idx;
+      btn.form.appendChild(hidden);
+      const card = btn.closest('[data-step-card]');
+      if (card) card.remove();
     });
   </script>
 </body>
