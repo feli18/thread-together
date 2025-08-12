@@ -3,10 +3,58 @@ const coverPreview = document.getElementById('coverPreview');
 const coverLabel = document.getElementById('coverLabel');
 const changeBtn = document.getElementById('changeCoverBtn');
 
+// --- helpers: image compress ---
+async function compressImageFile(file, maxDim = 1280, quality = 0.72) {
+  if (!file || !file.type?.startsWith('image/')) return file;
+  // 小图不压缩
+  if (file.size <= 600 * 1024) return file;
+
+  const img = await new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    const fr = new FileReader();
+    fr.onload = e => (image.src = e.target.result);
+    fr.onerror = reject;
+    fr.readAsDataURL(file);
+  });
+
+  const canvas = document.createElement('canvas');
+  let { width, height } = img;
+  const ratio = width / height;
+  if (width > height) {
+    width = Math.min(width, maxDim);
+    height = Math.round(width / ratio);
+  } else {
+    height = Math.min(height, maxDim);
+    width = Math.round(height * ratio);
+  }
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, width, height);
+
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', quality));
+  if (!blob) return file;
+  // 压缩后仍大于原文件则返回原文件
+  if (blob.size >= file.size) return file;
+  return new File([blob], file.name.replace(/\.(png|webp)$/i, '.jpg'), { type: 'image/jpeg' });
+}
+
+function setInputFiles(inputEl, file) {
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  inputEl.files = dt.files;
+}
+
 if (coverInput) {
-  coverInput.addEventListener('change', () => {
-    const file = coverInput.files[0];
+  coverInput.addEventListener('change', async () => {
+    let file = coverInput.files[0];
     if (!file) return;
+    // 压缩大图
+    file = await compressImageFile(file);
+    if (file) setInputFiles(coverInput, file);
+
     const reader = new FileReader();
     reader.onload = e => {
       coverPreview.src = e.target.result;
@@ -77,70 +125,61 @@ if (stepsContainer) {
 
   if (addStepBtn) addStepBtn.addEventListener('click', addStep);
 
-
   function resetStepBox(box) {
-  const input = box.querySelector('.step-input');
-  const label = box.querySelector('.step-label');
-  const img = box.querySelector('.step-img');
-  const video = box.querySelector('.step-video');
-  const changeBtn = box.querySelector('.step-change-btn');
-  const nameEl = box.querySelector('.step-filename');
+    const input = box.querySelector('.step-input');
+    const label = box.querySelector('.step-label');
+    const img = box.querySelector('.step-img');
+    const video = box.querySelector('.step-video');
+    const changeBtn = box.querySelector('.step-change-btn');
+    const nameEl = box.querySelector('.step-filename');
 
-  // 清空文件
-  if (input) {
-    // 如改用 URL.createObjectURL，请在此 revoke
-    input.value = '';
+    if (input) input.value = '';
+    if (img) { img.src = ''; img.classList.add('d-none'); }
+    if (video) { video.src = ''; video.load(); video.classList.add('d-none'); }
+    if (label) label.style.display = 'inline-block';
+    if (changeBtn) changeBtn.style.display = 'none';
+    if (nameEl) nameEl.textContent = '';
   }
 
-  // 还原 UI
-  if (img) { img.src = ''; img.classList.add('d-none'); }
-  if (video) { video.src = ''; video.load(); video.classList.add('d-none'); }
-  if (label) label.style.display = 'inline-block';
-  if (changeBtn) changeBtn.style.display = 'none';
-  if (nameEl) nameEl.textContent = '';
-}
+  function setStepPreview(box, file) {
+    const label = box.querySelector('.step-label');
+    const img = box.querySelector('.step-img');
+    const video = box.querySelector('.step-video');
+    const changeBtn = box.querySelector('.step-change-btn');
+    const nameEl = box.querySelector('.step-filename');
 
-function setStepPreview(box, file) {
-  const label = box.querySelector('.step-label');
-  const img = box.querySelector('.step-img');
-  const video = box.querySelector('.step-video');
-  const changeBtn = box.querySelector('.step-change-btn');
-  const nameEl = box.querySelector('.step-filename');
-
-  if (!file) {
-    resetStepBox(box);
-    return;
-  }
-
-  if (nameEl) nameEl.textContent = file.name;
-
-  const reader = new FileReader();
-  reader.onload = ({ target }) => {
-    const url = target.result;
-
-    if (img) { img.classList.add('d-none'); img.src = ''; }
-    if (video) { video.classList.add('d-none'); video.src = ''; }
-
-    if (file.type.startsWith('video/')) {
-      if (video) {
-        video.src = url;
-        video.classList.remove('d-none');
-        video.load();
-      }
-    } else {
-      if (img) {
-        img.src = url;
-        img.classList.remove('d-none');
-      }
+    if (!file) {
+      resetStepBox(box);
+      return;
     }
 
-    if (label) label.style.display = 'none';
-    if (changeBtn) changeBtn.style.display = 'flex';
-  };
-  reader.readAsDataURL(file);
-}
+    if (nameEl) nameEl.textContent = file.name;
 
-if (stepsContainer) {
+    const reader = new FileReader();
+    reader.onload = ({ target }) => {
+      const url = target.result;
+      if (img) { img.classList.add('d-none'); img.src = ''; }
+      if (video) { video.classList.add('d-none'); video.src = ''; }
+
+      if (file.type.startsWith('video/')) {
+        if (video) {
+          video.src = url;
+          video.classList.remove('d-none');
+          video.load();
+        }
+      } else {
+        if (img) {
+          img.src = url;
+          img.classList.remove('d-none');
+        }
+      }
+
+      if (label) label.style.display = 'none';
+      if (changeBtn) changeBtn.style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+  }
+
   stepsContainer.addEventListener('click', (e) => {
     const box = e.target.closest('.step-card');
     if (!box) return;
@@ -161,14 +200,20 @@ if (stepsContainer) {
     }
   });
 
-  stepsContainer.addEventListener('change', (e) => {
+  stepsContainer.addEventListener('change', async (e) => {
     if (!e.target.classList.contains('step-input')) return;
     const box = e.target.closest('.step-card');
-    const file = e.target.files && e.target.files[0];
+    let file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    // 压缩图片以降低总请求体积，避免 Vercel 限制
+    if (file.type.startsWith('image/')) {
+      file = await compressImageFile(file);
+      if (file) setInputFiles(e.target, file);
+    }
+
     setStepPreview(box, file);
   });
-}
-
 }
 
 const getTagsBtn = document.getElementById('getTagsBtn');
