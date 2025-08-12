@@ -51,8 +51,9 @@ async function handleProfileUpdate(req, res, next) {
     if (req.file) {
       if (req.file.filename) {
         user.avatar = '/uploads/' + req.file.filename;
-      } else {
-        // Vercel：URL
+      } else if (req.file.buffer && req.file.mimetype) {
+        const base64 = req.file.buffer.toString('base64');
+        user.avatar = `data:${req.file.mimetype};base64,${base64}`;
       }
     }
 
