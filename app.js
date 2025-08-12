@@ -142,6 +142,24 @@ app.use("/explore", exploreRoutes);
 app.use("/", searchRoutes);
 app.use("/generate-tags", generateTags);
 
+app.use((err, req, res, next) => {
+  console.error('❌ global error handling:', err);
+  console.error('  - Request path:', req.path);
+  console.error('  - Error stack:', err.stack);
+  
+  if (req.path.startsWith('/api/')) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+  
+  res.status(500).send('Something broke!');
+});
+
+// 404处理
+app.use((req, res) => {
+  console.log('❌ 404 Not Found:', req.path);
+  res.status(404).send('Page not found');
+});
+
 app.post(
   "/upload",
   upload.fields([

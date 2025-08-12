@@ -9,20 +9,32 @@ const router = express.Router();
 
 router.get('/profile', isLoggedIn, async (req, res, next) => {
   try {
+    console.log('Profile route start');
+    console.log('  - User ID:', req.session.userId);
+    
     const userId = req.session.userId;
 
     const user = await User.findById(userId)
       .populate('followers')
       .populate('following');
+    
+    console.log('  - User query result:', !!user);
+    console.log('  - Username:', user?.username);
 
     const [userPosts, likedPosts, collectedPosts] = await Promise.all([
       Post.find({ author: userId }).sort({ createdAt: -1 }),
       Post.find({ likedBy: userId }).sort({ createdAt: -1 }),
       Post.find({ bookmarkedBy: userId }).sort({ createdAt: -1 }),
     ]);
-
+    
+    console.log('  - Posts number:', userPosts.length);
+    console.log('  - prepare to render profile page');
+    
     res.render('profile.ejs', { user, userPosts, likedPosts, collectedPosts });
+    
+    console.log('  - Profile page rendered');
   } catch (err) {
+    console.error('❌ Profile route error:', err);
     next(err);
   }
 });
