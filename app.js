@@ -39,10 +39,9 @@ app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 app.set('trust proxy', 1);
 
-import staticRoutes from "./routes/static.js";
-app.use("/", staticRoutes);
-
-app.use(express.static(path.join(process.cwd(), "public")));
+if (!process.env.VERCEL) {
+  app.use(express.static(path.join(process.cwd(), "public")));
+}
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());

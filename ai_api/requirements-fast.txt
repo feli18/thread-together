@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+python-multipart
+torchvision
+torch
+transformers
+pillow
+
+numpy
+
+requests
+
