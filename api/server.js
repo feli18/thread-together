@@ -30,6 +30,7 @@ async function ensureDBConnection() {
   return connectionPromise;
 }
 
+// Vercel serverless function handler
 export default async function handler(req, res) {
   // Set CORS headers for Vercel
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -44,10 +45,14 @@ export default async function handler(req, res) {
   try {
     // 快速数据库连接检查
     await ensureDBConnection();
+    
+    // 调用Express应用
+    return app(req, res);
   } catch (e) {
-    console.error('DB connect failed:', e);
-    return res.status(500).send('Database connection failed');
+    console.error('Handler error:', e);
+    return res.status(500).json({ 
+      error: 'Internal server error', 
+      message: e.message 
+    });
   }
-  
-  return app(req, res); 
 }
