@@ -12,6 +12,7 @@ The main reasons for 404 errors on Vercel are:
 8. **Invalid vercel.json configuration**
 9. **Missing build script**
 10. **Configuration conflicts**
+11. **Deprecated Node.js version**
 
 ## Recent Fixes (Latest)
 - **Removed invalid `regions` property** from functions configuration
@@ -20,6 +21,14 @@ The main reasons for 404 errors on Vercel are:
 - **Added proper build script** to package.json
 - **Removed conflicting functions configuration**
 - **Cleaned up .vercel directory** to avoid conflicts
+- **Updated Node.js version** from 18.x to 22.x (Vercel requirement)
+
+## Node.js Version Update
+**Important**: Vercel now requires Node.js 22.x. Deployments with Node.js 18.x will fail after September 1, 2025.
+
+### What was changed:
+- Updated `"engines": { "node": "22.x" }` in package.json
+- This ensures compatibility with Vercel's latest requirements
 
 ## CPU Optimization Strategies
 
@@ -57,7 +66,7 @@ rm -rf .vercel
 
 # Commit changes
 git add .
-git commit -m "Fix Vercel configuration conflicts and build issues"
+git commit -m "Update Node.js to 22.x for Vercel compatibility"
 git push
 
 # Vercel will automatically redeploy
@@ -81,12 +90,17 @@ After deployment, check if these routes work properly:
 
 ### Build Failures:
 If Vercel build fails:
-1. **Check vercel.json schema** - ensure all properties are valid
-2. **Verify build script exists** in package.json
-3. Check that `package.json` has correct `main` field (`app.js`)
-4. Ensure `type: "module"` is set
-5. Verify Node.js version compatibility (18.x)
+1. **Check Node.js version** - must be 22.x for new deployments
+2. **Check vercel.json schema** - ensure all properties are valid
+3. **Verify build script exists** in package.json
+4. Check that `package.json` has correct `main` field (`app.js`)
+5. Ensure `type: "module"` is set
 6. Check for syntax errors in code
+
+### Node.js Version Issues:
+- **Error**: "Node.js version 18.x is deprecated"
+- **Solution**: Update to Node.js 22.x in package.json
+- **Deadline**: September 1, 2025 for new deployments
 
 ### Configuration Conflicts:
 Common issues and solutions:
@@ -130,7 +144,7 @@ In Vercel environment, file uploads use memory storage and won't persist to disk
 
 ### Package Configuration
 - Main entry point: `app.js`
-- Node version: 18.x
+- Node version: **22.x** (Vercel requirement)
 - Module type: ES modules
 - Build script: `build`
 
@@ -149,4 +163,5 @@ If issues persist, please:
 5. Verify package.json configuration
 6. **Check vercel.json schema validation**
 7. **Remove .vercel directory** if conflicts persist
-8. **Consider upgrading Vercel plan** if hitting resource limits
+8. **Verify Node.js version is 22.x**
+9. **Consider upgrading Vercel plan** if hitting resource limits
