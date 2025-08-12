@@ -54,7 +54,9 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24,                 
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production' 
+    secure: process.env.NODE_ENV === 'production',
+    domain: process.env.VERCEL ? '.vercel.app' : undefined,
+    path: '/'
   },
   store: MongoStore.create({
     mongoUrl: process.env.MONGODB_URI,

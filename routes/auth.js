@@ -25,9 +25,12 @@ router.post("/register", async (req, res) => {
 });
 
 router.get("/login", (req, res) => {
+  if (req.session && req.session.userId) {
+    console.log('User already logged in, redirecting to profile');
+    return res.redirect("/profile");
+  }
   res.render("login.ejs");
 });
-
 
 router.post("/login", async (req, res) => {
     const { username, password } = req.body;
@@ -39,6 +42,7 @@ router.post("/login", async (req, res) => {
   if (!match) return res.send("⚠️ Wrong password");
 
   req.session.userId = user._id;
+  console.log('✅ Login successful, redirecting to profile');
   res.redirect("/profile");
 });
 
