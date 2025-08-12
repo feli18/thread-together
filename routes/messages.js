@@ -3,12 +3,12 @@ import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 import Message from "../models/Message.js";
-import User from "../models/User.js";
 import { isLoggedIn } from "../middleware/middleware.js";
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
 
 let chatUpload;
 if (process.env.VERCEL) {
@@ -27,7 +27,7 @@ if (process.env.VERCEL) {
 }
 
 
-router.get("/", isLoggedIn, async (req, res) => {
+router.get("/", async (req, res) => {
   const currentUserId = req.session.userId;
 
   const messages = await Message.find({
@@ -37,26 +37,30 @@ router.get("/", isLoggedIn, async (req, res) => {
     .populate("sender", "username avatar")
     .populate("recipient", "username avatar");
 
-  const conversationUsers = new Map();
-  for (let msg of messages) {
-    const otherUser = msg.sender._id.toString() === currentUserId
-      ? msg.recipient
-      : msg.sender;
+
+    const conversationUsers = new Map();
+
+    for (let msg of messages) {
+    const otherUser =
+        msg.sender._id.toString() === currentUserId
+        ? msg.recipient
+        : msg.sender;
 
     if (!conversationUsers.has(otherUser._id.toString())) {
-      const unreadCount = await Message.countDocuments({
+        const unreadCount = await Message.countDocuments({
         sender: otherUser._id,
         recipient: currentUserId,
         read: false
-      });
+        });
 
-      conversationUsers.set(otherUser._id.toString(), {
+        conversationUsers.set(otherUser._id.toString(), {
         user: otherUser,
         lastMessage: msg,
         unreadCount
-      });
+        });
     }
-  }
+    }
+
 
   res.render("message", {
     conversations: Array.from(conversationUsers.values()),
@@ -64,18 +68,18 @@ router.get("/", isLoggedIn, async (req, res) => {
 });
 
 
-router.get("/:userId", isLoggedIn, async (req, res) => {
+router.get("/:userId", async (req, res) => {
   const currentUserId = req.session.userId;
   const targetUserId = req.params.userId;
 
-  await Message.updateMany(
+    await Message.updateMany(
     {
-      sender: targetUserId,
-      recipient: currentUserId,
-      read: false
+        sender: targetUserId,
+        recipient: currentUserId,
+        read: false
     },
     { $set: { read: true } }
-  );
+    );
 
   const messages = await Message.find({
     $or: [
@@ -84,18 +88,20 @@ router.get("/:userId", isLoggedIn, async (req, res) => {
     ],
   })
     .sort({ createdAt: 1 })
-me");    .populate("sender", "username avatar");
+    .populate("sender", "username");
 
-  const allMsgs = await Message.find({
+    const allMsgs = await Message.find({
     $or: [{ sender: currentUserId }, { recipient: currentUserId }]
   })
-    .sort({ createdAt: -1 })
-    .populate("sender",    "username avatar")
-    .populate("recipient", "username avatar");
+  .sort({ createdAt: -1 })
+  .populate("sender",    "username avatar")
+  .populate("recipient", "username avatar");
 
   const convMap = new Map();
   for (let msg of allMsgs) {
-    const other = msg.sender._id.toString() === currentUserId ? msg.recipient : msg.sender;
+    const other = msg.sender._id.toString() === currentUserId
+                  ? msg.recipient
+                  : msg.sender;
     if (!convMap.has(other._id.toString())) {
       const unread = await Message.countDocuments({
         sender: other._id,
@@ -103,11 +109,11 @@ me");    .populate("sender", "username avatar");
         read: false
       });
       convMap.set(other._id.toString(), {
-        _id:          other._id,
+        _id:         other._id,
         withUsername: other.username,
-        avatar:       other.avatar,
-        lastMessage:  msg.text || (msg.image ? "📷 Image" : ""),
-        unreadCount:  unread
+        avatar:      other.avatar,
+        lastMessage: msg.text || (msg.image ? "📷 Image" : ""),
+        unreadCount: unread
       });
     }
   }
@@ -122,24 +128,14 @@ me");    .populate("sender", "username avatar");
     conversations,
     currentConvId: targetUserId
   });
+
 });
 
-// 发送消息
-router.post("/:userId", isLoggedIn, chatUpload.single("image"), async (req, res) => {
+router.post("/:userId", chatUpload.single("image"), async (req, res) => {
   const currentUserId = req.session.userId;
   const targetUserId = req.params.userId;
   const text = req.body.text || "";
-
-  let image = null;
-  const file = req.file;
-  if (file) {
-    if (file.filename && !process.env.VERCEL) {
-      image = `/uploads/${file.filename}`;
-    } else if (file.buffer && file.mimetype) {
-      const base64 = file.buffer.toString('base64');
-      image = `data:${file.mimetype};base64,${base64}`;
-    }
-  }
+  const image = req.file ? `/uploads/${req.file.filename}` : null;
 
   await Message.create({
     sender: currentUserId,
