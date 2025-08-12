@@ -9,24 +9,20 @@ The main reasons for 404 errors on Vercel are:
 5. Dependency version incompatibilities
 6. **CPU and memory limitations (Hobby plan)**
 7. **Function execution timeouts**
+8. **Invalid vercel.json configuration**
 
-## Issues Fixed
- Fixed `vercel.json` configuration
-Enhanced `api/server.js` with CORS and request handling
-Fixed syntax errors in `app.js`
-Fixed `package.json` configuration
-Updated dependency versions for compatibility
-Added `.vercelignore` file
-**Optimized for Vercel CPU limitations**
-**Added database connection pooling**
-**Reduced middleware CPU usage**
+
+## Recent Fixes (Latest)
+- **Removed invalid `regions` property** from functions configuration
+- **Simplified vercel.json** to use only valid properties
+- **Fixed schema validation errors** that caused build failures
 
 ## CPU Optimization Strategies
 
 ### 1. Function Configuration
 - **maxDuration**: Reduced to 30 seconds
-- **Memory**: Limited to 1024MB
-- **Regions**: Fixed to US East (iad1)
+- **Memory**: Using default Vercel allocation
+- **Configuration**: Simplified to avoid schema errors
 
 ### 2. Database Optimization
 - Connection pooling to reduce connection overhead
@@ -54,7 +50,7 @@ VERCEL=true
 ```bash
 # Commit changes
 git add .
-git commit -m "Optimize for Vercel CPU limitations"
+git commit -m "Fix vercel.json schema validation errors"
 git push
 
 # Vercel will automatically redeploy
@@ -62,7 +58,6 @@ git push
 
 ### 3. Verify Deployment
 After deployment, check if these routes work properly:
-- `/health` - Health check endpoint
 - `/` - Homepage
 - `/profile` - User profile page
 - `/login` - Login page
@@ -79,10 +74,17 @@ After deployment, check if these routes work properly:
 
 ### Build Failures:
 If Vercel build fails:
-1. Check that `package.json` has correct `main` field (`app.js`)
-2. Ensure `type: "module"` is set
-3. Verify Node.js version compatibility (18.x)
-4. Check for syntax errors in code
+1. **Check vercel.json schema** - ensure all properties are valid
+2. Check that `package.json` has correct `main` field (`app.js`)
+3. Ensure `type: "module"` is set
+4. Verify Node.js version compatibility (18.x)
+5. Check for syntax errors in code
+
+### Schema Validation Errors:
+Common vercel.json errors:
+- **Invalid properties**: `regions`, `memory` in functions
+- **Wrong property types**: ensure values match expected types
+- **Missing required fields**: check Vercel documentation
 
 ### CPU/Memory Issues:
 If you hit Vercel limits:
@@ -130,4 +132,5 @@ If issues persist, please:
 3. Verify MongoDB connection status
 4. Check build logs for errors
 5. Verify package.json configuration
-6. **Consider upgrading Vercel plan** if hitting resource limits
+6. **Check vercel.json schema validation**
+7. **Consider upgrading Vercel plan** if hitting resource limits
