@@ -15,6 +15,7 @@ The main reasons for 404 errors on Vercel are:
 11. **Deprecated Node.js version**
 12. **File system permission errors (EROFS)**
 13. **Static file loading issues (logo, avatars)**
+14. **Vercel routing configuration problems**
 
 ## Recent Fixes (Latest)
 - **Removed invalid `regions` property** from functions configuration
@@ -26,6 +27,20 @@ The main reasons for 404 errors on Vercel are:
 - **Updated Node.js version** from 18.x to 22.x (Vercel requirement)
 - **Fixed file system permission errors** by using memory storage in Vercel
 - **Fixed static file loading issues** by adding dedicated static file routes
+- **Enhanced Vercel routing configuration** for better static file handling
+
+## Vercel Routing Configuration Fixes
+**Critical Issue**: Vercel's catch-all route `"/(.*)"` was interfering with static file handling
+
+### What was fixed:
+- **Added specific routes** for static files (`/images/*`, `/styles/*`, `/js/*`)
+- **Prioritized static file routes** before the catch-all route
+- **Ensured proper routing order** for optimal file serving
+
+### Why this happened:
+- Vercel's `"/(.*)"` route catches ALL requests
+- Static files need explicit routing to avoid conflicts
+- Route order matters in Vercel configuration
 
 ## Static File Loading Fixes
 **Issue**: Logo and avatar images not loading in Vercel deployment
@@ -35,6 +50,7 @@ The main reasons for 404 errors on Vercel are:
 - **Enhanced static file handling** for images, favicon, and other assets
 - **Added explicit image handling** for logo and avatar files
 - **Fixed favicon loading** issues
+- **Added smart fallback logic** for missing images
 
 ### Why this happened:
 - Vercel's static file handling can be inconsistent
@@ -66,7 +82,7 @@ The main reasons for 404 errors on Vercel are:
 ### 1. Function Configuration
 - **Configuration**: Simplified to avoid schema errors
 - **Builds**: Using standard @vercel/node builder
-- **Routes**: Simple catch-all routing
+- **Routes**: Optimized routing for static files and API
 
 ### 2. Database Optimization
 - Connection pooling to reduce connection overhead
@@ -97,7 +113,7 @@ rm -rf .vercel
 
 # Commit changes
 git add .
-git commit -m "Fix static file loading issues for Vercel deployment"
+git commit -m "Fix Vercel routing configuration for static files"
 git push
 
 # Vercel will automatically redeploy
@@ -110,6 +126,7 @@ After deployment, check if these routes work properly:
 - `/login` - Login page
 - `/register` - Registration page
 - **Static files**: Logo, avatars, CSS, JS files
+- **Test route**: `/test-static` to verify static routing
 
 ## Troubleshooting
 
@@ -137,6 +154,16 @@ If Vercel build fails:
 2. **Verify file paths** in `public` directory
 3. **Check vercel.json** routing configuration
 4. **Use explicit file routes** for critical assets
+5. **Test with `/test-static`** route to debug
+
+### Vercel Routing Issues:
+**Problem**: Static files not being served correctly
+
+**Solutions**:
+1. **Check route order** in vercel.json
+2. **Ensure specific routes** come before catch-all
+3. **Verify route patterns** match file paths
+4. **Test individual routes** for debugging
 
 ### File System Errors (EROFS):
 **Error**: `EROFS: read-only file system, mkdir '/var/task/temp'`
@@ -214,6 +241,7 @@ In Vercel environment, file uploads use memory storage and won't persist to disk
 - **Fallback images**: Default avatar if image not found
 - **Favicon support**: Proper favicon.ico and favicon.png handling
 - **Error handling**: Graceful fallbacks for missing files
+- **Smart routing**: Vercel-specific route configuration
 
 ## Support
 If issues persist, please:
@@ -227,4 +255,5 @@ If issues persist, please:
 8. **Verify Node.js version is 22.x**
 9. **Check for file system permission errors**
 10. **Verify static file routes are working**
-11. **Consider upgrading Vercel plan** if hitting resource limits
+11. **Test Vercel routing configuration**
+12. **Consider upgrading Vercel plan** if hitting resource limits

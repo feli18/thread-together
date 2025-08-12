@@ -4,6 +4,12 @@
     { "src": "api/server.js", "use": "@vercel/node" }
   ],
   "routes": [
+    { "src": "/images/(.*)", "dest": "/api/server.js" },
+    { "src": "/styles/(.*)", "dest": "/api/server.js" },
+    { "src": "/js/(.*)", "dest": "/api/server.js" },
+    { "src": "/uploads/(.*)", "dest": "/api/server.js" },
+    { "src": "/favicon.ico", "dest": "/api/server.js" },
+    { "src": "/favicon.png", "dest": "/api/server.js" },
     { "src": "/(.*)", "dest": "/api/server.js" }
   ]
 }
