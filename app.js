@@ -268,24 +268,35 @@ app.post(
 
     const { title, description, tags, stepDescriptions } = req.body;
 
-    const coverImagePath =
-      req.files?.["coverImage"]?.[0]?.filename
-        ? "/uploads/" + req.files["coverImage"][0].filename
-        : null;
+
+    const coverFile = req.files?.["coverImage"]?.[0];
+    let coverImagePath = null;
+    if (coverFile) {
+      if (coverFile.filename && !process.env.VERCEL) {
+        coverImagePath = "/uploads/" + coverFile.filename;
+      } else if (coverFile.buffer && coverFile.mimetype) {
+        const base64 = coverFile.buffer.toString("base64");
+        coverImagePath = `data:${coverFile.mimetype};base64,${base64}`;
+      }
+    }
 
     const stepFiles = req.files?.["stepFiles"] || [];
     const descriptions = Array.isArray(stepDescriptions)
       ? stepDescriptions
-      : [stepDescriptions];
+      : (stepDescriptions ? [stepDescriptions] : []);
 
     const steps = stepFiles.map((file, idx) => {
-      const isVideo = file.mimetype.startsWith("video/");
+      const isVideo = file.mimetype?.startsWith("video/");
+      let mediaValue = "";
+      if (file.filename && !process.env.VERCEL) {
+        mediaValue = "/uploads/" + file.filename;
+      } else if (file.buffer && file.mimetype) {
+        const base64 = file.buffer.toString("base64");
+        mediaValue = `data:${file.mimetype};base64,${base64}`;
+      }
       return {
         type: isVideo ? "video" : "image",
-        [isVideo ? "video" : "image"]:
-          coverImagePath && !process.env.VERCEL
-            ? "/uploads/" + file.filename
-            : "", 
+        [isVideo ? "video" : "image"]: mediaValue,
         text: descriptions[idx] || "",
       };
     });
