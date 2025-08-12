@@ -9,6 +9,8 @@ const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// AI API base URL: set AI_API_URL in env for production, fall back to local dev
+const AI_API_URL = process.env.AI_API_URL || "http://localhost:8000";
 
 let upload;
 if (process.env.VERCEL) {
@@ -31,7 +33,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     const form = new FormData();
     form.append("image", imageBuffer);
 
-    const response = await fetch("http://localhost:8000/predict", {
+    const response = await fetch(`${AI_API_URL}/predict`, {
       method: "POST",
       body: form,
       headers: form.getHeaders()
@@ -39,7 +41,7 @@ router.post("/", upload.single("image"), async (req, res) => {
 
     const data = await response.json();
     
-    if (!process.env.VERCEL && req.file.path) {
+    if (!process.env.VERCEL && req.file?.path) {
       const fs = await import("fs");
       fs.unlinkSync(req.file.path);
     }
