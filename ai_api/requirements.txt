@@ -1,7 +1,7 @@
 # Core AI and ML libraries for image tagging
-torch>=2.0.0
-torchvision>=0.15.0
-transformers>=4.30.0
+torch>=2.6.0
+torchvision>=0.21.0
+transformers>=4.40.0
 ultralytics>=8.0.0
 # yolov5>=7.0.0  # 移除，因为版本兼容性问题
 # clip>=1.0  # 移除，因为包名错误

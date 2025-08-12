@@ -47,9 +47,9 @@ app.use(methodOverride("_method"));
 app.use(session({
   name: 'tt.sid',                                
   secret: process.env.SESSION_SECRET || 'threadTogether-secret-key',
-  resave: false,
+  resave: true,  
   saveUninitialized: false,                      
-  rolling: false,                                
+  rolling: true,  
   cookie: {
     maxAge: 1000 * 60 * 60 * 24,                 
     httpOnly: true,

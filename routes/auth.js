@@ -55,9 +55,16 @@ router.post("/login", async (req, res) => {
   console.log('  - Session ID:', req.sessionID);
   console.log('  - User ID:', req.session.userId);
   console.log('  - Session:', !!req.session);
-  console.log('  - redirect to /profile');
   
-  res.redirect("/profile");
+  req.session.save((err) => {
+    if (err) {
+      console.error('Session save error:', err);
+      return res.status(500).send("Session error");
+    }
+    console.log('  - Session saved successfully');
+    console.log('  - redirect to /profile');
+    res.redirect("/profile");
+  });
 });
 
 
