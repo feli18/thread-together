@@ -145,7 +145,7 @@ router.post("/:userId", chatUpload.single("image"), async (req, res) => {
     image,
   });
 
-  res.redirect(`/messages/${targetUserId}`);
+  res.redirect(303, `/messages/${targetUserId}`);
 });
 
 export default router;
