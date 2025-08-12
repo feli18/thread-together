@@ -367,9 +367,16 @@ app.post(
         .split(",")
         .map((t) => t.trim().toLowerCase())
         .filter((t) => t.length > 0);
-
-      if (req.files?.["coverImage"]?.[0] && !process.env.VERCEL) {
-        post.coverImage = "/uploads/" + req.files["coverImage"][0].filename;
+        // if (req.files?.["coverImage"]?.[0] && !process.env.VERCEL) {
+        //   post.coverImage = "/uploads/" + req.files["coverImage"][0].filename;
+      const newCover = req.files?.["coverImage"]?.[0];
+      if (newCover) {
+        if (newCover.filename && !process.env.VERCEL) {
+          post.coverImage = "/uploads/" + newCover.filename;
+        } else if (newCover.buffer && newCover.mimetype) {
+          const base64 = newCover.buffer.toString("base64");
+          post.coverImage = `data:${newCover.mimetype};base64,${base64}`;
+        }
       }
       await post.save();
       res.redirect("/posts/" + post._id);

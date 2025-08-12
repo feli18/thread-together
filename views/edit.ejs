@@ -17,9 +17,10 @@
  
       <div class="mb-3">
         <label for="coverImage" class="form-label">Cover Image</label><br>
-        <% if (post.steps[0] && post.steps[0].image) { %>
-          <img src="<%= post.steps[0].image %>" alt="cover" style="max-width: 200px;" class="mb-2">
-        <% } %>
+        <!-- <%# if (post.steps[0] && post.steps[0].image) { %>
+          <img src="<%#= post.steps[0].image %>" alt="cover" style="max-width: 200px;" class="mb-2">
+        <%# } %> -->
+        <img src="<%= post.coverImage || (post.steps[0] && post.steps[0].image) || '/images/default.jpg' %>" alt="cover" style="max-width: 200px;" class="mb-2">
         <input type="file" name="coverImage" class="form-control" />
       </div>
 
