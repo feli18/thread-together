@@ -63,7 +63,7 @@ router.post("/login", async (req, res) => {
     }
     console.log('  - Session saved successfully');
     console.log('  - redirect to /profile');
-    res.redirect("/profile");
+    res.redirect(303, "/profile");
   });
 });
 
