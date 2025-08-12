@@ -89,30 +89,42 @@ app.use(async (req, res, next) => {
   const query = req.query.q || "";
   const userId = req.session.userId || null;
 
+  // 只在需要时查询用户信息
   let currentUser = null;
   if (userId) {
-    currentUser = await User.findById(userId)
-      .select("_id username avatar")
-      .lean();
+    try {
+      currentUser = await User.findById(userId)
+        .select("_id username avatar")
+        .lean()
+        .maxTimeMS(5000); // 5秒超时
+    } catch (err) {
+      console.error('User query timeout:', err);
+      currentUser = null;
+    }
   }
+  
   res.locals.currentUser = currentUser;
   res.locals.query = query;
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
 
-  res.locals.matchedUsers = query
-    ? await User.find({ username: { $regex: query, $options: "i" } })
-        .select("_id username avatar")
-        .lean()
-    : [];
+  // 延迟加载用户搜索，减少CPU使用
+  res.locals.matchedUsers = [];
 
+  // 只在需要时查询通知和消息计数
   if (userId) {
-    const [notificationCount, messageCount] = await Promise.all([
-      Notification.countDocuments({ recipient: userId, read: false }),
-      Message.countDocuments({ recipient: userId, read: false }),
-    ]);
-    res.locals.unreadNotifications = notificationCount;
-    res.locals.unreadMessages = messageCount;
+    try {
+      const [notificationCount, messageCount] = await Promise.all([
+        Notification.countDocuments({ recipient: userId, read: false }).maxTimeMS(3000),
+        Message.countDocuments({ recipient: userId, read: false }).maxTimeMS(3000),
+      ]);
+      res.locals.unreadNotifications = notificationCount;
+      res.locals.unreadMessages = messageCount;
+    } catch (err) {
+      console.error('Count query timeout:', err);
+      res.locals.unreadNotifications = 0;
+      res.locals.unreadMessages = 0;
+    }
   } else {
     res.locals.unreadNotifications = 0;
     res.locals.unreadMessages = 0;
