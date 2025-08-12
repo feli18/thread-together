@@ -1,27 +1,30 @@
 import express from "express";
-const router = express.Router();
-
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
-
 import Message from "../models/Message.js";
-import User from "../models/User.js";
+import { isLoggedIn } from "../middleware/middleware.js";
 
+const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
-const chatStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../public/uploads'));
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + '-' + file.originalname;
-    cb(null, uniqueName);
-  }
-});
-const chatUpload = multer({ storage: chatStorage });
+let chatUpload;
+if (process.env.VERCEL) {
+  chatUpload = multer({ storage: multer.memoryStorage() });
+} else {
+  const chatStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, path.join(__dirname, '../public/uploads'));
+    },
+    filename: function (req, file, cb) {
+      const uniqueName = Date.now() + '-' + file.originalname;
+      cb(null, uniqueName);
+    }
+  });
+  chatUpload = multer({ storage: chatStorage });
+}
 
 
 router.get("/", async (req, res) => {

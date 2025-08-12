@@ -13,6 +13,7 @@ The main reasons for 404 errors on Vercel are:
 9. **Missing build script**
 10. **Configuration conflicts**
 11. **Deprecated Node.js version**
+12. **File system permission errors (EROFS)**
 
 ## Recent Fixes (Latest)
 - **Removed invalid `regions` property** from functions configuration
@@ -22,6 +23,20 @@ The main reasons for 404 errors on Vercel are:
 - **Removed conflicting functions configuration**
 - **Cleaned up .vercel directory** to avoid conflicts
 - **Updated Node.js version** from 18.x to 22.x (Vercel requirement)
+- **Fixed file system permission errors** by using memory storage in Vercel
+
+## File System Permission Fixes
+**Critical Issue**: Vercel serverless environment has a read-only file system (`EROFS: read-only file system`)
+
+### What was fixed:
+- **generateTags.js**: Changed from `DiskStorage` to `memoryStorage` for Vercel
+- **messages.js**: Updated multer configuration to use memory storage in Vercel
+- **multer.js**: Already correctly configured for Vercel environment
+
+### Why this happened:
+- Vercel's `/var/task` directory is read-only
+- `multer` was trying to create directories and write files
+- Solution: Use `multer.memoryStorage()` in Vercel environment
 
 ## Node.js Version Update
 **Important**: Vercel now requires Node.js 22.x. Deployments with Node.js 18.x will fail after September 1, 2025.
@@ -66,7 +81,7 @@ rm -rf .vercel
 
 # Commit changes
 git add .
-git commit -m "Update Node.js to 22.x for Vercel compatibility"
+git commit -m "Fix file system permission errors for Vercel deployment"
 git push
 
 # Vercel will automatically redeploy
@@ -96,6 +111,15 @@ If Vercel build fails:
 4. Check that `package.json` has correct `main` field (`app.js`)
 5. Ensure `type: "module"` is set
 6. Check for syntax errors in code
+
+### File System Errors (EROFS):
+**Error**: `EROFS: read-only file system, mkdir '/var/task/temp'`
+
+**Solutions**:
+1. **Use memory storage**: `multer.memoryStorage()` in Vercel
+2. **Avoid disk operations**: Don't create directories or write files
+3. **Environment detection**: Check `process.env.VERCEL` before using disk storage
+4. **File handling**: Use `req.file.buffer` instead of `req.file.path` in Vercel
 
 ### Node.js Version Issues:
 - **Error**: "Node.js version 18.x is deprecated"
@@ -154,6 +178,11 @@ In Vercel environment, file uploads use memory storage and won't persist to disk
 - Lazy loading of non-critical data
 - Reduced middleware complexity
 
+### File System Handling
+- **Vercel**: Uses `multer.memoryStorage()` and `req.file.buffer`
+- **Local**: Uses `multer.diskStorage()` and `req.file.path`
+- **Environment detection**: Automatically switches based on `process.env.VERCEL`
+
 ## Support
 If issues persist, please:
 1. Check Vercel function logs
@@ -164,4 +193,5 @@ If issues persist, please:
 6. **Check vercel.json schema validation**
 7. **Remove .vercel directory** if conflicts persist
 8. **Verify Node.js version is 22.x**
-9. **Consider upgrading Vercel plan** if hitting resource limits
+9. **Check for file system permission errors**
+10. **Consider upgrading Vercel plan** if hitting resource limits

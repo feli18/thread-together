@@ -4,23 +4,33 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fetch from 'node-fetch';
 import FormData from 'form-data'; 
-import fs from "fs";
-
-
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const upload = multer({ dest: path.join(__dirname, "../temp") });
+
+let upload;
+if (process.env.VERCEL) {
+  upload = multer({ storage: multer.memoryStorage() });
+} else {
+  upload = multer({ dest: path.join(__dirname, "../temp") });
+}
 
 router.post("/", upload.single("image"), async (req, res) => {
-  const imagePath = req.file.path;
-
-  const form = new FormData();
-  form.append("image", fs.createReadStream(imagePath));
-
   try {
+    let imageBuffer;
+    
+    if (process.env.VERCEL) {
+      imageBuffer = req.file.buffer;
+    } else {
+      const fs = await import("fs");
+      imageBuffer = fs.createReadStream(req.file.path);
+    }
+
+    const form = new FormData();
+    form.append("image", imageBuffer);
+
     const response = await fetch("http://localhost:8000/predict", {
       method: "POST",
       body: form,
@@ -28,11 +38,17 @@ router.post("/", upload.single("image"), async (req, res) => {
     }); 
 
     const data = await response.json();
-    fs.unlinkSync(imagePath);
+    
+    if (!process.env.VERCEL && req.file.path) {
+      const fs = await import("fs");
+      fs.unlinkSync(req.file.path);
+    }
+    
     res.json({ tags: data.tags });
   } catch (err) {
-    console.error("调用 FastAPI 出错：", err);
-    res.status(500).json({ error: "标签生成失败" });
+    console.error("Error calling FastAPI:", err);
+    res.status(500).json({ error: "Failed to generate tags" });
   }
 });
+
 export default router;
