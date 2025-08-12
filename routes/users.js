@@ -27,22 +27,33 @@ router.get('/profile', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post('/profile/edit', isLoggedIn, upload.single('avatar'), async (req, res) => {
-  const { username, bio, website } = req.body;
-  const user = await User.findById(req.session.userId);
+async function handleProfileUpdate(req, res, next) {
+  try {
+    const { username, bio, website } = req.body;
+    const user = await User.findById(req.session.userId);
 
-  user.username = username;
-  user.bio = bio;
-  user.website = website;
+    user.username = username;
+    user.bio = bio;
+    user.website = website;
 
-  if (req.file) {
-    user.avatar = '/uploads/' + req.file.filename;
+    if (req.file) {
+      if (req.file.filename) {
+        user.avatar = '/uploads/' + req.file.filename;
+      } else {
+        // Vercel：URL
+      }
+    }
+
+    await user.save();
+    req.flash('success', 'Profile updated successfully!');
+    return res.redirect('/profile');
+  } catch (err) {
+    return next(err);
   }
+}
 
-  await user.save();
-  req.flash('success', 'Profile updated successfully!');
-  res.redirect('/profile');
-});
+router.post('/profile/edit', isLoggedIn, upload.single('avatar'), handleProfileUpdate);
+router.post('/profile',      isLoggedIn, upload.single('avatar'), handleProfileUpdate);
 
 router.get('/profile/edit', isLoggedIn, async (req, res) => {
   const user = await User.findById(req.session.userId); 
@@ -51,21 +62,15 @@ router.get('/profile/edit', isLoggedIn, async (req, res) => {
 
 router.get('/users/:id', async (req, res, next) => {
   try {
-    // 被访问的用户
     const profileUser = await User.findById(req.params.id).lean();
     if (!profileUser) return res.status(404).send('User not found');
 
-    
     const userPosts = await Post.find({ author: profileUser._id })
       .sort({ createdAt: -1 })
       .lean();
 
-    const currentUser = req.session.userId
-      ? await User.findById(req.session.userId).lean()
-      : null;
-
     res.render('users/publicProfile', {
-      user: profileUser,   
+      user: profileUser,
       userPosts,
     });
   } catch (err) {
@@ -74,8 +79,6 @@ router.get('/users/:id', async (req, res, next) => {
 });
 
 router.post('/users/:id/follow', isLoggedIn, followUser);
-
 router.post('/users/:id/unfollow', isLoggedIn, unfollowUser);
-
 
 export default router;

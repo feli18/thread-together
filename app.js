@@ -34,8 +34,7 @@ const app = express();
 const { ObjectId } = mongoose.Types;
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);await connectDB();
-await connectDB();
+const __dirname = path.dirname(__filename);
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 app.set('trust proxy', 1);

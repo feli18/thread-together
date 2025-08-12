@@ -1,5 +1,35 @@
 {
   "version": 2,
-  "builds": [{ "src": "api/server.js", "use": "@vercel/node" }],
-  "routes": [ { "handle": "filesystem" }, { "src": "/(.*)", "dest": "/api/server.js" }]
+  "builds": [
+    { "src": "api/server.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/server.js" },
+    { "src": "/uploads/(.*)", "dest": "/api/server.js" },
+    { "src": "/styles/(.*)", "dest": "/api/server.js" },
+    { "src": "/js/(.*)", "dest": "/api/server.js" },
+    { "src": "/images/(.*)", "dest": "/api/server.js" },
+    { "src": "/videos/(.*)", "dest": "/api/server.js" },
+    { "src": "/profile(.*)", "dest": "/api/server.js" },
+    { "src": "/login(.*)", "dest": "/api/server.js" },
+    { "src": "/register(.*)", "dest": "/api/server.js" },
+    { "src": "/explore(.*)", "dest": "/api/server.js" },
+    { "src": "/upload(.*)", "dest": "/api/server.js" },
+    { "src": "/posts/(.*)", "dest": "/api/server.js" },
+    { "src": "/messages(.*)", "dest": "/api/server.js" },
+    { "src": "/notifications(.*)", "dest": "/api/server.js" },
+    { "src": "/tags(.*)", "dest": "/api/server.js" },
+    { "src": "/search(.*)", "dest": "/api/server.js" },
+    { "src": "/users/(.*)", "dest": "/api/server.js" },
+    { "src": "/(.*)", "dest": "/api/server.js" }
+  ],
+  "functions": {
+    "api/server.js": {
+      "maxDuration": 60
+    }
+  },
+  "env": {
+    "NODE_ENV": "production",
+    "VERCEL": "true"
+  }
 }
