@@ -3,6 +3,7 @@ import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
 import Message from "../models/Message.js";
+import User from "../models/User.js";
 import { isLoggedIn } from "../middleware/middleware.js";
 
 const router = express.Router();
