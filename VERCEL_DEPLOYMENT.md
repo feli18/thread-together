@@ -10,19 +10,23 @@ The main reasons for 404 errors on Vercel are:
 6. **CPU and memory limitations (Hobby plan)**
 7. **Function execution timeouts**
 8. **Invalid vercel.json configuration**
-
+9. **Missing build script**
+10. **Configuration conflicts**
 
 ## Recent Fixes (Latest)
 - **Removed invalid `regions` property** from functions configuration
 - **Simplified vercel.json** to use only valid properties
 - **Fixed schema validation errors** that caused build failures
+- **Added proper build script** to package.json
+- **Removed conflicting functions configuration**
+- **Cleaned up .vercel directory** to avoid conflicts
 
 ## CPU Optimization Strategies
 
 ### 1. Function Configuration
-- **maxDuration**: Reduced to 30 seconds
-- **Memory**: Using default Vercel allocation
 - **Configuration**: Simplified to avoid schema errors
+- **Builds**: Using standard @vercel/node builder
+- **Routes**: Simple catch-all routing
 
 ### 2. Database Optimization
 - Connection pooling to reduce connection overhead
@@ -46,11 +50,14 @@ NODE_ENV=production
 VERCEL=true
 ```
 
-### 2. Redeploy
+### 2. Clean Deployment
 ```bash
+# Remove any conflicting configuration
+rm -rf .vercel
+
 # Commit changes
 git add .
-git commit -m "Fix vercel.json schema validation errors"
+git commit -m "Fix Vercel configuration conflicts and build issues"
 git push
 
 # Vercel will automatically redeploy
@@ -75,10 +82,18 @@ After deployment, check if these routes work properly:
 ### Build Failures:
 If Vercel build fails:
 1. **Check vercel.json schema** - ensure all properties are valid
-2. Check that `package.json` has correct `main` field (`app.js`)
-3. Ensure `type: "module"` is set
-4. Verify Node.js version compatibility (18.x)
-5. Check for syntax errors in code
+2. **Verify build script exists** in package.json
+3. Check that `package.json` has correct `main` field (`app.js`)
+4. Ensure `type: "module"` is set
+5. Verify Node.js version compatibility (18.x)
+6. Check for syntax errors in code
+
+### Configuration Conflicts:
+Common issues and solutions:
+- **Conflicting functions and builds**: Use only one configuration method
+- **Invalid properties**: Remove unsupported properties like `regions`, `memory`
+- **Schema validation errors**: Use only documented Vercel properties
+- **Build script missing**: Ensure `build` script exists in package.json
 
 ### Schema Validation Errors:
 Common vercel.json errors:
@@ -117,7 +132,7 @@ In Vercel environment, file uploads use memory storage and won't persist to disk
 - Main entry point: `app.js`
 - Node version: 18.x
 - Module type: ES modules
-- Build script: `vercel-build`
+- Build script: `build`
 
 ### Performance Optimizations
 - Database connection pooling
@@ -133,4 +148,5 @@ If issues persist, please:
 4. Check build logs for errors
 5. Verify package.json configuration
 6. **Check vercel.json schema validation**
-7. **Consider upgrading Vercel plan** if hitting resource limits
+7. **Remove .vercel directory** if conflicts persist
+8. **Consider upgrading Vercel plan** if hitting resource limits

@@ -9,8 +9,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "node app.js",
-    "build": "echo 'No build step required'",
-    "vercel-build": "echo 'Vercel build completed'"
+    "build": "echo 'Build completed'"
   },
   "author": "",
   "license": "ISC",
