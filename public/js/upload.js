@@ -42,7 +42,7 @@ function createStepBox(index) {
 
       <!-- 与封面一致的上传框结构 -->
       <div class="upload-like mb-2" data-upload-like>
-        <input type="file" accept="image/*,video/*" class="d-none step-input" />
+        <input type="file" accept="image/*,video/*" class="d-none step-input" name="stepFiles" />
         <label class="upload-like__label step-label">+ Upload Step Media</label>
 
         <img class="preview-media step-img d-none" alt="step image preview" />
