@@ -45,7 +45,7 @@ router.post('/', async (req, res) => {
   }
 
 
-  res.redirect(`/posts/${postId}`);
+  res.redirect(303, `/posts/${postId}`);
 });
 
 router.delete('/:commentId', async (req, res) => {

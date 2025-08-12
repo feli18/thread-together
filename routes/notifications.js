@@ -63,7 +63,7 @@ router.get('/read/:id', async (req, res) => {
   const notificationId = req.params.id;
   const notification = await Notification.findById(notificationId);
 
-  if (!notification) return res.redirect("/notifications");
+  if (!notification) return res.redirect(303, "/notifications");
 
 
   notification.read = true;
@@ -71,9 +71,9 @@ router.get('/read/:id', async (req, res) => {
 
 
   if (notification.post) {
-    res.redirect(`/posts/${notification.post}`);
+    res.redirect(303, `/posts/${notification.post}`);
   } else {
-    res.redirect("/notifications");
+    res.redirect(303, "/notifications");
   }
 });
 router.get('/count', async (req, res) => {

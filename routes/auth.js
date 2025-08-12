@@ -21,7 +21,7 @@ router.post("/register", async (req, res) => {
   await newUser.save();
 
   req.session.userId = newUser._id;
-  res.redirect("/profile");
+  res.redirect(303, "/profile");
 });
 
 router.get("/login", (req, res) => {

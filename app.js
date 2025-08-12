@@ -318,7 +318,7 @@ app.post(
     });
 
     await newPost.save();
-    res.redirect("/explore");
+    res.redirect(303, "/explore");
   }
 );
 
@@ -330,7 +330,7 @@ app.post("/posts/:id/delete", async (req, res) => {
       return res.status(403).send("Unauthorized");
 
     await Post.findByIdAndDelete(req.params.id);
-    res.redirect("/profile");
+    res.redirect(303, "/profile");
   } catch (err) {
     console.error("Delete error:", err);
     res.status(500).send("Server error");
@@ -379,7 +379,7 @@ app.post(
         }
       }
       await post.save();
-      res.redirect("/posts/" + post._id);
+      res.redirect(303, "/posts/" + post._id);
     } catch {
       res.status(500).send("Server error");
     }
@@ -390,7 +390,7 @@ app.post("/posts/:id/like", async (req, res) => {
   const post = await Post.findById(req.params.id);
   const userId = req.session.userId;
   if (!post) return res.status(404).send("Post not found");
-  if (!userId) return res.status(403).send("Login required");
+  if (!userId) return res.redirect("/login");
 
   const alreadyLiked = post.likedBy.includes(userId);
   if (alreadyLiked) {
@@ -447,7 +447,7 @@ app.post("/posts/:id/bookmark", async (req, res) => {
     }
   }
   await post.save();
-  res.redirect(req.get("referer"));
+  res.redirect(303, req.get("referer"));
 });
 
 app.post("/posts/:id/comments", async (req, res) => {
@@ -488,7 +488,7 @@ app.post("/posts/:id/comments", async (req, res) => {
     }
   }
 
-  res.redirect(`/posts/${post._id}`);
+  res.redirect(303, `/posts/${post._id}`);
 });
 
 // 错误处理中间件 - 必须在所有路由之后

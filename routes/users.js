@@ -59,7 +59,7 @@ async function handleProfileUpdate(req, res, next) {
 
     await user.save();
     req.flash('success', 'Profile updated successfully!');
-    return res.redirect('/profile');
+    return res.redirect(303, '/profile');
   } catch (err) {
     return next(err);
   }
