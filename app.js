@@ -142,22 +142,118 @@ app.use("/explore", exploreRoutes);
 app.use("/", searchRoutes);
 app.use("/generate-tags", generateTags);
 
-app.use((err, req, res, next) => {
-  console.error('❌ global error handling:', err);
-  console.error('  - Request path:', req.path);
-  console.error('  - Error stack:', err.stack);
-  
-  if (req.path.startsWith('/api/')) {
-    return res.status(500).json({ error: 'Internal server error' });
+
+app.get("/", async (req, res) => {
+  try {
+    const posts = await Post.find().sort({ createdAt: -1 }).populate("author").lean();
+
+    const hotTags = await Post.aggregate([
+      { $unwind: "$tags" },
+      { $group: { _id: "$tags", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 8 },
+      { $project: { name: "$_id", _id: 0 } },
+    ]);
+
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setHours(0, 0, 0, 0);
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 6);
+
+    const weeklyTagsAgg = await TagView.aggregate([
+      { $match: { viewedAt: { $gte: oneWeekAgo } } },
+      { $group: { _id: "$tag", views: { $sum: 1 } } },
+      { $sort: { views: -1 } },
+      { $limit: 15 },
+      { $project: { name: "$_id", _id: 0 } },
+    ]);
+    const weeklyTags = weeklyTagsAgg.map((t) => t.name);
+
+    const days = [];
+    for (let d = new Date(oneWeekAgo); d <= new Date(); d.setDate(d.getDate() + 1)) {
+      days.push(d.toLocaleDateString("en-CA", { timeZone: "Europe/London" }));
+    }
+
+    const popularAgg = await TagView.aggregate([
+      { $match: { viewedAt: { $gte: oneWeekAgo } } },
+      { $group: { _id: "$tag", views: { $sum: 1 } } },
+      { $sort: { views: -1 } },
+      { $limit: 5 },
+      { $project: { name: "$_id", _id: 0 } },
+    ]);
+    const popularTags = popularAgg.map((t) => t.name);
+
+    const dailyViewsAgg = await TagView.aggregate([
+      { $match: { viewedAt: { $gte: oneWeekAgo }, tag: { $in: popularTags } } },
+      {
+        $project: {
+          tag: 1,
+          day: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$viewedAt",
+              timezone: "Europe/London",
+            },
+          },
+        },
+      },
+      { $group: { _id: { tag: "$tag", day: "$day" }, count: { $sum: 1 } } },
+      { $project: { tag: "$_id.tag", day: "$_id.day", count: 1, _id: 0 } },
+    ]);
+
+    const trendMap = {};
+    popularTags.forEach((tag) => {
+      trendMap[tag] = { name: tag, counts: days.map(() => 0) };
+    });
+    dailyViewsAgg.forEach(({ tag, day, count }) => {
+      const idx = days.indexOf(day);
+      if (idx >= 0) trendMap[tag].counts[idx] = count;
+    });
+
+    const trendingViews = { days, tags: Object.values(trendMap) };
+    res.render("index.ejs", { posts, hotTags, weeklyTags, trendingViews, currentUser: req.session.userId ? await User.findById(req.session.userId) : null });
+  } catch (err) {
+    console.error("Failed to load homepage:", err);
+    res.status(500).send("Server error");
   }
-  
-  res.status(500).send('Something broke!');
 });
 
-// 404处理
-app.use((req, res) => {
-  console.log('❌ 404 Not Found:', req.path);
-  res.status(404).send('Page not found');
+app.get("/upload", (req, res) => res.render("upload.ejs"));
+
+app.get("/notifications", async (req, res) => {
+  if (!req.session.userId) return res.redirect("/login");
+  const notifications = await Notification.find({ recipient: req.session.userId })
+    .sort({ createdAt: -1 })
+    .populate("sender", "username avatar")
+    .populate("post", "coverImage")
+    .populate("comment", "text");
+  res.render("notifications.ejs", { notifications });
+});
+
+app.get("/posts/:id", async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id)
+      .populate("author")
+      .populate({ path: "comments", populate: { path: "user", select: "username avatar" } })
+      .populate("likedBy");
+
+    if (!post) return res.status(404).render("404", { message: "Post not found" });
+
+    const commentTree = buildCommentTree(post.comments || []);
+
+    const now = new Date();
+    const views = (post.tags || []).map((tag) => ({
+      tag,
+      post: post._id,
+      user: req.session.userId || null,
+      viewedAt: now,
+    }));
+    if (views.length) await TagView.insertMany(views);
+
+    res.render("post.ejs", { post, commentTree });
+  } catch (err) {
+    console.error("详情页加载失败：", err);
+    res.status(500).send("Server error");
+  }
 });
 
 app.post(
@@ -335,119 +431,6 @@ app.post("/posts/:id/bookmark", async (req, res) => {
   res.redirect(req.get("referer"));
 });
 
-app.get("/", async (req, res) => {
-  try {
-    const posts = await Post.find().sort({ createdAt: -1 }).populate("author").lean();
-
-    const hotTags = await Post.aggregate([
-      { $unwind: "$tags" },
-      { $group: { _id: "$tags", count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: 8 },
-      { $project: { name: "$_id", _id: 0 } },
-    ]);
-
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setHours(0, 0, 0, 0);
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 6);
-
-    const weeklyTagsAgg = await TagView.aggregate([
-      { $match: { viewedAt: { $gte: oneWeekAgo } } },
-      { $group: { _id: "$tag", views: { $sum: 1 } } },
-      { $sort: { views: -1 } },
-      { $limit: 15 },
-      { $project: { name: "$_id", _id: 0 } },
-    ]);
-    const weeklyTags = weeklyTagsAgg.map((t) => t.name);
-
-    const days = [];
-    for (let d = new Date(oneWeekAgo); d <= new Date(); d.setDate(d.getDate() + 1)) {
-      days.push(d.toLocaleDateString("en-CA", { timeZone: "Europe/London" }));
-    }
-
-    const popularAgg = await TagView.aggregate([
-      { $match: { viewedAt: { $gte: oneWeekAgo } } },
-      { $group: { _id: "$tag", views: { $sum: 1 } } },
-      { $sort: { views: -1 } },
-      { $limit: 5 },
-      { $project: { name: "$_id", _id: 0 } },
-    ]);
-    const popularTags = popularAgg.map((t) => t.name);
-
-    const dailyViewsAgg = await TagView.aggregate([
-      { $match: { viewedAt: { $gte: oneWeekAgo }, tag: { $in: popularTags } } },
-      {
-        $project: {
-          tag: 1,
-          day: {
-            $dateToString: {
-              format: "%Y-%m-%d",
-              date: "$viewedAt",
-              timezone: "Europe/London",
-            },
-          },
-        },
-      },
-      { $group: { _id: { tag: "$tag", day: "$day" }, count: { $sum: 1 } } },
-      { $project: { tag: "$_id.tag", day: "$_id.day", count: 1, _id: 0 } },
-    ]);
-
-    const trendMap = {};
-    popularTags.forEach((tag) => {
-      trendMap[tag] = { name: tag, counts: days.map(() => 0) };
-    });
-    dailyViewsAgg.forEach(({ tag, day, count }) => {
-      const idx = days.indexOf(day);
-      if (idx >= 0) trendMap[tag].counts[idx] = count;
-    });
-
-    const trendingViews = { days, tags: Object.values(trendMap) };
-    res.render("index.ejs", { posts, hotTags, weeklyTags, trendingViews, currentUser: req.session.userId ? await User.findById(req.session.userId) : null });
-  } catch (err) {
-    console.error("Failed to load homepage:", err);
-    res.status(500).send("Server error");
-  }
-});
-
-app.get("/upload", (req, res) => res.render("upload.ejs"));
-
-app.get("/notifications", async (req, res) => {
-  if (!req.session.userId) return res.redirect("/login");
-  const notifications = await Notification.find({ recipient: req.session.userId })
-    .sort({ createdAt: -1 })
-    .populate("sender", "username avatar")
-    .populate("post", "coverImage")
-    .populate("comment", "text");
-  res.render("notifications.ejs", { notifications });
-});
-
-app.get("/posts/:id", async (req, res) => {
-  try {
-    const post = await Post.findById(req.params.id)
-      .populate("author")
-      .populate({ path: "comments", populate: { path: "user", select: "username avatar" } })
-      .populate("likedBy");
-
-    if (!post) return res.status(404).render("404", { message: "Post not found" });
-
-    const commentTree = buildCommentTree(post.comments || []);
-
-    const now = new Date();
-    const views = (post.tags || []).map((tag) => ({
-      tag,
-      post: post._id,
-      user: req.session.userId || null,
-      viewedAt: now,
-    }));
-    if (views.length) await TagView.insertMany(views);
-
-    res.render("post.ejs", { post, commentTree });
-  } catch (err) {
-    console.error("详情页加载失败：", err);
-    res.status(500).send("Server error");
-  }
-});
-
 app.post("/posts/:id/comments", async (req, res) => {
   const post = await Post.findById(req.params.id);
   if (!post) return res.status(404).send("Post not found");
@@ -487,6 +470,25 @@ app.post("/posts/:id/comments", async (req, res) => {
   }
 
   res.redirect(`/posts/${post._id}`);
+});
+
+// 错误处理中间件 - 必须在所有路由之后
+app.use((err, req, res, next) => {
+  console.error('❌ global error handling:', err);
+  console.error('  - Request path:', req.path);
+  console.error('  - Error stack:', err.stack);
+  
+  if (req.path.startsWith('/api/')) {
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+  
+  res.status(500).send('Something broke!');
+});
+
+// 404处理 - 必须在最后
+app.use((req, res) => {
+  console.log('❌ 404 Not Found:', req.path);
+  res.status(404).send('Page not found');
 });
 
 export default app;
