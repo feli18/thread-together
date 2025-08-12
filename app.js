@@ -38,7 +38,11 @@ const __dirname = path.dirname(__filename);
 app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 app.set('trust proxy', 1);
+
 app.use(express.static(path.join(process.cwd(), "public")));
+
+import staticRoutes from "./routes/static.js";
+app.use("/", staticRoutes);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
@@ -131,9 +135,6 @@ app.use(async (req, res, next) => {
   }
   next();
 });
-
-import staticRoutes from "./routes/static.js";
-app.use("/", staticRoutes);
 
 app.use("/", authRoutes);
 app.use("/", userRoutes);

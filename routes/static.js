@@ -15,14 +15,13 @@ router.get("/images/:filename", (req, res) => {
     if (fs.existsSync(imagePath)) {
       res.sendFile(imagePath);
     } else {
-      res.status(404).send("Image not found");
     }
   } catch (error) {
     console.error("Static file error:", error);
     res.status(500).send("Internal server error");
   }
 });
-
+  
 router.get("/favicon.ico", (req, res) => {
   try {
     const faviconPath = path.join(process.cwd(), "public", "images", "Logo.png");
