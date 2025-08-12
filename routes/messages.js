@@ -136,7 +136,16 @@ router.post("/:userId", chatUpload.single("image"), async (req, res) => {
   const currentUserId = req.session.userId;
   const targetUserId = req.params.userId;
   const text = req.body.text || "";
-  const image = req.file ? `/uploads/${req.file.filename}` : null;
+
+  let image = null;
+  if (req.file) {
+    if (req.file.filename && !process.env.VERCEL) {
+      image = `/uploads/${req.file.filename}`;
+    } else if (req.file.buffer && req.file.mimetype) {
+      const base64 = req.file.buffer.toString('base64');
+      image = `data:${req.file.mimetype};base64,${base64}`;
+    }
+  }
 
   await Message.create({
     sender: currentUserId,

@@ -13,7 +13,7 @@ export const followUser = async (req, res) => {
     req.flash('success', `你已关注 ${targetUser.username}`);
   }
 
-  res.redirect(`/users/${req.params.id}`);
+  res.redirect(303, `/users/${req.params.id}`);
 };
 
 export const unfollowUser = async (req, res) => {
@@ -27,5 +27,5 @@ export const unfollowUser = async (req, res) => {
   await currentUser.save();
   req.flash('success', `你已取消关注 ${targetUser.username}`);
 
-  res.redirect(`/users/${req.params.id}`);
+  res.redirect(303, `/users/${req.params.id}`);
 };

@@ -415,7 +415,7 @@ app.post("/posts/:id/like", async (req, res) => {
     }
   }
   await post.save();
-  res.redirect(`/posts/${post._id}`);
+  res.redirect(303, `/posts/${post._id}`);
 });
 
 app.post("/posts/:id/bookmark", async (req, res) => {
