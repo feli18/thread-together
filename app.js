@@ -21,6 +21,7 @@ import tagRoutes from "./routes/tags.js";
 import exploreRoutes from "./routes/explore.js";
 import searchRoutes from "./routes/search.js";
 import logsRoutes from "./routes/logs.js";
+import adminRoutes from "./routes/admin.js";
 
 import Post from "./models/Post.js";
 import User from "./models/User.js";
@@ -144,6 +145,7 @@ app.use("/explore", exploreRoutes);
 app.use("/", searchRoutes);
 app.use("/generate-tags", generateTags);
 app.use("/logs", logsRoutes);
+app.use("/admin", adminRoutes);
 
 
 app.get("/", async (req, res) => {

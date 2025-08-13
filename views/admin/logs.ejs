@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>TagAction Logs</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" />
+</head>
+<body class="p-4">
+  <div class="container-fluid">
+    <h3 class="mb-3">TagAction Logs</h3>
+    <p class="text-muted">Showing latest <%= logs.length %> records. Add ?limit=200 to URL for more.</p>
+    <div class="table-responsive">
+      <table class="table table-sm table-striped">
+        <thead>
+          <tr>
+            <th>createdAt</th>
+            <th>userId</th>
+            <th>sessionId</th>
+            <th>tag</th>
+            <th>action</th>
+            <th>category</th>
+            <th>timeMs</th>
+            <th>postId</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% logs.forEach(l => { %>
+            <tr>
+              <td><%= new Date(l.createdAt).toLocaleString() %></td>
+              <td><%= l.userId || '' %></td>
+              <td><%= l.sessionId || '' %></td>
+              <td><%= l.tag %></td>
+              <td><span class="badge bg-secondary"><%= l.action %></span></td>
+              <td><%= l.category || '' %></td>
+              <td><%= l.timeMs ?? '' %></td>
+              <td><%= l.postId || '' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
+
+
