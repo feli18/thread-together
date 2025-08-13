@@ -23,40 +23,53 @@
     <div class="left-column" style="flex: 1; min-width: 300px;">
       <img src="<%= post.coverImage || post.steps[0]?.image || '/images/default.jpg' %>" alt="<%= post.title %>" class="cover-img " />
       <div class="info">
-        
-        <h1 class="post-title" style="font-size: 25px; "><%= post.title %></h1>
-        <p class="text-muted d-flex align-items-center gap-2">
-              <a href="/users/<%= post.author._id %>">
-                <img
-                  src="<%= post.author.avatar || '/images/default-avatar.png' %>"
-                  alt="<%= post.author.username %>"
-                  width="32"
-                  height="32"
-                  class="rounded-circle"
-                />
+        <div class="d-flex justify-content-between align-items-start">
+          <h1 class="post-title" style="font-size: 25px; "><%= post.title %></h1>
+          <div class="d-flex align-items-center gap-2 ms-3">
+            <% const viewerId = currentUser && currentUser._id ? currentUser._id.toString() : null; %>
+            <% const liked = viewerId ? post.likedBy.some(user => user._id.toString() === viewerId) : false; %>
+            <% if (viewerId) { %>
+              <form action="/posts/<%= post._id %>/like" method="POST" class="like-form m-0" data-post-id="<%= post._id %>">
+                <button type="submit" class="icon-btn btn btn-light like-btn border-0">
+                  <i class="<%= liked ? 'bi bi-heart-fill text-danger' : 'bi bi-heart text-secondary' %>"></i>
+                  <span class="like-count"><%= post.likedBy.length %></span>
+                </button>
+              </form>
+            <% } else { %>
+              <a href="/login" class="icon-btn btn btn-light border-0">
+                <i class="bi bi-heart text-secondary"></i>
+                <span class="like-count"><%= post.likedBy.length %></span>
               </a>
+            <% } %>
 
-              <a
-                href="/users/<%= post.author._id %>"
-                class="text-decoration-none text-dark fw-semibold"
-              >
-                <%= post.author.username %>
+            <% const bookmarked = viewerId ? post.bookmarkedBy.some(user => user._id.toString() === viewerId) : false; %>
+            <% if (viewerId) { %>
+              <form action="/posts/<%= post._id %>/bookmark" method="POST" class="m-0" style="display:inline;">
+                <button type="submit" class="icon-btn btn btn-light save-btn border-0">
+                  <i class="<%= bookmarked ? 'bi bi-bookmark-fill text-primary' : 'bi bi-bookmark text-secondary' %>"></i>
+                  <span class="bookmark-count"><%= post.bookmarkedBy.length %></span>
+                </button>
+              </form>
+            <% } else { %>
+              <a href="/login" class="icon-btn btn btn-light save-btn border-0">
+                <i class="bi bi-bookmark text-secondary"></i>
               </a>
-
-              <span class="text-muted">&middot; <%= post.createdAt.toLocaleDateString() %></span>
-            </p>
-            <div class="tags ">
-              <% post.tags.forEach(tag => { %>
-                <a
-                  href="/tags/<%= encodeURIComponent(tag) %>"
-                  class="badge tag text-decoration-none me-1"
-                >
-                  #<%= tag %>
-                </a>
-              <% }) %>
-            </div>
-      
-         </div>
+            <% } %>
+          </div>
+        </div>
+        <p class="text-muted d-flex align-items-center gap-2 mt-2">
+          <a href="/users/<%= post.author._id %>">
+            <img src="<%= post.author.avatar || '/images/default-avatar.png' %>" alt="<%= post.author.username %>" width="32" height="32" class="rounded-circle" />
+          </a>
+          <a href="/users/<%= post.author._id %>" class="text-decoration-none text-dark fw-semibold"><%= post.author.username %></a>
+          <span class="text-muted">&middot; <%= post.createdAt.toLocaleDateString() %></span>
+        </p>
+        <div class="tags ">
+          <% post.tags.forEach(tag => { %>
+            <a href="/tags/<%= encodeURIComponent(tag) %>" class="badge tag text-decoration-none me-1">#<%= tag %></a>
+          <% }) %>
+        </div>
+      </div>
       <h5 class="fw-semibold mb-3" style="font-size: 25px; ">Comments</h5>
 
       <div class="comment-section mt-4">
@@ -188,6 +201,27 @@
       button.remove();
     });
   });
+</script>
+
+<script>
+  (function(){
+    const form = document.currentScript.previousElementSibling;
+    if (!form || !form.matches('form.like-form')) return;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const res = await fetch(form.action, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        if (!res.ok) return;
+        const data = await res.json();
+        const icon = form.querySelector('i');
+        const count = form.querySelector('.like-count');
+        if (icon && data) {
+          icon.className = data.liked ? 'bi bi-heart-fill text-danger' : 'bi bi-heart text-secondary';
+        }
+        if (count) count.textContent = data.count;
+      } catch(err) { console.error('Like failed', err); }
+    });
+  })();
 </script>
 
 
