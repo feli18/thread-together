@@ -217,6 +217,8 @@ if (stepsContainer) {
 }
 
 const getTagsBtn = document.getElementById('getTagsBtn');
+let _suggestedTags = [];
+let _suggestShownAt = 0;
 if (getTagsBtn) {
   getTagsBtn.addEventListener('click', async () => {
     const file = coverInput?.files?.[0];
@@ -252,6 +254,10 @@ if (getTagsBtn) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(suggested)
         }); } catch(e) { /* ignore */ }
+
+        // cache for later diff at form submit
+        _suggestedTags = data.tags.map(t => String(t).toLowerCase());
+        _suggestShownAt = performance.now();
       } else {
         tagDisplay.innerHTML = "<span class='text-muted'>No recommendation tags generated.</span>";
       }
@@ -301,3 +307,85 @@ if (tagDisplay) {
   });
   observer.observe(tagDisplay, { childList: true, subtree: true });
 }
+
+// --- Diff final tags vs suggestions on form submit ---
+(function registerFormSubmitDiff() {
+  const form = document.querySelector('form[action="/upload"]');
+  if (!form) return;
+  form.addEventListener('submit', async () => {
+    const input = document.getElementById('tagsInput');
+    if (!input || !_suggestedTags.length) return;
+    const finalTags = parseTags(input.value);
+    const now = performance.now();
+
+    const suggestedSet = new Set(_suggestedTags);
+    const finalSet = new Set(finalTags);
+
+    // accept: intersection
+    const accepted = finalTags.filter(t => suggestedSet.has(t));
+    // removed: suggested not in final
+    const removed = _suggestedTags.filter(t => !finalSet.has(t));
+    // added: final not in suggested
+    const added   = finalTags.filter(t => !suggestedSet.has(t));
+
+    // try to infer edits by pairing removed and added with high similarity
+    const edits = [];
+    const remainingAdded = [];
+    added.forEach(a => {
+      const match = removed.find(r => isLikelyEdit(r, a));
+      if (match) {
+        edits.push({ from: match, to: a });
+        // remove matched r from removed list
+        const idx = removed.indexOf(match);
+        if (idx >= 0) removed.splice(idx, 1);
+      } else {
+        remainingAdded.push(a);
+      }
+    });
+
+    const events = [];
+    accepted.forEach(tag => events.push({ tag, action: 'accept', timeMs: now - (_suggestShownAt || suggestShownAt), category: inferCategory(tag) }));
+    removed.forEach(tag  => events.push({ tag, action: 'remove', timeMs: now - (_suggestShownAt || suggestShownAt), category: inferCategory(tag) }));
+    remainingAdded.forEach(tag => events.push({ tag, action: 'add', timeMs: now - (_suggestShownAt || suggestShownAt), category: inferCategory(tag) }));
+    edits.forEach(pair => events.push({ tag: pair.to, action: 'edit', timeMs: now - (_suggestShownAt || suggestShownAt), category: inferCategory(pair.to) }));
+
+    if (events.length) {
+      try { await fetch('/logs', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(events) }); } catch(e){}
+    }
+  });
+
+  function parseTags(text) {
+    if (!text) return [];
+    return text
+      .split(/[#,\s]+/).map(s => s.trim()).filter(Boolean)
+      .map(s => s.toLowerCase());
+  }
+
+  function isLikelyEdit(fromTag, toTag) {
+    if (!fromTag || !toTag) return false;
+    if (fromTag === toTag) return false;
+    // quick checks
+    if (toTag.includes(fromTag) || fromTag.includes(toTag)) return true;
+    // simple Levenshtein threshold <=2
+    return levenshtein(fromTag, toTag) <= 2;
+  }
+
+  function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    if (m === 0) return n; if (n === 0) return m;
+    const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        dp[i][j] = Math.min(
+          dp[i - 1][j] + 1,
+          dp[i][j - 1] + 1,
+          dp[i - 1][j - 1] + cost
+        );
+      }
+    }
+    return dp[m][n];
+  }
+})();
