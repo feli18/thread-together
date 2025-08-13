@@ -64,9 +64,13 @@
             <input type="text" name="tags" id="tagsInput" class="form-control" placeholder="e.g. Vintage, Cotton, Dress" <% if (expGroup === 'B') { %>readonly<% } %> />
             <button type="button" id="getTagsBtn" class="btn btn-outline-info btn-sm mt-2">✨ AI Suggested Tags</button>
             <% if (expGroup === 'B') { %>
-              <div class="small text-muted mt-1">🔒 Group B: View only - tags cannot be edited</div>
+              <div class="small text-muted mt-1">🔒 Group B: View only - tags cannot be edited 
+                <a href="?forceGroup=A" class="ms-2 small">Switch to Edit Mode</a>
+              </div>
             <% } else { %>
-              <div class="small text-success mt-1">✏️ Group A: Full editing enabled</div>
+              <div class="small text-success mt-1">✏️ Group A: Full editing enabled
+                <a href="?forceGroup=B" class="ms-2 small">Switch to View Mode</a>
+              </div>
             <% } %>
             <div id="tagDisplayArea" class="mt-2"></div>
 

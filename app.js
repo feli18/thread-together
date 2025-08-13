@@ -96,13 +96,17 @@ app.use(async (req, res, next) => {
   const query = req.query.q || "";
   const userId = req.session.userId || null;
 
-  if (!req.session.expGroup) {
-    const hash = req.sessionID.split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
-      return a & a;
-    }, 0);
-    req.session.expGroup = Math.abs(hash) % 2 === 0 ? 'A' : 'B';
+  if (!req.session.expGroup || req.query.forceGroup) {
+    if (req.query.forceGroup && ['A', 'B'].includes(req.query.forceGroup)) {
+      // Manual override: ?forceGroup=A or ?forceGroup=B
+      req.session.expGroup = req.query.forceGroup;
+    } else {
+      // Random assignment for small user base (better for testing)
+      req.session.expGroup = Math.random() < 0.5 ? 'A' : 'B';
+    }
   }
+  
+  // req.session.expGroup = Math.random() < 0.5 ? 'A' : 'B';
   res.locals.expGroup = req.session.expGroup;
 
   let currentUser = null;

@@ -45,8 +45,12 @@
   <div class="container d-flex align-items-center">
     <% if (typeof expGroup !== 'undefined') { %>
       <div class="me-3">
-        <span class="badge <%= expGroup === 'A' ? 'bg-success' : 'bg-warning' %>">
-          <%= expGroup === 'A' ? 'Group A' : 'Group B' %>
+        <span class="px-3 py-2 rounded-pill shadow-sm" 
+              style="font-size: 0.85rem; font-weight: bold; font-family: 'Boska', serif;
+                     <%= expGroup === 'A' 
+                         ? 'background-color: #f7f1ec; color: #00766d; border: 2px solid #d8c2b3;' 
+                         : 'background-color: #fffade; color: #743f4d; border: 2px solid #d8c2b3;' %>">
+          <%= expGroup === 'A' ? '✏️ Edit Mode' : '👁️ View Mode' %>
         </span>
       </div>
     <% } %>
