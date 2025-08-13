@@ -11,8 +11,9 @@
 }
 
 .post-card img {
-  height:80%;
-  object-fit: cover;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 .icon-btn {
   background: none;
@@ -26,18 +27,14 @@
   .post-card {
     width: 220px;
   }
-  .post-card img {
-    height: 220px;
-  }
+  .post-card img { height: auto; }
 }
 
 @media (max-width: 992px) {
   .post-card {
     width: 200px;
   }
-  .post-card img {
-    height: 200px;
-  }
+  .post-card img { height: auto; }
 }
 
 @media (max-width: 768px) {
@@ -131,7 +128,8 @@
       </a>
 
       <div class="d-flex flex-wrap gap-2 mb-2">
-        <% post.tags.forEach(tag => { %>
+        <% const maxTags = 4; const shown = post.tags.slice(0, maxTags); const hiddenCount = Math.max(0, post.tags.length - maxTags); %>
+        <% shown.forEach(tag => { %>
           <a
             href="/tags/<%= encodeURIComponent(tag) %>"
             class="badge bg-light text-dark text-decoration-none me-1 mb-1"
@@ -139,6 +137,9 @@
             #<%= tag %>
           </a>
         <% }) %>
+        <% if (hiddenCount > 0) { %>
+          <span class="badge bg-light text-muted">+<%= hiddenCount %></span>
+        <% } %>
       </div>
 
       <div class="d-flex justify-content-between">
