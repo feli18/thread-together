@@ -2,8 +2,6 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import { fileURLToPath } from "url";
-import fetch from 'node-fetch';
-import FormData from 'form-data'; 
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -28,35 +26,36 @@ router.post("/", upload.single("image"), async (req, res) => {
     const filename = req.file.originalname || "image.jpg";
     const contentType = req.file.mimetype || "image/jpeg";
 
-    let fileBody;
+    // Use native undici FormData/Blob for maximum compatibility
+    const form = new FormData();
+
     if (process.env.VERCEL) {
-      fileBody = req.file.buffer;
+      const blob = new Blob([req.file.buffer], { type: contentType });
+      form.append("image", blob, filename);
     } else {
-      const fs = await import("fs");
-      fileBody = fs.createReadStream(req.file.path);
+      const fs = await import("fs/promises");
+      const buf = await fs.readFile(req.file.path);
+      const blob = new Blob([buf], { type: contentType });
+      form.append("image", blob, filename);
     }
 
-    const form = new FormData();
-    form.append("image", fileBody, { filename, contentType });
-
-    // 10s 超时，避免函数挂住
+    // 12s timeout，避免挂住
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 12000);
 
     const response = await fetch(`${AI_API_URL}/predict`, {
       method: "POST",
       body: form,
-      headers: form.getHeaders(),
-      signal: controller.signal
+      signal: controller.signal,
     }).catch(err => {
       throw new Error(`AI API network error: ${err.message}`);
     });
 
     clearTimeout(timeout);
 
-    let data;
     const text = await response.text();
-    try { data = JSON.parse(text); } catch (e) { data = { error: "Invalid JSON from AI API", raw: text }; }
+    let data;
+    try { data = JSON.parse(text); } catch { data = { raw: text }; }
 
     if (!response.ok) {
       console.error("AI API error", {
@@ -68,12 +67,15 @@ router.post("/", upload.single("image"), async (req, res) => {
       return res.status(502).json({ error: "AI API failed", details: data, status: response.status });
     }
 
+    // 清理本地临时文件
     if (!process.env.VERCEL && req.file?.path) {
-      const fs = await import("fs");
-      fs.unlinkSync(req.file.path);
+      try {
+        const fs = await import("fs/promises");
+        await fs.unlink(req.file.path);
+      } catch {}
     }
 
-    return res.json({ tags: data.tags || [] });
+    return res.json({ tags: Array.isArray(data.tags) ? data.tags : [] });
   } catch (err) {
     console.error("Error calling FastAPI:", err);
     return res.status(500).json({ error: "Failed to generate tags", message: err.message, AI_API_URL });

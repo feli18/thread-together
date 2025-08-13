@@ -219,6 +219,13 @@ if (stepsContainer) {
 const getTagsBtn = document.getElementById('getTagsBtn');
 let _suggestedTags = [];
 let _suggestShownAt = 0;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const expGroupBadge = document.querySelector('.badge');
+  if (expGroupBadge && expGroupBadge.textContent.includes('Group')) {
+    console.log(`🧪 A/B Test - You are in: ${expGroupBadge.textContent.trim()}`);
+  }
+});
 if (getTagsBtn) {
   getTagsBtn.addEventListener('click', async () => {
     const file = coverInput?.files?.[0];

@@ -8,7 +8,12 @@
 </head>
 <body class="p-4">
   <div class="container-fluid">
-    <h3 class="mb-3">Metrics</h3>
+    <h3 class="mb-3">Metrics <span class="badge bg-info">Group <%= groupFilter %></span></h3>
+    <div class="mb-3">
+      <a href="/admin/metrics" class="btn btn-sm btn-outline-secondary">All</a>
+      <a href="/admin/metrics?group=A" class="btn btn-sm btn-outline-primary">Group A</a>
+      <a href="/admin/metrics?group=B" class="btn btn-sm btn-outline-success">Group B</a>
+    </div>
 
     <div class="row g-4 mb-4">
       <div class="col-md-3">

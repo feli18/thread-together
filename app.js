@@ -96,6 +96,15 @@ app.use(async (req, res, next) => {
   const query = req.query.q || "";
   const userId = req.session.userId || null;
 
+  if (!req.session.expGroup) {
+    const hash = req.sessionID.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    req.session.expGroup = Math.abs(hash) % 2 === 0 ? 'A' : 'B';
+  }
+  res.locals.expGroup = req.session.expGroup;
+
   let currentUser = null;
   if (userId) {
     try {

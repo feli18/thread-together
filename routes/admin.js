@@ -25,13 +25,16 @@ router.get('/metrics', async (req, res) => {
   try {
     const windowDays = Math.max(1, Math.min(parseInt(req.query.days || '7', 10) || 7, 30));
     const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000);
-
+    const groupFilter = req.query.group; 
+    const baseMatchFilter = groupFilter ? { expGroup: groupFilter } : {};
+    
     const [counts, avgTimeAgg, meanTagsAgg, funnelAgg] = await Promise.all([
       TagActionLog.aggregate([
+        { $match: baseMatchFilter },
         { $group: { _id: '$action', count: { $sum: 1 } } }
       ]),
       TagActionLog.aggregate([
-        { $match: { timeMs: { $ne: null } } },
+        { $match: { ...baseMatchFilter, timeMs: { $ne: null } } },
         { $group: { _id: null, avgTimeMs: { $avg: '$timeMs' } } }
       ]),
       Post.aggregate([
@@ -40,7 +43,7 @@ router.get('/metrics', async (req, res) => {
       ]),
       // Funnel: TagView -> viewPost -> interaction (like/bookmark)
       TagActionLog.aggregate([
-        { $match: { createdAt: { $gte: since } } },
+        { $match: { ...baseMatchFilter, createdAt: { $gte: since } } },
         { $group: { _id: '$action', c: { $sum: 1 } } }
       ])
     ]);
@@ -111,7 +114,8 @@ router.get('/metrics', async (req, res) => {
       hhi,
       windowDays,
       ctrTagToPost,
-      convPostToInteract
+      convPostToInteract,
+      groupFilter: groupFilter || 'All'
     });
   } catch (err) {
     console.error('admin/metrics error', err);

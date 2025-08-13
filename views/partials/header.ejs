@@ -43,6 +43,13 @@
 
 <header class="py-3 ">
   <div class="container d-flex align-items-center">
+    <% if (typeof expGroup !== 'undefined') { %>
+      <div class="me-3">
+        <span class="badge <%= expGroup === 'A' ? 'bg-success' : 'bg-warning' %>">
+          <%= expGroup === 'A' ? 'Group A' : 'Group B' %>
+        </span>
+      </div>
+    <% } %>
    
 
     <form action="/search" method="GET"

@@ -24,7 +24,8 @@ router.post('/', async (req, res) => {
         timeMs: typeof e.timeMs === 'number' ? e.timeMs : null,
         category: e.category || 'Other',
         suggestedCount: typeof e.suggestedCount === 'number' ? e.suggestedCount : null,
-        sessionId
+        sessionId,
+        expGroup: req.session?.expGroup || null
       }));
 
     if (!docs.length) return res.status(400).json({ error: 'Invalid payload' });
