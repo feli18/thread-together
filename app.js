@@ -20,6 +20,7 @@ import notificationRoutes from "./routes/notifications.js";
 import tagRoutes from "./routes/tags.js";
 import exploreRoutes from "./routes/explore.js";
 import searchRoutes from "./routes/search.js";
+import logsRoutes from "./routes/logs.js";
 
 import Post from "./models/Post.js";
 import User from "./models/User.js";
@@ -142,6 +143,7 @@ app.use("/tags", tagRoutes);
 app.use("/explore", exploreRoutes);
 app.use("/", searchRoutes);
 app.use("/generate-tags", generateTags);
+app.use("/logs", logsRoutes);
 
 
 app.get("/", async (req, res) => {

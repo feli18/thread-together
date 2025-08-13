@@ -232,6 +232,7 @@ if (getTagsBtn) {
     const formData = new FormData();
     formData.append('image', file);
 
+    const t0 = performance.now();
     try {
       const res = await fetch('/generate-tags', { method: 'POST', body: formData });
       const data = await res.json();
@@ -239,6 +240,18 @@ if (getTagsBtn) {
       if (data.tags?.length) {
         tagDisplay.innerHTML = 'Recommendation tags：' + data.tags.map(t => `<span class="badge tag me-1">#${t}</span>`).join('');
         if (tagInput) tagInput.value = data.tags.map(t => `#${t}`).join(' ');
+
+        // log suggest event batch for H1/H2/H3 metrics
+        const suggested = data.tags.map(tag => ({
+          tag,
+          action: 'suggest',
+          category: inferCategory(tag),
+        }));
+        try { await fetch('/logs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(suggested)
+        }); } catch(e) { /* ignore */ }
       } else {
         tagDisplay.innerHTML = "<span class='text-muted'>No recommendation tags generated.</span>";
       }
@@ -247,4 +260,44 @@ if (getTagsBtn) {
       console.error('❌ Failed to generate tags:', err);
     }
   });
+}
+
+// --- Logging utilities for tag actions ---
+function inferCategory(tag) {
+  const t = String(tag).toLowerCase();
+  const isMaterial = /(cotton|linen|denim|silk|wool|polyester|nylon|rayon|leather)/.test(t);
+  const isTechnique = /(patchwork|quilting|embroidery|handsewn|appli|smocking|overlock)/.test(t);
+  if (isMaterial) return 'Material';
+  if (isTechnique) return 'Technique';
+  return 'Style';
+}
+
+async function logTagAction({ tag, action, timeMs, category }) {
+  try {
+    await fetch('/logs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tag, action, timeMs: typeof timeMs === 'number' ? Math.round(timeMs) : null, category: category || inferCategory(tag) })
+    });
+  } catch (e) { /* swallow */ }
+}
+
+// Wire basic editable tag interactions if any dynamic UI renders into #tagDisplayArea
+const tagDisplay = document.getElementById('tagDisplayArea');
+if (tagDisplay) {
+  let suggestShownAt = 0;
+  const observer = new MutationObserver(() => {
+    // when suggestions are inserted, start timer
+    suggestShownAt = performance.now();
+    // add click handler on each badge to simulate accept/remove/edit
+    tagDisplay.querySelectorAll('.badge.tag').forEach(badge => {
+      badge.style.cursor = 'pointer';
+      badge.addEventListener('click', () => {
+        const now = performance.now();
+        logTagAction({ tag: badge.textContent.replace(/^#/, ''), action: 'accept', timeMs: now - suggestShownAt });
+        badge.classList.toggle('bg-success');
+      }, { once: true });
+    });
+  });
+  observer.observe(tagDisplay, { childList: true, subtree: true });
 }
