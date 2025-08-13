@@ -237,8 +237,8 @@ if (getTagsBtn) {
       const data = await res.json();
 
       if (data.tags?.length) {
-        tagDisplay.innerHTML = 'Recommendation tags：' + data.tags.map(t => `<span class="badge tag me-1">${t}</span>`).join('');
-        if (tagInput) tagInput.value = data.tags.join(', ');
+        tagDisplay.innerHTML = 'Recommendation tags：' + data.tags.map(t => `<span class="badge tag me-1">#${t}</span>`).join('');
+        if (tagInput) tagInput.value = data.tags.map(t => `#${t}`).join(' ');
       } else {
         tagDisplay.innerHTML = "<span class='text-muted'>No recommendation tags generated.</span>";
       }

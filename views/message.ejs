@@ -78,7 +78,7 @@
             <% conversations.forEach(conv => { %>
                 <a href="/messages/<%= conv.user._id %>" class="message-item ">
                     <div class="d-flex align-items-center">
-                        <img src="<%= conv.user.avatar %>" width="40" class="rounded-circle me-2" />
+                        <img src="<%= conv.user.avatar || '/images/default-avatar.png' %>" width="40" class="rounded-circle me-2" />
                         <span>@<%= conv.user.username %></span>
                     </div>
                     

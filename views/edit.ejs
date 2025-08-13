@@ -33,7 +33,7 @@
 
       <div class="mb-3">
         <label for="tags" class="form-label">Tags (comma separated)</label>
-        <input type="text" name="tags" class="form-control" value="<%= post.tags.join(', ') %>">
+        <input type="text" name="tags" class="form-control" value="<%= post.tags.map(t => '#' + t).join(' ') %>">
       </div>
 
       <hr class="my-4">
@@ -72,7 +72,7 @@
       <div class="mb-3">
         <h5>Add New Steps</h5>
         <div id="newSteps"></div>
-        <button type="button" id="addNewStepBtn" class="btn btn-outline-danger btn-sm mt-2">+ Add step</button>
+        <button type="button" id="addNewStepBtn" class="btn btn-secondary btn-sm mt-2">+ Add step</button>
       </div>
 
       <button type="submit" class="btn btn-primary btn-sm">Update Post</button>
@@ -89,23 +89,33 @@
         <div class="card-body">
           <div class="mb-2"><strong>New step</strong></div>
           <input type="file" name="newStepFiles" accept="image/*,video/*" class="form-control mb-2" required />
-          <textarea name="newStepTexts[]" class="form-control" rows="2" placeholder="Add description..."></textarea>
+          <textarea name="newStepTexts[]" class="form-control mb-2" rows="2" placeholder="Add description..."></textarea>
+          <button type="button" class="btn btn-outline-danger btn-sm remove-new-step">Delete this step</button>
         </div>`;
       newSteps.appendChild(wrapper);
     });
 
     // delete existing step immediately
     document.addEventListener('click', (e) => {
+      // remove existing
       const btn = e.target.closest('[data-del-step]');
-      if (!btn) return;
-      const idx = btn.getAttribute('data-del-step');
-      const hidden = document.createElement('input');
-      hidden.type = 'hidden';
-      hidden.name = 'existingStepDelete[]';
-      hidden.value = idx;
-      btn.form.appendChild(hidden);
-      const card = btn.closest('[data-step-card]');
-      if (card) card.remove();
+      if (btn) {
+        const idx = btn.getAttribute('data-del-step');
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = 'existingStepDelete[]';
+        hidden.value = idx;
+        btn.form.appendChild(hidden);
+        const card = btn.closest('[data-step-card]');
+        if (card) card.remove();
+        return;
+      }
+      // remove newly added
+      const rm = e.target.closest('.remove-new-step');
+      if (rm) {
+        const card = rm.closest('.card');
+        if (card) card.remove();
+      }
     });
   </script>
 </body>
