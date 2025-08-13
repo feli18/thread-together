@@ -42,14 +42,14 @@
         <div class="p-3 border rounded">
           <h5>Acceptance Rate</h5>
           <div class="fs-4"><%= (acceptanceRate * 100).toFixed(1) %>%</div>
-          <canvas id="acceptanceChart" height="120"></canvas>
+          <canvas id="acceptanceChart" height="120" data-acc="<%= (acceptanceRate * 100).toFixed(1) %>"></canvas>
         </div>
       </div>
       <div class="col-md-6">
         <div class="p-3 border rounded">
           <h5>Mean Tags per Post</h5>
           <div class="fs-4"><%= meanTags %></div>
-          <canvas id="meanTagsChart" height="120"></canvas>
+          <canvas id="meanTagsChart" height="120" data-mean="<%= meanTags %>"></canvas>
         </div>
       </div>
     </div>
@@ -70,20 +70,35 @@
         </div>
       </div>
     </div>
+
+    <div class="row g-4 mt-2">
+      <div class="col-md-6">
+        <div class="p-3 border rounded">
+          <h5>Funnel: Tag → Post</h5>
+          <div class="fs-4"><%= (ctrTagToPost * 100).toFixed(1) %>%</div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="p-3 border rounded">
+          <h5>Funnel: Post → Interaction</h5>
+          <div class="fs-4"><%= (convPostToInteract * 100).toFixed(1) %>%</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
-    const acc = <%= (acceptanceRate * 100).toFixed(1) %>;
+    const acc = parseFloat(document.getElementById('acceptanceChart').dataset.acc || '0');
     new Chart(document.getElementById('acceptanceChart'), {
       type: 'bar',
       data: { labels: ['Acceptance %'], datasets: [{ label: 'Acceptance', data: [acc], backgroundColor: '#4caf50' }] },
       options: { scales: { y: { beginAtZero: true, max: 100 } } }
     });
 
-    const meanTags = <%= meanTags %>;
+    const meanTagsVal = parseFloat(document.getElementById('meanTagsChart').dataset.mean || '0');
     new Chart(document.getElementById('meanTagsChart'), {
       type: 'bar',
-      data: { labels: ['Mean Tags'], datasets: [{ label: 'Tags', data: [meanTags], backgroundColor: '#2196f3' }] },
+      data: { labels: ['Mean Tags'], datasets: [{ label: 'Tags', data: [meanTagsVal], backgroundColor: '#2196f3' }] },
       options: { scales: { y: { beginAtZero: true, suggestedMax: 10 } } }
     });
   </script>

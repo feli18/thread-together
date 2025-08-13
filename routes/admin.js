@@ -26,7 +26,7 @@ router.get('/metrics', async (req, res) => {
     const windowDays = Math.max(1, Math.min(parseInt(req.query.days || '7', 10) || 7, 30));
     const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000);
 
-    const [counts, avgTimeAgg, meanTagsAgg] = await Promise.all([
+    const [counts, avgTimeAgg, meanTagsAgg, funnelAgg] = await Promise.all([
       TagActionLog.aggregate([
         { $group: { _id: '$action', count: { $sum: 1 } } }
       ]),
@@ -37,6 +37,11 @@ router.get('/metrics', async (req, res) => {
       Post.aggregate([
         { $project: { tagCount: { $size: { $ifNull: ['$tags', []] } } } },
         { $group: { _id: null, meanTags: { $avg: '$tagCount' } } }
+      ]),
+      // Funnel: TagView -> viewPost -> interaction (like/bookmark)
+      TagActionLog.aggregate([
+        { $match: { createdAt: { $gte: since } } },
+        { $group: { _id: '$action', c: { $sum: 1 } } }
       ])
     ]);
 
@@ -83,6 +88,15 @@ router.get('/metrics', async (req, res) => {
       hhi = tvAgg[0].hhi || 0;
     }
 
+    // Funnel quick calc (counts only, unique users can be added later if needed)
+    const funnelMap = Object.fromEntries((funnelAgg||[]).map(x => [x._id, x.c]));
+    const tagViewsCnt = await TagView.countDocuments({ viewedAt: { $gte: since } });
+    const postViewsCnt = funnelMap['viewPost'] || 0;
+    const interactionsCnt = (funnelMap['like'] || 0) + (funnelMap['bookmark'] || 0);
+
+    const ctrTagToPost = tagViewsCnt ? (postViewsCnt / tagViewsCnt) : 0;
+    const convPostToInteract = postViewsCnt ? (interactionsCnt / postViewsCnt) : 0;
+
     res.render('admin/metrics', {
       suggested,
       accepted,
@@ -95,7 +109,9 @@ router.get('/metrics', async (req, res) => {
       meanTags:  Number(meanTags.toFixed(2)),
       top5Share,
       hhi,
-      windowDays
+      windowDays,
+      ctrTagToPost,
+      convPostToInteract
     });
   } catch (err) {
     console.error('admin/metrics error', err);

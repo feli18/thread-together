@@ -115,7 +115,8 @@
 <div class=" col">
   <!-- <div class="card-wrapper"> -->
   <div class="card shadow-sm rounded post-card">
-    <a href="/posts/<%= post._id %>">
+    <% const postHref = (typeof fromTag !== 'undefined' && fromTag) ? ('/posts/' + post._id + '?fromTag=' + encodeURIComponent(fromTag)) : ('/posts/' + post._id); %>
+    <a href="<%= postHref %>">
       <img
         src="<%= post.coverImage || post.steps[0]?.image || '/images/default.jpg' %>"
         class="card-img-top"
@@ -123,7 +124,7 @@
       >
     </a>
     <div class="card-body">
-      <a href="/posts/<%= post._id %>" style="text-decoration:none; color:inherit;">
+      <a href="<%= postHref %>" style="text-decoration:none; color:inherit;">
         <h5 class="card-title mb-1 fw-bold"><%= post.title %></h5>
       </a>
 

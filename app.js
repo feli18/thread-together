@@ -29,6 +29,7 @@ import Comment from "./models/comment.js";
 import Notification from "./models/Notification.js";
 import Message from "./models/Message.js";
 import TagView from "./models/TagView.js";
+import TagActionLog from "./models/TagActionLog.js";
 import { buildCommentTree } from "./utils/buildCommentTree.js";
 import { connectDB, getMongoClient } from './config/db.js';
 
@@ -254,6 +255,16 @@ app.get("/posts/:id", async (req, res) => {
     }));
     if (views.length) await TagView.insertMany(views);
 
+    // H4: log a lightweight post view for funnel analysis
+    try {
+      await TagActionLog.create({
+        userId: req.session.userId || null,
+        postId: post._id,
+        tag: (req.query.fromTag || ''),
+        action: 'viewPost'
+      });
+    } catch {}
+
     res.render("post.ejs", { post, commentTree });
   } catch (err) {
     console.error("详情页加载失败：", err);
@@ -469,6 +480,9 @@ app.post("/posts/:id/like", async (req, res) => {
   }
   await post.save();
 
+  // H4: log interaction
+  try { await TagActionLog.create({ userId, postId: post._id, action: 'like' }); } catch {}
+
   const wantsJson = (req.headers['x-requested-with'] === 'XMLHttpRequest') || ((req.headers.accept || '').includes('application/json'));
   if (wantsJson) {
     return res.json({ liked: !alreadyLiked, count: post.likedBy.length });
@@ -489,6 +503,9 @@ app.post("/posts/:id/bookmark", async (req, res) => {
     post.bookmarkedBy.push(userId);
   }
   await post.save();
+
+  // H4: log interaction
+  try { await TagActionLog.create({ userId, postId: post._id, action: 'bookmark' }); } catch {}
 
   const wantsJson = (req.headers['x-requested-with'] === 'XMLHttpRequest') || ((req.headers.accept || '').includes('application/json'));
   if (wantsJson) {
