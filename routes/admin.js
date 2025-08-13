@@ -1,6 +1,7 @@
 import express from 'express';
 import TagActionLog from '../models/TagActionLog.js';
 import Post from '../models/Post.js';
+import TagView from '../models/TagView.js';
 
 const router = express.Router();
 
@@ -22,6 +23,9 @@ router.get('/logs', async (req, res) => {
 // Basic metrics page
 router.get('/metrics', async (req, res) => {
   try {
+    const windowDays = Math.max(1, Math.min(parseInt(req.query.days || '7', 10) || 7, 30));
+    const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000);
+
     const [counts, avgTimeAgg, meanTagsAgg] = await Promise.all([
       TagActionLog.aggregate([
         { $group: { _id: '$action', count: { $sum: 1 } } }
@@ -48,6 +52,37 @@ router.get('/metrics', async (req, res) => {
     const avgTimeMs      = (avgTimeAgg[0]?.avgTimeMs) || 0;
     const meanTags       = (meanTagsAgg[0]?.meanTags) || 0;
 
+    // H3: Top-5 Share and HHI for last N days using TagView
+    const tvAgg = await TagView.aggregate([
+      { $match: { viewedAt: { $gte: since } } },
+      { $group: { _id: '$tag', c: { $sum: 1 } } },
+      { $sort: { c: -1 } },
+      { $group: { _id: null, items: { $push: '$$ROOT' }, total: { $sum: '$c' } } },
+      { $project: {
+        total: 1,
+        top5: { $slice: ['$items', 5] },
+        items: 1
+      } },
+      { $unwind: '$items' },
+      { $project: {
+        total: 1,
+        top5: 1,
+        p: { $cond: [{ $gt: ['$total', 0] }, { $divide: ['$items.c', '$total'] }, 0] },
+        tag: '$items._id',
+        c: '$items.c'
+      } },
+      { $group: { _id: null, total: { $first: '$total' }, top5Arr: { $first: '$top5' }, hhi: { $sum: { $multiply: ['$p', '$p'] } } } }
+    ]);
+
+    let top5Share = 0;
+    let hhi = 0;
+    if (tvAgg[0]) {
+      const total = tvAgg[0].total || 0;
+      const tsum = (tvAgg[0].top5Arr || []).reduce((s, x) => s + (x?.c || 0), 0);
+      top5Share = total ? (tsum / total) : 0;
+      hhi = tvAgg[0].hhi || 0;
+    }
+
     res.render('admin/metrics', {
       suggested,
       accepted,
@@ -57,7 +92,10 @@ router.get('/metrics', async (req, res) => {
       editRate,
       removeRate,
       avgTimeMs: Math.round(avgTimeMs),
-      meanTags:  Number(meanTags.toFixed(2))
+      meanTags:  Number(meanTags.toFixed(2)),
+      top5Share,
+      hhi,
+      windowDays
     });
   } catch (err) {
     console.error('admin/metrics error', err);
