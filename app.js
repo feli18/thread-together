@@ -439,7 +439,7 @@ app.post("/posts/:id/like", async (req, res) => {
   const post = await Post.findById(req.params.id);
   const userId = req.session.userId;
   if (!post) return res.status(404).send("Post not found");
-  if (!userId) return res.redirect("/login");
+  if (!userId) return res.status(403).send("Login required");
 
   const alreadyLiked = post.likedBy.includes(userId);
   if (alreadyLiked) {
@@ -464,6 +464,11 @@ app.post("/posts/:id/like", async (req, res) => {
     }
   }
   await post.save();
+
+  const wantsJson = (req.headers['x-requested-with'] === 'XMLHttpRequest') || ((req.headers.accept || '').includes('application/json'));
+  if (wantsJson) {
+    return res.json({ liked: !alreadyLiked, count: post.likedBy.length });
+  }
   res.redirect(303, `/posts/${post._id}`);
 });
 
