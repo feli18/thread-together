@@ -106,13 +106,12 @@
       
         <div class="d-flex flex-column align-items-end">
            <div class="post-actions d-flex gap-2 mt-2 mt-sm-0 align-items-center">
-            <% const viewerId = currentUser && currentUser._id ? currentUser._id.toString() : null; %>
-            <% const liked = viewerId ? post.likedBy.some(user => user._id.toString() === viewerId) : false; %>
+            <% const liked2 = (typeof viewerId !== 'undefined' && viewerId) ? post.likedBy.some(user => user._id.toString() === viewerId) : false; %>
 
-            <% if (viewerId) { %>
+            <% if (typeof viewerId !== 'undefined' && viewerId) { %>
                 <form action="/posts/<%= post._id %>/like" method="POST" class="like-form" data-post-id="<%= post._id %>">
                 <button type="submit" class="icon-btn btn btn-light like-btn border-0">
-                    <i class="<%= liked ? 'bi bi-heart-fill text-danger' : 'bi bi-heart text-secondary' %>"></i>
+                    <i class="<%= liked2 ? 'bi bi-heart-fill text-danger' : 'bi bi-heart text-secondary' %>"></i>
                     <span class="like-count"><%= post.likedBy.length %></span>
                 </button>
                 </form>
@@ -123,11 +122,11 @@
                 </a>
             <% } %>
         
-            <% const bookmarked = viewerId ? post.bookmarkedBy.some(user => user._id.toString() === viewerId) : false; %>
-                <% if (viewerId) { %>
+            <% const bookmarked2 = (typeof viewerId !== 'undefined' && viewerId) ? post.bookmarkedBy.some(user => user._id.toString() === viewerId) : false; %>
+                <% if (typeof viewerId !== 'undefined' && viewerId) { %>
                 <form action="/posts/<%= post._id %>/bookmark" method="POST" style="display:inline;">
                     <button type="submit" class="icon-btn btn btn-light save-btn border-0">
-                    <i class="<%= bookmarked ? 'bi bi-bookmark-fill text-primary' : 'bi bi-bookmark text-secondary' %>"></i>
+                    <i class="<%= bookmarked2 ? 'bi bi-bookmark-fill text-primary' : 'bi bi-bookmark text-secondary' %>"></i>
                     <span class="bookmark-count"><%= post.bookmarkedBy.length %></span>
                     </button>
                 </form>
