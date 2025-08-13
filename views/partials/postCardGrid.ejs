@@ -178,11 +178,29 @@
 </script>
 
         <%# const bookmarked = post.bookmarkedBy.some(u => u._id.toString() === currentUser?.toString()); %>
-        <form action="/posts/<%= post._id %>/bookmark" method="POST">
+        <form action="/posts/<%= post._id %>/bookmark" method="POST" class="bookmark-form">
           <button type="submit" class="icon-btn btn save-btn btn-light border-0">
             <i class="<%= bookmarked ? 'bi bi-bookmark-fill text-primary' : 'bi bi-bookmark text-secondary' %>"></i>
           </button>
         </form>
+<script>
+  (function(){
+    const form = document.currentScript.previousElementSibling;
+    if (!form || !form.matches('form.bookmark-form')) return;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const res = await fetch(form.action, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        if (!res.ok) return;
+        const data = await res.json();
+        const icon = form.querySelector('i');
+        if (icon && data) {
+          icon.className = data.bookmarked ? 'bi bi-bookmark-fill text-primary' : 'bi bi-bookmark text-secondary';
+        }
+      } catch(err) { console.error('Bookmark failed', err); }
+    });
+  })();
+</script>
       </div>
     </div>
   </div>

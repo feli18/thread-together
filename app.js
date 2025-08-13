@@ -303,7 +303,7 @@ app.post(
 
     const rawTags = tags || "";
     const tagsArr = rawTags
-      .split(",")
+      .split(/\s*#+/)
       .map((t) => t.trim().toLowerCase())
       .filter((t) => t.length > 0);
 
@@ -364,7 +364,7 @@ app.post(
       post.description = req.body.description;
       const rawTags2 = req.body.tags || "";
       post.tags = rawTags2
-        .split(",")
+        .split(/\s*#+/)
         .map((t) => t.trim().toLowerCase())
         .filter((t) => t.length > 0);
 
@@ -476,32 +476,21 @@ app.post("/posts/:id/bookmark", async (req, res) => {
   const post = await Post.findById(req.params.id);
   const userId = req.session.userId;
   if (!post) return res.status(404).send("Post not found");
-  if (!userId) return res.redirect("/login");
+  if (!userId) return res.status(403).send("Login required");
 
   const alreadyBookmarked = post.bookmarkedBy.includes(userId);
   if (alreadyBookmarked) {
     post.bookmarkedBy.pull(userId);
   } else {
     post.bookmarkedBy.push(userId);
-    if (post.author.toString() !== userId) {
-      const existing = await Notification.findOne({
-        recipient: post.author,
-        sender: userId,
-        post: post._id,
-        type: "bookmark",
-      });
-      if (!existing) {
-        await Notification.create({
-          recipient: post.author,
-          sender: userId,
-          type: "bookmark",
-          post: post._id,
-        });
-      }
-    }
   }
   await post.save();
-  res.redirect(303, req.get("referer"));
+
+  const wantsJson = (req.headers['x-requested-with'] === 'XMLHttpRequest') || ((req.headers.accept || '').includes('application/json'));
+  if (wantsJson) {
+    return res.json({ bookmarked: !alreadyBookmarked, count: post.bookmarkedBy.length });
+  }
+  res.redirect(303, `/posts/${post._id}`);
 });
 
 app.post("/posts/:id/comments", async (req, res) => {
