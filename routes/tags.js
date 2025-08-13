@@ -8,7 +8,8 @@ router.get('/:tagName', async (req, res) => {
     const { tagName } = req.params;
     const regex = new RegExp(`^${tagName}$`, 'i');
     const tag = req.params.tagName;
-    await TagView.create({ tag });
+    // await TagView.create({ tag });
+    await TagView.create({ tag, user: req.session.userId || null });  
 
     const posts = await Post.find({ tags: regex })
       .sort({ createdAt: -1 })
