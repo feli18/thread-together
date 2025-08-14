@@ -4,6 +4,15 @@
     padding-right: 0.75rem;
   }
   
+  .masonry1 {
+    column-count: 1 !important;
+    padding-left: 0.5rem !important;
+  }
+  
+  .masonry1 .col {
+    margin-bottom: 1rem !important;
+  }
+  
   .sidebar {
     position: fixed;
     bottom: 0;
@@ -44,6 +53,11 @@
   
   .main-content {
     padding-bottom: 80px;
+    padding-top: 0.5rem;
+  }
+  
+  .masonry1 {
+    margin-top: 1rem !important;
   }
   
   header {
@@ -160,6 +174,16 @@
   
   .post-actions .btn i {
     font-size: 0.8rem;
+  }
+  
+  .like-form, .bookmark-form {
+    display: block !important;
+  }
+  
+  .icon-btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
   
   .profile-header {

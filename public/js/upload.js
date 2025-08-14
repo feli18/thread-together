@@ -1,6 +1,54 @@
 // Experiment mode configuration
 const uploadMode = window.uploadMode || 'editable';
 const modeConfig = window.modeConfig || {};
+let currentTaskId = null; // Will be set when task starts
+
+// Experiment task management
+async function startExperimentTask(imageId) {
+  try {
+    const response = await fetch('/experiment/task/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: uploadMode,
+        imageId: imageId || `img_${Date.now()}`, // Generate imageId if not provided
+        k: 5, // Number of AI suggestions
+        isWarmup: false // Can be set based on UI
+      })
+    });
+    
+    const result = await response.json();
+    if (result.success) {
+      currentTaskId = result.taskId;
+      console.log(`🧪 Experiment task started: ${currentTaskId} (mode: ${uploadMode})`);
+      return result.taskId;
+    } else {
+      console.error('Failed to start experiment task:', result.error);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error starting experiment task:', error);
+    return null;
+  }
+}
+
+async function recordSuggestions(suggestions) {
+  if (!currentTaskId) return;
+  
+  try {
+    await fetch(`/experiment/task/${currentTaskId}/suggestions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        suggested: suggestions,
+        aiCallSuccess: true
+      })
+    });
+    console.log(`📝 Recorded ${suggestions.length} suggestions for task ${currentTaskId}`);
+  } catch (error) {
+    console.error('Error recording suggestions:', error);
+  }
+}
 
 const coverInput = document.getElementById('coverInput');
 const coverPreview = document.getElementById('coverPreview');
@@ -60,11 +108,17 @@ if (coverInput) {
     if (file) setInputFiles(coverInput, file);
 
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = async e => {
       coverPreview.src = e.target.result;
       coverPreview.style.display = 'block';
       coverLabel.style.display = 'none';
       changeBtn.style.display = 'inline-block';
+      
+      // Start experiment task when image is uploaded
+      if (!currentTaskId) {
+        const imageId = `img_${file.name}_${Date.now()}`;
+        await startExperimentTask(imageId);
+      }
     };
     reader.readAsDataURL(file);
   });
@@ -276,7 +330,16 @@ if (getTagsBtn && modeConfig.aiEnabled) {
           tagInput.placeholder = 'Click on tags above to accept them';
         }
 
-        // log suggest event batch for H1/H2/H3 metrics
+        // Record suggestions in TaskLog for experiment analysis
+        const suggestions = data.tags.map((tag, index) => ({
+          tag,
+          category: inferCategory(tag),
+          rank: index + 1,
+          score: 0.8 - (index * 0.1) // Simulate confidence scores
+        }));
+        await recordSuggestions(suggestions);
+
+        // log suggest event batch for H1/H2/H3 metrics (existing TagActionLog)
         const suggested = data.tags.map(tag => ({
           tag,
           action: 'suggest',
@@ -377,7 +440,22 @@ if (tagDisplay) {
 (function registerFormSubmitDiff() {
   const form = document.querySelector('form[action="/upload"]');
   if (!form) return;
-  form.addEventListener('submit', async () => {
+  form.addEventListener('submit', async (e) => {
+    // Add taskId to form if available
+    if (currentTaskId) {
+      let taskIdInput = form.querySelector('input[name="taskId"]');
+      if (!taskIdInput) {
+        taskIdInput = document.createElement('input');
+        taskIdInput.type = 'hidden';
+        taskIdInput.name = 'taskId';
+        taskIdInput.value = currentTaskId;
+        form.appendChild(taskIdInput);
+      } else {
+        taskIdInput.value = currentTaskId;
+      }
+      console.log(`📤 Submitting form with taskId: ${currentTaskId}`);
+    }
+
     const input = document.getElementById('tagsInput');
     if (!input || !_suggestedTags.length) return;
     const finalTags = parseTags(input.value);

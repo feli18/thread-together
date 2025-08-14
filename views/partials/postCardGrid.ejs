@@ -143,7 +143,7 @@
         <% } %>
       </div>
 
-      <div class="d-flex justify-content-between">
+      <div class="d-flex justify-content-between post-actions">
         <% 
   const currentUserId = typeof currentUser === 'object' ? currentUser?._id?.toString() : currentUser?.toString();
   const liked = post.likedBy.some(u => u._id.toString() === currentUserId);

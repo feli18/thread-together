@@ -22,6 +22,7 @@ import exploreRoutes from "./routes/explore.js";
 import searchRoutes from "./routes/search.js";
 import logsRoutes from "./routes/logs.js";
 import adminRoutes from "./routes/admin.js";
+import experimentRoutes from "./routes/experiment.js";
 
 import Post from "./models/Post.js";
 import User from "./models/User.js";
@@ -30,6 +31,7 @@ import Notification from "./models/Notification.js";
 import Message from "./models/Message.js";
 import TagView from "./models/TagView.js";
 import TagActionLog from "./models/TagActionLog.js";
+import TaskLog from "./models/TaskLog.js";
 import { buildCommentTree } from "./utils/buildCommentTree.js";
 import { connectDB, getMongoClient } from './config/db.js';
 
@@ -160,6 +162,7 @@ app.use("/", searchRoutes);
 app.use("/generate-tags", generateTags);
 app.use("/logs", logsRoutes);
 app.use("/admin", adminRoutes);
+app.use("/experiment", experimentRoutes);
 
 
 app.get("/", async (req, res) => {
@@ -330,7 +333,7 @@ app.post(
   async (req, res) => {
     if (!req.session.userId) return res.redirect("/login");
 
-    const { title, description, tags, stepDescriptions, mode } = req.body;
+    const { title, description, tags, stepDescriptions, mode, taskId } = req.body;
     
     // Validate experiment mode
     const experimentMode = mode && ['editable', 'locked', 'off'].includes(mode) ? mode : 'editable';
@@ -385,6 +388,32 @@ app.post(
     });
 
     await newPost.save();
+    
+    if (taskId) {
+      try {
+        const taskLog = await TaskLog.findOne({ taskId });
+        if (taskLog) {
+          // Parse final tags (remove # and clean)
+          const finalTags = tagsArr.map(t => t.toLowerCase());
+          
+          taskLog.final = finalTags;
+          taskLog.submittedAt = new Date();
+          taskLog.imageUploadSuccess = !!coverImagePath;
+          
+          await taskLog.save();
+          console.log(`✅ Experiment task ${taskId} completed:`, {
+            mode: taskLog.mode,
+            suggested: taskLog.suggested.length,
+            final: finalTags.length,
+            completionTime: taskLog.completionTimeSeconds
+          });
+        }
+      } catch (error) {
+        console.error('Failed to record task completion:', error);
+        // Don't fail the upload if task logging fails
+      }
+    }
+    
     res.redirect(303, "/explore");
   }
 );

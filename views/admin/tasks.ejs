@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Experiment Tasks</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" />
+</head>
+<body class="p-4">
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3 class="mb-0">🧪 Experiment Tasks</h3>
+      <div class="btn-group" role="group">
+        <a href="/admin/tasks" class="btn btn-<%= !filter.mode ? 'primary' : 'outline-secondary' %>">
+          All Modes
+        </a>
+        <a href="/admin/tasks?mode=editable" class="btn btn-<%= filter.mode === 'editable' ? 'success' : 'outline-success' %>">
+          A: Editable
+        </a>
+        <a href="/admin/tasks?mode=locked" class="btn btn-<%= filter.mode === 'locked' ? 'warning' : 'outline-warning' %>">
+          B: Locked  
+        </a>
+        <a href="/admin/tasks?mode=off" class="btn btn-<%= filter.mode === 'off' ? 'secondary' : 'outline-secondary' %>">
+          C: Manual
+        </a>
+      </div>
+    </div>
+    
+    <div class="alert alert-light border-0 mb-4">
+      <strong>Current Filter:</strong> 
+      <span class="badge bg-<%= filter.mode === 'editable' ? 'success' : filter.mode === 'locked' ? 'warning' : filter.mode === 'off' ? 'secondary' : 'primary' %>">
+        <%= filter.mode ? (filter.mode === 'editable' ? 'A: Editable' : filter.mode === 'locked' ? 'B: Locked' : 'C: Manual') : 'All Modes' %>
+      </span>
+      | Total Tasks: <strong><%= tasks.length %></strong>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card border-0 bg-light">
+          <div class="card-body text-center">
+            <h5 class="mb-1"><%= tasks.filter(t => t.isCompleted).length %></h5>
+            <small class="text-muted">Completed</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 bg-light">
+          <div class="card-body text-center">
+            <h5 class="mb-1"><%= tasks.filter(t => !t.isCompleted).length %></h5>
+            <small class="text-muted">Abandoned</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 bg-light">
+          <div class="card-body text-center">
+            <% const completedTasks = tasks.filter(t => t.isCompleted && t.completionTimeSeconds); %>
+            <h5 class="mb-1">
+              <%= completedTasks.length > 0 ? Math.round(completedTasks.reduce((sum, t) => sum + t.completionTimeSeconds, 0) / completedTasks.length) : 0 %>s
+            </h5>
+            <small class="text-muted">Avg Time</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card border-0 bg-light">
+          <div class="card-body text-center">
+            <% const tasksWithRate = tasks.filter(t => t.acceptanceRate !== null); %>
+            <h5 class="mb-1">
+              <%= tasksWithRate.length > 0 ? (tasksWithRate.reduce((sum, t) => sum + t.acceptanceRate, 0) / tasksWithRate.length * 100).toFixed(1) : 0 %>%
+            </h5>
+            <small class="text-muted">Avg Accept Rate</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-sm table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>Task ID</th>
+            <th>User</th>
+            <th>Mode</th>
+            <th>Image</th>
+            <th>Status</th>
+            <th>Suggested</th>
+            <th>Final</th>
+            <th>Accept Rate</th>
+            <th>Time</th>
+            <th>Coverage</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% tasks.forEach(task => { %>
+            <tr class="<%= task.isCompleted ? '' : 'table-warning' %>">
+              <td>
+                <code class="small"><%= task.taskId.slice(0, 8) %>...</code>
+              </td>
+              <td>
+                <%= task.userId?.username || 'Anonymous' %>
+              </td>
+              <td>
+                <span class="badge bg-<%= task.mode === 'editable' ? 'success' : task.mode === 'locked' ? 'warning' : 'secondary' %>">
+                  <%= task.mode.toUpperCase() %>
+                </span>
+              </td>
+              <td>
+                <small class="text-muted"><%= task.imageId %></small>
+              </td>
+              <td>
+                <% if (task.isCompleted) { %>
+                  <span class="badge bg-success">✓ Completed</span>
+                <% } else { %>
+                  <span class="badge bg-warning">⏸ Abandoned</span>
+                <% } %>
+              </td>
+              <td>
+                <strong><%= task.suggested.length %></strong>
+                <% if (task.suggested.length > 0) { %>
+                  <div class="small text-muted">
+                    <% task.suggested.slice(0, 3).forEach(s => { %>
+                      <span class="badge bg-light text-dark me-1" style="font-size: 0.6rem;">#<%= s.tag %></span>
+                    <% }); %>
+                    <% if (task.suggested.length > 3) { %>+<%= task.suggested.length - 3 %><% } %>
+                  </div>
+                <% } %>
+              </td>
+              <td>
+                <strong><%= task.final.length %></strong>
+                <% if (task.final.length > 0) { %>
+                  <div class="small text-muted">
+                    <% task.final.slice(0, 3).forEach(f => { %>
+                      <span class="badge bg-primary me-1" style="font-size: 0.6rem;">#<%= f %></span>
+                    <% }); %>
+                    <% if (task.final.length > 3) { %>+<%= task.final.length - 3 %><% } %>
+                  </div>
+                <% } %>
+              </td>
+              <td>
+                <% if (task.acceptanceRate !== null) { %>
+                  <strong><%= (task.acceptanceRate * 100).toFixed(1) %>%</strong>
+                <% } else { %>
+                  <span class="text-muted">N/A</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (task.completionTimeSeconds) { %>
+                  <strong><%= task.completionTimeSeconds %>s</strong>
+                <% } else { %>
+                  <span class="text-muted">—</span>
+                <% } %>
+              </td>
+              <td>
+                <strong><%= task.categoryCoverage %>/3</strong>
+                <div class="progress" style="height: 3px;">
+                  <div class="progress-bar bg-info" style="width: <%= (task.categoryCoverage / 3) * 100 %>%"></div>
+                </div>
+              </td>
+              <td>
+                <small class="text-muted">
+                  <%= new Date(task.createdAt).toLocaleString() %>
+                </small>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4">
+      <a href="/admin/metrics" class="btn btn-outline-primary me-2">View Metrics</a>
+      <a href="/admin/logs" class="btn btn-outline-secondary">View Raw Logs</a>
+    </div>
+  </div>
+</body>
+</html>

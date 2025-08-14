@@ -2,6 +2,7 @@ import express from 'express';
 import TagActionLog from '../models/TagActionLog.js';
 import Post from '../models/Post.js';
 import TagView from '../models/TagView.js';
+import TaskLog from '../models/TaskLog.js';
 
 const router = express.Router();
 
@@ -120,6 +121,41 @@ router.get('/metrics', async (req, res) => {
   } catch (err) {
     console.error('admin/metrics error', err);
     res.status(500).send('Failed to load metrics');
+  }
+});
+
+// List all experiment tasks
+router.get('/tasks', async (req, res) => {
+  try {
+    const { mode, limit = 50, completed } = req.query;
+    
+    const filter = {};
+    if (mode) filter.mode = mode;
+    if (completed !== undefined) {
+      filter.submittedAt = completed === 'true' ? { $ne: null } : null;
+    }
+    
+    const tasks = await TaskLog.find(filter)
+      .populate('userId', 'username')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit));
+    
+    const tasksWithMetrics = tasks.map(task => ({
+      ...task.toObject(),
+      completionTimeSeconds: task.completionTimeSeconds,
+      isCompleted: task.isCompleted,
+      acceptanceRate: task.getAcceptanceRate(),
+      categoryCoverage: task.getCategoryCoverage()
+    }));
+    
+    res.render('admin/tasks.ejs', { 
+      tasks: tasksWithMetrics,
+      filter: { mode, completed },
+      limit: parseInt(limit)
+    });
+  } catch (err) {
+    console.error('admin/tasks error', err);
+    res.status(500).send('Failed to load tasks');
   }
 });
 
