@@ -23,6 +23,7 @@ import searchRoutes from "./routes/search.js";
 import logsRoutes from "./routes/logs.js";
 import adminRoutes from "./routes/admin.js";
 import experimentRoutes from "./routes/experiment.js";
+import experimentTestRoutes from "./routes/experiment-test.js";
 
 import Post from "./models/Post.js";
 import User from "./models/User.js";
@@ -163,6 +164,7 @@ app.use("/generate-tags", generateTags);
 app.use("/logs", logsRoutes);
 app.use("/admin", adminRoutes);
 app.use("/experiment", experimentRoutes);
+app.use("/experiment-test", experimentTestRoutes);
 
 
 app.get("/", async (req, res) => {
