@@ -115,12 +115,23 @@ function renumberSteps() {
 function addStep() {
   const count = stepsContainer.querySelectorAll('.step-card').length;
   stepsContainer.insertAdjacentHTML('beforeend', createStepBox(count + 1));
+  updateAddStepButton();
+}
+
+function updateAddStepButton() {
+  if (!addStepBtn) return;
+  const count = stepsContainer.querySelectorAll('.step-card').length;
+  if (count === 0) {
+    addStepBtn.innerHTML = '<i class="bi bi-plus-circle me-1"></i>Add First Step';
+  } else {
+    addStepBtn.innerHTML = '<i class="bi bi-plus-circle me-1"></i>Add Another Step';
+  }
 }
 
 if (stepsContainer) {
   window.addEventListener('load', () => {
     stepsContainer.classList.add('steps-grid');
-    if (stepsContainer.children.length === 0) addStep();
+    updateAddStepButton();
   });
 
   if (addStepBtn) addStepBtn.addEventListener('click', addStep);
@@ -186,6 +197,7 @@ if (stepsContainer) {
     if (e.target.closest('.remove-step')) {
       box.remove();
       renumberSteps();
+      updateAddStepButton();
       return;
     }
 
