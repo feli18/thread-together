@@ -236,7 +236,43 @@ app.get("/", async (req, res) => {
   }
 });
 
-app.get("/upload", (req, res) => res.render("upload.ejs"));
+app.get("/upload", (req, res) => {
+  const mode = req.query.mode || 'editable';
+  
+  if (!['editable', 'locked', 'off'].includes(mode)) {
+    return res.redirect('/upload?mode=editable');
+  }
+  
+  const modeConfig = {
+    editable: {
+      name: 'A: Editable AI Tags',
+      description: 'AI suggestions that you can edit, remove, or add to',
+      aiEnabled: true,
+      tagsEditable: true,
+      color: 'success'
+    },
+    locked: {
+      name: 'B: Locked AI Tags', 
+      description: 'AI suggestions that you can accept or reject, but not edit',
+      aiEnabled: true,
+      tagsEditable: false,
+      color: 'warning'
+    },
+    off: {
+      name: 'C: Manual Tags',
+      description: 'No AI suggestions - add all tags manually',
+      aiEnabled: false,
+      tagsEditable: true,
+      color: 'secondary'
+    }
+  };
+  
+  res.render("upload.ejs", {
+    mode,
+    modeConfig: modeConfig[mode],
+    allModes: modeConfig
+  });
+});
 
 app.get("/notifications", async (req, res) => {
   if (!req.session.userId) return res.redirect("/login");
@@ -294,7 +330,10 @@ app.post(
   async (req, res) => {
     if (!req.session.userId) return res.redirect("/login");
 
-    const { title, description, tags, stepDescriptions } = req.body;
+    const { title, description, tags, stepDescriptions, mode } = req.body;
+    
+    // Validate experiment mode
+    const experimentMode = mode && ['editable', 'locked', 'off'].includes(mode) ? mode : 'editable';
 
 
     const coverFile = req.files?.["coverImage"]?.[0];

@@ -1,3 +1,7 @@
+// Experiment mode configuration
+const uploadMode = window.uploadMode || 'editable';
+const modeConfig = window.modeConfig || {};
+
 const coverInput = document.getElementById('coverInput');
 const coverPreview = document.getElementById('coverPreview');
 const coverLabel = document.getElementById('coverLabel');
@@ -238,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log(`🧪 A/B Test - You are in: ${expGroupBadge.textContent.trim()}`);
   }
 });
-if (getTagsBtn) {
+if (getTagsBtn && modeConfig.aiEnabled) {
   getTagsBtn.addEventListener('click', async () => {
     const file = coverInput?.files?.[0];
     if (!file) {
@@ -259,8 +263,18 @@ if (getTagsBtn) {
       const data = await res.json();
 
       if (data.tags?.length) {
-        tagDisplay.innerHTML = 'Recommendation tags：' + data.tags.map(t => `<span class="badge tag me-1">#${t}</span>`).join('');
-        if (tagInput) tagInput.value = data.tags.map(t => `#${t}`).join(' ');
+        const badgeClass = uploadMode === 'locked' ? 'badge bg-secondary tag me-1' : 'badge tag me-1';
+        const badgeStyle = uploadMode === 'locked' ? '' : 'cursor: pointer;';
+        
+        tagDisplay.innerHTML = 'Recommendation tags：' + 
+          data.tags.map(t => `<span class="${badgeClass}" style="${badgeStyle}">#${t}</span>`).join('');
+        
+        if (tagInput && uploadMode !== 'locked') {
+          tagInput.value = data.tags.map(t => `#${t}`).join(' ');
+        } else if (tagInput && uploadMode === 'locked') {
+          // In locked mode, show tags but don't auto-fill input
+          tagInput.placeholder = 'Click on tags above to accept them';
+        }
 
         // log suggest event batch for H1/H2/H3 metrics
         const suggested = data.tags.map(tag => ({
@@ -314,14 +328,46 @@ if (tagDisplay) {
   const observer = new MutationObserver(() => {
     // when suggestions are inserted, start timer
     suggestShownAt = performance.now();
-    // add click handler on each badge to simulate accept/remove/edit
+    
+    // add click handler based on mode
     tagDisplay.querySelectorAll('.badge.tag').forEach(badge => {
-      badge.style.cursor = 'pointer';
-      badge.addEventListener('click', () => {
-        const now = performance.now();
-        logTagAction({ tag: badge.textContent.replace(/^#/, ''), action: 'accept', timeMs: now - suggestShownAt });
-        badge.classList.toggle('bg-success');
-      }, { once: true });
+      if (uploadMode === 'locked') {
+        // Locked mode: click to accept tags individually
+        badge.style.cursor = 'pointer';
+        badge.addEventListener('click', () => {
+          const now = performance.now();
+          const tagText = badge.textContent.replace(/^#/, '');
+          const tagInput = document.getElementById('tagsInput');
+          
+          if (badge.classList.contains('bg-success')) {
+            // Remove from input
+            badge.classList.remove('bg-success');
+            if (tagInput) {
+              const currentTags = tagInput.value.split(/\s+/).filter(t => t.length > 0);
+              const filteredTags = currentTags.filter(t => t.replace(/^#+/, '') !== tagText);
+              tagInput.value = filteredTags.join(' ');
+            }
+            logTagAction({ tag: tagText, action: 'remove', timeMs: now - suggestShownAt });
+          } else {
+            // Add to input
+            badge.classList.add('bg-success');
+            if (tagInput) {
+              const currentTags = tagInput.value.split(/\s+/).filter(t => t.length > 0);
+              currentTags.push(`#${tagText}`);
+              tagInput.value = currentTags.join(' ');
+            }
+            logTagAction({ tag: tagText, action: 'accept', timeMs: now - suggestShownAt });
+          }
+        });
+      } else if (uploadMode === 'editable') {
+        // Editable mode: just visual feedback (tags already in input)
+        badge.style.cursor = 'pointer';
+        badge.addEventListener('click', () => {
+          const now = performance.now();
+          logTagAction({ tag: badge.textContent.replace(/^#/, ''), action: 'accept', timeMs: now - suggestShownAt });
+          badge.classList.toggle('bg-success');
+        }, { once: true });
+      }
     });
   });
   observer.observe(tagDisplay, { childList: true, subtree: true });

@@ -26,14 +26,39 @@
           onclick="history.back()"
         >← Back</button>
       </div>
-      <div class="text-center my-4">
-      <h2 class="fw-bold" style="font-size: 2rem;">Upload Your Project Here 🪡</h2>
-    </div>
+            <div class="text-center my-4">
+        <h2 class="fw-bold" style="font-size: 2rem;">Upload Your Project Here 🪡</h2>
+        
+        <!-- Experiment Mode Selector -->
+        <div class="mode-selector mt-4 mb-4">
+          <div class="row justify-content-center">
+            <div class="col-md-10">
+              <div class="alert alert-<%= modeConfig.color %> border-0 mb-3">
+                <h5 class="mb-2">
+                  <i class="bi bi-<%= mode === 'editable' ? 'pencil-square' : mode === 'locked' ? 'lock' : 'person' %>"></i>
+                  <%= modeConfig.name %>
+                </h5>
+                <p class="mb-0 small"><%= modeConfig.description %></p>
+              </div>
+              
+              <div class="btn-group" role="group" aria-label="Upload modes">
+                <% Object.keys(allModes).forEach(modeKey => { %>
+                  <a href="/upload?mode=<%= modeKey %>" 
+                     class="btn btn-<%= mode === modeKey ? 'primary' : 'outline-secondary' %> btn-sm">
+                    <%= modeKey.toUpperCase() %>: <%= allModes[modeKey].name.split(':')[1].trim() %>
+                  </a>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       
 
       <div class="container py-4 upload-page">
 
         <form action="/upload" method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="mode" value="<%= mode %>">
         <div class="row">
           <!-- Left -->
           <div class="col-md-6">
@@ -58,18 +83,28 @@
             <label class="mt-3">Description</label>
             <textarea name="description" rows="3" class="form-control" required></textarea>
 
-            <label class="mt-3">AI Suggested Tags</label>
-            <input type="text" name="tags" id="tagsInput" class="form-control" placeholder="e.g. Vintage, Cotton, Dress" <% if (expGroup === 'B') { %>readonly<% } %> />
-            <button type="button" id="getTagsBtn" class="btn btn-outline-info btn-sm mt-2">✨ AI Suggested Tags</button>
-            <% if (expGroup === 'B') { %>
-              <div class="small text-muted mt-1">🔒 Group B: View only - tags cannot be edited 
-                <a href="?forceGroup=A" class="ms-2 small">Switch to Edit Mode</a>
-              </div>
-            <% } else { %>
-              <div class="small text-success mt-1">✏️ Group A: Full editing enabled
-                <a href="?forceGroup=B" class="ms-2 small">Switch to View Mode</a>
-              </div>
+            <label class="mt-3">
+              <% if (mode === 'off') { %>
+                Manual Tags
+              <% } else { %>
+                AI Suggested Tags
+              <% } %>
+            </label>
+            <input type="text" name="tags" id="tagsInput" class="form-control" 
+                   placeholder="<% if (mode === 'off') { %>Add tags manually, e.g. #vintage #cotton #dress<% } else { %>AI will suggest tags - you can modify them<% } %>" 
+                   <% if (mode === 'locked') { %>readonly<% } %> />
+            
+            <% if (modeConfig.aiEnabled) { %>
+              <button type="button" id="getTagsBtn" class="btn btn-outline-info btn-sm mt-2">
+                ✨ Generate AI Tags
+              </button>
             <% } %>
+            
+            <div class="small text-muted mt-1">
+              <i class="bi bi-<%= mode === 'editable' ? 'pencil-square' : mode === 'locked' ? 'lock' : 'person' %>"></i>
+              <%= modeConfig.description %>
+            </div>
+            
             <div id="tagDisplayArea" class="mt-2"></div>
 
           </div>
@@ -129,6 +164,10 @@
   </div>
 
 
+  <script>
+    window.uploadMode = '<%= mode %>';
+    window.modeConfig = <%- JSON.stringify(modeConfig) %>;
+  </script>
   <script src="/js/upload.js"></script>
 
 </body>
