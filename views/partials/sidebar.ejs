@@ -1,64 +1,67 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sidebar</title>
-
-  <link rel="stylesheet" href="/styles/sidebar.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
-</head>
-<body>
-    <aside class="sidebar d-flex flex-column justify-content-between p-4">
-        <div>
-            <!-- <button class="btn btn-primary mb-4"><a href="/" class="nav-link"> Logo</a></button> -->
-            <a href="/" class="sidebar-logo mb-4"
-            <% if (currentPath === '/') { %> data-active <% } %>
-            >
-                <img src="/images/Logo.png" alt="Site Logo" class="sidebar-logo__img">
+<aside class="sidebar d-flex flex-column justify-content-between p-4 d-none d-md-flex">
+    <div>
+        <a href="/" class="sidebar-logo mb-4"
+        <% if (currentPath === '/') { %> data-active <% } %>
+        >
+            <img src="/images/Logo.png" alt="Site Logo" class="sidebar-logo__img">
+        </a>
+        <ul class="nav flex-column gap-3">
+        <li><a href="/" class="nav-link mb-2<%= currentPath === '/' ? ' active-nav' : '' %>"><i class="bi bi-compass"></i> Discover</a></li>
+        <li><a href="/upload" class="nav-link mb-2<%= currentPath === '/upload' ? ' active-nav' : '' %>"><i class="bi bi-upload"></i> Upload</a></li>
+        <li>
+            <a href="/notifications" class="nav-link mb-2<% if (currentPath === '/notifications') { %> active-nav<% } %>">
+                <span><i class="bi bi-bell"></i> Notifications</span>
+                <% if (unreadNotifications > 0) { %>
+                <span class="badge bg-danger rounded-circle"><%= unreadNotifications %></span>
+                <% } %>
             </a>
-            <ul class="nav flex-column gap-3">
-            <li><a href="/" class="nav-link mb-2<%= currentPath === '/' ? ' active-nav' : '' %>"><i class="bi bi-compass"></i> Discover</a></li>
-            <li><a href="/upload" class="nav-link mb-2<%= currentPath === '/upload' ? ' active-nav' : '' %>"><i class="bi bi-upload"></i> Upload</a></li>
-            <li>
-                <a href="/notifications" class="nav-link mb-2<% if (currentPath === '/notifications') { %> active-nav<% } %>">
-                    <span><i class="bi bi-bell"></i> Notifications</span>
-                    <% if (unreadNotifications > 0) { %>
-                    <span class="badge bg-danger rounded-circle"><%= unreadNotifications %></span>
-                    <% } %>
-                </a>
-            </li>
-            <li>
-                <a href="/messages" class="nav-link mb-2 <%= currentPath === '/messages' ? ' active-nav' : '' %>">
-                    <span><i class="bi bi-chat-dots"></i> Messages</span>
-                    <% if (unreadMessages > 0) { %>
-                    <span class="badge bg-danger rounded-circle"><%= unreadMessages %></span>
-                    <% } %>
-                </a>
-            </li>
-        
-            <li><a href="/explore" class="nav-link mb-2<%= currentPath === '/explore' ? ' active-nav' : '' %>"><i class="bi bi-tag"></i> Explore Tags</a></li>
-            </ul>
-        </div>
-
-        <div class="mt-4">
-            <% if (currentUser) { %>
-            <a href="/profile" class="d-flex align-items-center gap-2 text-dark text-decoration-none mb-2 <%= currentPath.startsWith('/profile') ? ' active-nav' : '' %>">
-                <!-- <img src="<%#= user?.avatar || '/images/default.jpg' %>" width="35" height="35" alt="Avatar" -->
-                <img src="<%= currentUser?.avatar|| '/images/default.jpg' %>" width="35" height="35" alt="Avatar"
-                class=" rounded-circle mb-2 border border-3 ">
-                <span class="me-text">Me</span>
+        </li>
+        <li>
+            <a href="/messages" class="nav-link mb-2 <%= currentPath === '/messages' ? ' active-nav' : '' %>">
+                <span><i class="bi bi-chat-dots"></i> Messages</span>
+                <% if (unreadMessages > 0) { %>
+                <span class="badge bg-danger rounded-circle"><%= unreadMessages %></span>
+                <% } %>
             </a>
-            <a href="/logout" class="btn btn-outline-secondary w-100">Logout</a>
-            <% } else { %>
-            <a href="/login" class="btn btn-primary btn-sm w-100">Login</a>
-            <% } %>
-        </div>
-    </aside>
+        </li>
+    
+        <li><a href="/explore" class="nav-link mb-2<%= currentPath === '/explore' ? ' active-nav' : '' %>"><i class="bi bi-tag"></i> Explore Tags</a></li>
+        </ul>
+    </div>
 
+    <div class="mt-4">
+        <% if (currentUser) { %>
+        <a href="/profile" class="d-flex align-items-center gap-2 text-dark text-decoration-none mb-2 <%= currentPath.startsWith('/profile') ? ' active-nav' : '' %>">
+            <img src="<%= currentUser?.avatar|| '/images/default.jpg' %>" width="35" height="35" alt="Avatar"
+            class=" rounded-circle mb-2 border border-3 ">
+            <span class="me-text">Me</span>
+        </a>
+        <a href="/logout" class="btn btn-outline-secondary w-100">Logout</a>
+        <% } else { %>
+        <a href="/login" class="btn btn-primary btn-sm w-100">Login</a>
+        <% } %>
+    </div>
+</aside>
 
-</body>
-</html>
+<nav class="sidebar d-md-none">
+  <% 
+    const mobileMenuItems = [
+      { href: "/", icon: "bi-compass", text: "Discover", path: "/" },
+      { href: "/explore", icon: "bi-tag", text: "Explore", path: "/explore" },
+      { href: "/upload", icon: "bi-upload", text: "Upload", path: "/upload" },
+      { href: "/profile", icon: "bi-person", text: "Profile", path: "/profile" },
+      { href: "/messages", icon: "bi-chat-dots", text: "Messages", path: "/messages" }
+    ];
+  %>
+  <% mobileMenuItems.forEach(item => { %>
+    <a href="<%= item.href %>" class="nav-link <%= currentPath === item.path || (item.path === '/profile' && currentPath.startsWith('/profile')) ? 'active-nav' : '' %>">
+      <i class="<%= item.icon %>"></i>
+      <span><%= item.text %></span>
+      <% if (item.path === '/messages' && unreadMessages > 0) { %>
+        <div class="badge bg-danger" style="position: absolute; top: 2px; right: 8px; font-size: 0.6rem; min-width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center;"><%= unreadMessages > 9 ? '9+' : unreadMessages %></div>
+      <% } %>
+    </a>
+  <% }) %>
+</nav>
 
