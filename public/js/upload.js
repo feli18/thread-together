@@ -418,40 +418,12 @@ if (tagDisplay) {
             badge.classList.add('bg-success');
             if (tagInput) {
               const currentTags = tagInput.value.split(/\s+/).filter(t => t.length > 0);
-              const tagExists = currentTags.some(t => t.replace(/^#+/, '') === tagText);
-              if (!tagExists) {
-                currentTags.push(`#${tagText}`);
-                tagInput.value = currentTags.join(' ');
-              }
+              currentTags.push(`#${tagText}`);
+              tagInput.value = currentTags.join(' ');
             }
             logTagAction({ tag: tagText, action: 'accept', timeMs: now - suggestShownAt });
           }
         });
-        
-        // Add a helper function to sync badge states with input
-        const syncBadgeStates = () => {
-          if (tagInput) {
-            const currentTags = tagInput.value.split(/\s+/).filter(t => t.length > 0);
-            const currentTagTexts = currentTags.map(t => t.replace(/^#+/, ''));
-            
-            // Reset all badges to unselected state
-            tagDisplay.querySelectorAll('.badge.tag').forEach(b => b.classList.remove('bg-success'));
-            
-            // Mark selected badges based on input content
-            currentTagTexts.forEach(tagText => {
-              const matchingBadge = Array.from(tagDisplay.querySelectorAll('.badge.tag'))
-                .find(b => b.textContent.replace(/^#/, '') === tagText);
-              if (matchingBadge) {
-                matchingBadge.classList.add('bg-success');
-              }
-            });
-          }
-        };
-        
-        // Sync badge states when input changes
-        if (tagInput) {
-          tagInput.addEventListener('input', syncBadgeStates);
-        }
       } else if (uploadMode === 'editable') {
         // Editable mode: just visual feedback (tags already in input)
         badge.style.cursor = 'pointer';
