@@ -444,7 +444,6 @@ if (tagDisplay) {
           }
         });
       } else if (uploadMode === 'editable') {
-        // Editable mode: just visual feedback (tags already in input)
         badge.style.cursor = 'pointer';
         badge.addEventListener('click', () => {
           const now = performance.now();
