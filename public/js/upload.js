@@ -389,59 +389,58 @@ async function logTagAction({ tag, action, timeMs, category }) {
 const tagDisplay = document.getElementById('tagDisplayArea');
 if (tagDisplay) {
   let suggestShownAt = 0;
-  
-  // Use event delegation to avoid duplicate event binding
-  tagDisplay.addEventListener('click', (e) => {
-    const badge = e.target.closest('.badge.tag');
-    if (!badge) return;
-    
-    // Check if this badge already has a click handler (avoid duplicate binding)
-    if (badge.dataset.clickHandled) return;
-    badge.dataset.clickHandled = 'true';
-    
-    if (uploadMode === 'locked') {
-      // Locked mode: click to accept tags individually
-      const now = performance.now();
-      const tagText = badge.textContent.replace(/^#/, '');
-      const tagInput = document.getElementById('tagsInput');
-      
-      console.log(`🔒 B mode tag clicked : ${tagText}, current state: ${badge.classList.contains('bg-success') ? 'selected' : 'not selected'}`);
-      
-      if (badge.classList.contains('bg-success')) {
-        // Remove from input
-        badge.classList.remove('bg-success');
-        if (tagInput) {
-          const currentTags = tagInput.value.split(/\s+/).filter(t => t.length > 0);
-          const filteredTags = currentTags.filter(t => t.replace(/^#+/, '') !== tagText);
-          tagInput.value = filteredTags.join(' ');
-        }
-        logTagAction({ tag: tagText, action: 'remove', timeMs: now - suggestShownAt });
-      } else {
-        // Add to input
-        badge.classList.add('bg-success');
-        if (tagInput) {
-          const currentTags = tagInput.value.split(/\s+/).filter(t => t.length > 0);
-          currentTags.push(`#${tagText}`);
-          tagInput.value = currentTags.join(' ');
-        }
-        logTagAction({ tag: tagText, action: 'accept', timeMs: now - suggestShownAt });
-      }
-    } else if (uploadMode === 'editable') {
-      // Editable mode: just visual feedback (tags already in input)
-      const now = performance.now();
-      logTagAction({ tag: badge.textContent.replace(/^#/, ''), action: 'accept', timeMs: now - suggestShownAt });
-      badge.classList.toggle('bg-success');
-    }
-  });
-  
   const observer = new MutationObserver(() => {
     // when suggestions are inserted, start timer
     suggestShownAt = performance.now();
     
-    // Reset click handler flags for new tags
+    // add click handler based on mode
     tagDisplay.querySelectorAll('.badge.tag').forEach(badge => {
-      if (!badge.dataset.clickHandled) {
-        badge.dataset.clickHandled = 'false';
+      if (uploadMode === 'locked') {
+        // Locked mode: click to accept tags individually
+        badge.addEventListener('click', () => {
+          const now = performance.now();
+          const tagText = badge.textContent.replace(/^#/, '');
+          const tagInput = document.getElementById('tagsInput');
+          
+          console.log(`🔒 B mode tag clicked : ${tagText}, current state: ${badge.classList.contains('bg-success') ? 'selected' : 'not selected'}`);
+          console.log(`🔍 Before click - badge classes:`, badge.classList.toString());
+          
+          if (badge.classList.contains('bg-success')) {
+            // Remove from input
+            console.log(`🗑️ Removing tag: ${tagText}`);
+            badge.classList.remove('bg-success');
+            console.log(`🔍 After removal - badge classes:`, badge.classList.toString());
+            
+            if (tagInput) {
+              const currentTags = tagInput.value.split(/\s+/).filter(t => t.length > 0);
+              const filteredTags = currentTags.filter(t => t.replace(/^#+/, '') !== tagText);
+              tagInput.value = filteredTags.join(' ');
+              console.log(`📝 Input updated - removed: ${tagText}, new value:`, tagInput.value);
+            }
+            logTagAction({ tag: tagText, action: 'remove', timeMs: now - suggestShownAt });
+          } else {
+            // Add to input
+            console.log(`➕ Adding tag: ${tagText}`);
+            badge.classList.add('bg-success');
+            console.log(`🔍 After addition - badge classes:`, badge.classList.toString());
+            
+            if (tagInput) {
+              const currentTags = tagInput.value.split(/\s+/).filter(t => t.length > 0);
+              currentTags.push(`#${tagText}`);
+              tagInput.value = currentTags.join(' ');
+              console.log(`📝 Input updated - added: ${tagText}, new value:`, tagInput.value);
+            }
+            logTagAction({ tag: tagText, action: 'accept', timeMs: now - suggestShownAt });
+          }
+        });
+      } else if (uploadMode === 'editable') {
+        // Editable mode: just visual feedback (tags already in input)
+        badge.style.cursor = 'pointer';
+        badge.addEventListener('click', () => {
+          const now = performance.now();
+          logTagAction({ tag: badge.textContent.replace(/^#/, ''), action: 'accept', timeMs: now - suggestShownAt });
+          badge.classList.toggle('bg-success');
+        }, { once: true });
       }
     });
   });
