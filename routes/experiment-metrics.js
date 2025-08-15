@@ -9,7 +9,7 @@ router.get('/h1-h4-metrics', async (req, res) => {
     const { mode, days = 7, userId } = req.query;
     
     // Build filter
-    const filter = { isCompleted: true }; // Only completed tasks
+    const filter = { submittedAt: { $exists: true, $ne: null } }; // Only completed tasks
     if (mode) filter.mode = mode;
     if (userId) filter.userId = userId;
     
