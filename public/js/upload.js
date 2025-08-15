@@ -319,7 +319,7 @@ if (getTagsBtn && modeConfig.aiEnabled) {
 
       if (data.tags?.length) {
         const badgeClass = uploadMode === 'locked' ? 'badge bg-secondary tag me-1' : 'badge tag me-1';
-        const badgeStyle = uploadMode === 'locked' ? '' : 'cursor: pointer;';
+        const badgeStyle = 'cursor: pointer;'; 
         
         tagDisplay.innerHTML = 'Recommendation tags：' + 
           data.tags.map(t => `<span class="${badgeClass}" style="${badgeStyle}">#${t}</span>`).join('');
@@ -397,11 +397,12 @@ if (tagDisplay) {
     tagDisplay.querySelectorAll('.badge.tag').forEach(badge => {
       if (uploadMode === 'locked') {
         // Locked mode: click to accept tags individually
-        badge.style.cursor = 'pointer';
         badge.addEventListener('click', () => {
           const now = performance.now();
           const tagText = badge.textContent.replace(/^#/, '');
           const tagInput = document.getElementById('tagsInput');
+          
+          console.log(`🔒 B mode tag clicked : ${tagText}, current state: ${badge.classList.contains('bg-success') ? 'selected' : 'not selected'}`);
           
           if (badge.classList.contains('bg-success')) {
             // Remove from input
