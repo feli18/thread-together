@@ -398,17 +398,26 @@ app.post(
           // Parse final tags (remove # and clean)
           const finalTags = tagsArr.map(t => t.toLowerCase());
           
-          taskLog.final = finalTags;
-          taskLog.submittedAt = new Date();
-          taskLog.imageUploadSuccess = !!coverImagePath;
-          
-          await taskLog.save();
-          console.log(`✅ Experiment task ${taskId} completed:`, {
-            mode: taskLog.mode,
-            suggested: taskLog.suggested.length,
-            final: finalTags.length,
-            completionTime: taskLog.completionTimeSeconds
-          });
+          // Only record if user actually submitted tags
+          if (finalTags.length > 0) {
+            taskLog.final = finalTags;
+            taskLog.submittedAt = new Date();
+            taskLog.imageUploadSuccess = !!coverImagePath;
+            
+            await taskLog.save();
+            console.log(`✅ Experiment task ${taskId} completed:`, {
+              mode: taskLog.mode,
+              suggested: taskLog.suggested.length,
+              final: finalTags.length,
+              completionTime: taskLog.completionTimeSeconds
+            });
+          } else {
+            // User didn't submit any tags, mark as abandoned
+            taskLog.submittedAt = new Date();
+            taskLog.final = [];
+            await taskLog.save();
+            console.log(`⚠️ Experiment task ${taskId} abandoned (no tags submitted)`);
+          }
         }
       } catch (error) {
         console.error('Failed to record task completion:', error);
