@@ -24,6 +24,7 @@ import logsRoutes from "./routes/logs.js";
 import adminRoutes from "./routes/admin.js";
 import experimentRoutes from "./routes/experiment.js";
 import experimentTestRoutes from "./routes/experiment-test.js";
+import experimentMetricsRoutes from "./routes/experiment-metrics.js";
 
 import Post from "./models/Post.js";
 import User from "./models/User.js";
@@ -165,6 +166,7 @@ app.use("/logs", logsRoutes);
 app.use("/admin", adminRoutes);
 app.use("/experiment", experimentRoutes);
 app.use("/experiment-test", experimentTestRoutes);
+app.use("/experiment-metrics", experimentMetricsRoutes);
 
 
 app.get("/", async (req, res) => {
