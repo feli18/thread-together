@@ -12,7 +12,7 @@ async function startExperimentTask(imageId) {
       body: JSON.stringify({
         mode: uploadMode,
         imageId: imageId || `img_${Date.now()}`, // Generate imageId if not provided
-        k: 5, // Number of AI suggestions
+        k: 10, // Number of AI suggestions
         isWarmup: false // Can be set based on UI
       })
     });
