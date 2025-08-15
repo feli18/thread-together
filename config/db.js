@@ -29,8 +29,6 @@ export async function connectDB() {
       maxIdleTimeMS: 30_000,            // Added max idle time
       // DNS and network options
       family: 4,                         // Force IPv4
-      keepAlive: true,                   // Enable keep-alive
-      keepAliveInitialDelay: 30000,     // Keep-alive delay
     };
 
     cached.promise = mongoose.connect(uri, connectionOptions)
