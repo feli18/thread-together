@@ -403,36 +403,45 @@ if (tagDisplay) {
           const tagInput = document.getElementById('tagsInput');
           
           console.log(`🔒 B mode tag clicked : ${tagText}, current state: ${badge.classList.contains('bg-success') ? 'selected' : 'not selected'}`);
-          console.log(`🔍 Before click - badge classes:`, badge.classList.toString());
+          console.log(`  Before click - badge classes:`, badge.classList.toString());
           
-                      if (badge.classList.contains('bg-success')) {
-              // Remove from input
-              console.log(`🗑️ Removing tag: ${tagText}`);
-              badge.classList.remove('bg-success');
-              console.log(`🔍 After removal - badge classes:`, badge.classList.toString());
+          if (badge.classList.contains('bg-success')) {
+            // Remove from input
+            console.log(`🗑️ Removing tag: ${tagText}`);
+            badge.classList.remove('bg-success');
+            console.log(`  After removal - badge classes:`, badge.classList.toString());
+            
+            if (tagInput) {
+              const currentTags = tagInput.value.split(/\s+/).filter(t => t.length > 0);
+              console.log(`  Current tags in input:`, currentTags);
+              console.log(`  Looking for tag: "${tagText}"`);
               
-              if (tagInput) {
-                const currentTags = tagInput.value.split(/\s+/).filter(t => t.length > 0);
-                console.log(`🔍 Current tags in input:`, currentTags);
-                console.log(`🔍 Looking for tag: "${tagText}"`);
+              // Fix: Use exact match for tag removal - handle multi-word tags properly
+              const filteredTags = currentTags.filter(t => {
+                const cleanTag = t.replace(/^#+/, '').trim();
+                const isMatch = cleanTag === tagText;
+                console.log(`  Comparing: "${cleanTag}" === "${tagText}" → ${isMatch}`);
                 
-                // Fix: Use exact match for tag removal
-                const filteredTags = currentTags.filter(t => {
-                  const cleanTag = t.replace(/^#+/, '').trim();
-                  const isMatch = cleanTag === tagText;
-                  console.log(`🔍 Comparing: "${cleanTag}" === "${tagText}" → ${isMatch}`);
-                  return !isMatch;
-                });
+                // Additional debug info for multi-word tags
+                if (tagText.includes(' ')) {
+                  console.log(`Multi-word tag detected: "${tagText}"`);
+                  console.log(`Clean tag: "${cleanTag}"`);
+                  console.log(`Length comparison: ${cleanTag.length} vs ${tagText.length}`);
+                  console.log(`  Character codes: ${cleanTag.split('').map(c => c.charCodeAt(0)).join(',')} vs ${tagText.split('').map(c => c.charCodeAt(0)).join(',')}`);
+                }
                 
-                tagInput.value = filteredTags.join(' ');
-                console.log(`📝 Input updated - removed: ${tagText}, new value:`, tagInput.value);
-              }
-              logTagAction({ tag: tagText, action: 'remove', timeMs: now - suggestShownAt });
-            } else {
+                return !isMatch;
+              });
+              
+              tagInput.value = filteredTags.join(' ');
+              console.log(`📝 Input updated - removed: ${tagText}, new value:`, tagInput.value);
+            }
+            logTagAction({ tag: tagText, action: 'remove', timeMs: now - suggestShownAt });
+          } else {
             // Add to input
             console.log(`➕ Adding tag: ${tagText}`);
             badge.classList.add('bg-success');
-            console.log(`🔍 After addition - badge classes:`, badge.classList.toString());
+            console.log(`  After addition - badge classes:`, badge.classList.toString());
             
             if (tagInput) {
               const currentTags = tagInput.value.split(/\s+/).filter(t => t.length > 0);
