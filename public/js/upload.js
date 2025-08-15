@@ -412,32 +412,21 @@ if (tagDisplay) {
       console.log(`  After removal - badge classes:`, badge.classList.toString());
       
                   if (tagInput) {
-              // Fix: Don't split by spaces for multi-word tags
               const inputValue = tagInput.value;
               console.log(`  Raw input value: "${inputValue}"`);
               console.log(`  Looking for tag: "${tagText}"`);
               
-              if (tagText.includes(' ')) {
-                // Multi-word tag: remove the exact tag with #
-                const tagToRemove = `#${tagText}`;
-                const newValue = inputValue.replace(new RegExp(`\\b${tagToRemove}\\b`, 'g'), '').replace(/\s+/g, ' ').trim();
-                tagInput.value = newValue;
-                console.log(`📝 Multi-word tag removed: "${tagToRemove}", new value: "${newValue}"`);
-              } else {
-                // Single word tag: use the existing logic
-                const currentTags = inputValue.split(/\s+/).filter(t => t.length > 0);
-                console.log(`  Current tags in input:`, currentTags);
-                
-                const filteredTags = currentTags.filter(t => {
-                  const cleanTag = t.replace(/^#+/, '').trim();
-                  const isMatch = cleanTag === tagText;
-                  console.log(`  Comparing: "${cleanTag}" === "${tagText}" → ${isMatch}`);
-                  return !isMatch;
-                });
-                
-                tagInput.value = filteredTags.join(' ');
-                console.log(`📝 Single word tag removed: "${tagText}", new value: "${tagInput.value}"`);
-              }
+              // Fix: Parse tags correctly by looking for # patterns
+              const tagPattern = /#[^\s]+(?:\s+[^\s]+)*/g;
+              const currentTags = inputValue.match(tagPattern) || [];
+              console.log(`  Parsed tags:`, currentTags);
+              
+              // Remove the specific tag
+              const tagToRemove = `#${tagText}`;
+              const filteredTags = currentTags.filter(tag => tag !== tagToRemove);
+              
+              tagInput.value = filteredTags.join(' ');
+              console.log(`📝 Tag removed: "${tagToRemove}", new value: "${tagInput.value}"`);
             }
       logTagAction({ tag: tagText, action: 'remove', timeMs: now - suggestShownAt });
     } else {
