@@ -411,31 +411,34 @@ if (tagDisplay) {
       badge.classList.remove('bg-success');
       console.log(`  After removal - badge classes:`, badge.classList.toString());
       
-      if (tagInput) {
-        const currentTags = tagInput.value.split(/\s+/).filter(t => t.length > 0);
-        console.log(`  Current tags in input:`, currentTags);
-        console.log(`  Looking for tag: "${tagText}"`);
-        
-        // Fix: Use exact match for tag removal - handle multi-word tags properly
-        const filteredTags = currentTags.filter(t => {
-          const cleanTag = t.replace(/^#+/, '').trim();
-          const isMatch = cleanTag === tagText;
-          console.log(`  Comparing: "${cleanTag}" === "${tagText}" → ${isMatch}`);
-          
-          // Additional debug info for multi-word tags
-          if (tagText.includes(' ')) {
-            console.log(`Multi-word tag detected: "${tagText}"`);
-            console.log(`Clean tag: "${cleanTag}"`);
-            console.log(`Length comparison: ${cleanTag.length} vs ${tagText.length}`);
-            console.log(`  Character codes: ${cleanTag.split('').map(c => c.charCodeAt(0)).join(',')} vs ${tagText.split('').map(c => c.charCodeAt(0)).join(',')}`);
-          }
-          
-          return !isMatch;
-        });
-        
-        tagInput.value = filteredTags.join(' ');
-        console.log(`📝 Input updated - removed: ${tagText}, new value:`, tagInput.value);
-      }
+                  if (tagInput) {
+              // Fix: Don't split by spaces for multi-word tags
+              const inputValue = tagInput.value;
+              console.log(`  Raw input value: "${inputValue}"`);
+              console.log(`  Looking for tag: "${tagText}"`);
+              
+              if (tagText.includes(' ')) {
+                // Multi-word tag: remove the exact tag with #
+                const tagToRemove = `#${tagText}`;
+                const newValue = inputValue.replace(new RegExp(`\\b${tagToRemove}\\b`, 'g'), '').replace(/\s+/g, ' ').trim();
+                tagInput.value = newValue;
+                console.log(`📝 Multi-word tag removed: "${tagToRemove}", new value: "${newValue}"`);
+              } else {
+                // Single word tag: use the existing logic
+                const currentTags = inputValue.split(/\s+/).filter(t => t.length > 0);
+                console.log(`  Current tags in input:`, currentTags);
+                
+                const filteredTags = currentTags.filter(t => {
+                  const cleanTag = t.replace(/^#+/, '').trim();
+                  const isMatch = cleanTag === tagText;
+                  console.log(`  Comparing: "${cleanTag}" === "${tagText}" → ${isMatch}`);
+                  return !isMatch;
+                });
+                
+                tagInput.value = filteredTags.join(' ');
+                console.log(`📝 Single word tag removed: "${tagText}", new value: "${tagInput.value}"`);
+              }
+            }
       logTagAction({ tag: tagText, action: 'remove', timeMs: now - suggestShownAt });
     } else {
       // Add to input
