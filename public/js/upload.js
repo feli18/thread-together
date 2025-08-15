@@ -416,9 +416,9 @@ if (tagDisplay) {
               console.log(`  Raw input value: "${inputValue}"`);
               console.log(`  Looking for tag: "${tagText}"`);
               
-              // Fix: Parse tags correctly by looking for # patterns
-              const tagPattern = /#[^\s]+(?:\s+[^\s]+)*/g;
-              const currentTags = inputValue.match(tagPattern) || [];
+              // Fix: Parse tags correctly by splitting on # and filtering
+              const tags = inputValue.split(/#/).filter(tag => tag.trim().length > 0);
+              const currentTags = tags.map(tag => `#${tag.trim()}`);
               console.log(`  Parsed tags:`, currentTags);
               
               // Remove the specific tag
