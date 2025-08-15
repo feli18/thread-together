@@ -310,6 +310,7 @@ if (getTagsBtn && modeConfig.aiEnabled) {
 
     const formData = new FormData();
     formData.append('image', file);
+    formData.append('k', '10'); 
 
     const t0 = performance.now();
     try {

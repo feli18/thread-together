@@ -24,10 +24,10 @@ async def health():
     return {"status": "healthy", "message": "AI API is running"}
 
 @app.post("/predict")
-async def predict(image: UploadFile = File(...)):
+async def predict(image: UploadFile = File(...), k: int = 10):
     contents = await image.read()
     pil_image = Image.open(io.BytesIO(contents)).convert("RGB")
-    tags = predict_tags(pil_image)
+    tags = predict_tags(pil_image, top_k=k)
     return {"tags": tags}
 
 if __name__ == "__main__":

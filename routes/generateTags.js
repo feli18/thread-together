@@ -39,10 +39,12 @@ router.post("/", upload.single("image"), async (req, res) => {
       form.append("image", blob, filename);
     }
 
-    // 12s timeout，避免挂住
+    // 12s timeout
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
-
+    const k = req.body.k || 10;
+    form.append("k", k.toString());
+    
     const response = await fetch(`${AI_API_URL}/predict`, {
       method: "POST",
       body: form,
