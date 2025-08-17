@@ -22,9 +22,9 @@ router.get('/profile', isLoggedIn, async (req, res, next) => {
     console.log('  - Username:', user?.username);
 
     const [userPosts, likedPosts, collectedPosts] = await Promise.all([
-      Post.find({ author: userId }).sort({ createdAt: -1 }),
-      Post.find({ likedBy: userId }).sort({ createdAt: -1 }),
-      Post.find({ bookmarkedBy: userId }).sort({ createdAt: -1 }),
+      Post.find({ author: userId }).sort({ createdAt: -1 }).limit(100),
+      Post.find({ likedBy: userId }).sort({ createdAt: -1 }).limit(100),
+      Post.find({ bookmarkedBy: userId }).sort({ createdAt: -1 }).limit(100),
     ]);
     
     console.log('  - Posts number:', userPosts.length);
@@ -80,6 +80,7 @@ router.get('/users/:id', async (req, res, next) => {
 
     const userPosts = await Post.find({ author: profileUser._id })
       .sort({ createdAt: -1 })
+      .limit(100)
       .lean();
 
     res.render('users/publicProfile', {

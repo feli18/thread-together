@@ -171,7 +171,7 @@ app.use("/experiment-metrics", experimentMetricsRoutes);
 
 app.get("/", async (req, res) => {
   try {
-    const posts = await Post.find().sort({ createdAt: -1 }).populate("author").lean();
+    const posts = await Post.find().sort({ createdAt: -1 }).limit(50).populate("author").lean();
 
     const hotTags = await Post.aggregate([
       { $unwind: "$tags" },
