@@ -26,7 +26,7 @@
         <tbody>
           <% logs.forEach(l => { %>
             <tr>
-              <td><%= new Date(l.createdAt).toLocaleString() %></td>
+                              <td><%= new Date(l.createdAt).toLocaleString('en-GB', { timeZone: 'Europe/London' }) %></td>
               <td><%= l.userId || '' %></td>
               <td><%= l.sessionId || '' %></td>
               <td><%= l.tag %></td>

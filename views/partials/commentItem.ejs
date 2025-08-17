@@ -25,7 +25,7 @@ function countHiddenReplies(comment, level) {
         <p class="mb-1 fw-semibold"><a href="/users/<%= comment.user._id %>" class="text-decoration-none text-dark">@<%= comment.user.username %></a></p>
         <p class="mb-1"><%= comment.text %></p>
         <div class="text-muted small d-flex gap-3">
-          <span><%= comment.createdAt.toLocaleDateString() %></span>
+                          <span><%= comment.createdAt.toLocaleDateString('en-GB', { timeZone: 'Europe/London' }) %></span>
           <a href="#" class="reply-btn text-decoration-none" data-reply-id="<%= comment._id %>"><i class="bi bi-chat-left-text"></i> Reply</a>
         </div>
 

@@ -159,7 +159,7 @@
               </td>
               <td>
                 <small class="text-muted">
-                  <%= new Date(task.createdAt).toLocaleString() %>
+                                      <%= new Date(task.createdAt).toLocaleString('en-GB', { timeZone: 'Europe/London' }) %>
                 </small>
               </td>
             </tr>

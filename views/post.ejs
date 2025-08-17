@@ -63,7 +63,7 @@
             <img src="<%= post.author.avatar || '/images/default-avatar.png' %>" alt="<%= post.author.username %>" width="32" height="32" class="rounded-circle" />
           </a>
           <a href="/users/<%= post.author._id %>" class="text-decoration-none text-dark fw-semibold"><%= post.author.username %></a>
-          <span class="text-muted">&middot; <%= post.createdAt.toLocaleDateString() %></span>
+          <span class="text-muted">&middot; <%= post.createdAt.toLocaleDateString('en-GB', { timeZone: 'Europe/London' }) %></span>
         </p>
         <div class="tags ">
           <% post.tags.forEach(tag => { %>

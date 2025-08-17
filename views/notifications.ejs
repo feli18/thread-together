@@ -64,7 +64,7 @@
                         <div class="username fw-semibold">@<%= n.sender.username %></div>
                         <div class="action text-muted">
                           <%= n.type === 'comment' ? 'commented on' : 'replied to a comment on' %> your post
-                          <span class="ms-2 time small"><%= n.createdAt.toLocaleDateString() %></span>
+                          <span class="ms-2 time small"><%= n.createdAt.toLocaleDateString('en-GB', { timeZone: 'Europe/London' }) %></span>
                         </div>
                         <div class="text-muted small">[<%= n.comment?.text || 'no comment text' %>]</div>
                       </div>
@@ -88,7 +88,7 @@
                         <div class="username fw-semibold">@<%= n.sender.username %></div>
                         <div class="action text-muted">
                           <%= n.type === 'like' ? 'liked' : 'saved' %> your post
-                          <span class="ms-2 time small"><%= n.createdAt.toLocaleDateString() %></span>
+                          <span class="ms-2 time small"><%= n.createdAt.toLocaleDateString('en-GB', { timeZone: 'Europe/London' }) %></span>
                         </div>
                       </div>
                     </div>

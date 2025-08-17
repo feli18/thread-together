@@ -190,7 +190,7 @@
                         <img src="<%= msg.image %>" class="img-fluid rounded mt-1" style="max-width:200px;">
                       <% } %>
                       <div class="text-muted small mt-1 text-end" style="font-size:.75rem">
-                        <%= new Date(msg.createdAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) %>
+                        <%= new Date(msg.createdAt).toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit', timeZone: 'Europe/London'}) %>
                       </div>
                     </div>
                   </div>
