@@ -150,7 +150,6 @@
   const bookmarked = post.bookmarkedBy.some(u => u._id.toString() === currentUserId);
 %>
 
-        <%# const liked = post.likedBy.some(u => u._id.toString() === currentUser?.toString()); %>
         <form action="/posts/<%= post._id %>/like" method="POST" class="like-form" data-post-id="<%= post._id %>">
           <button type="submit" class="icon-btn btn btn-light like-btn border-0">
             <i class="<%= liked ? 'bi bi-heart-fill text-danger' : 'bi bi-heart text-secondary' %>"></i>
