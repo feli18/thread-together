@@ -43,7 +43,9 @@ router.post("/", upload.single("image"), async (req, res) => {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12000);
     const k = req.body.k || 10;
+    const model = req.body.model || "clip";
     form.append("k", k.toString());
+    form.append("model", model);
     
     const response = await fetch(`${AI_API_URL}/predict`, {
       method: "POST",
@@ -77,7 +79,10 @@ router.post("/", upload.single("image"), async (req, res) => {
       } catch {}
     }
 
-    return res.json({ tags: Array.isArray(data.tags) ? data.tags : [] });
+    return res.json({ 
+      tags: Array.isArray(data.tags) ? data.tags : [],
+      model: data.model || "clip"
+    });
   } catch (err) {
     console.error("Error calling FastAPI:", err);
     return res.status(500).json({ error: "Failed to generate tags", message: err.message, AI_API_URL });

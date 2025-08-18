@@ -95,6 +95,32 @@
                    <% if (mode === 'locked') { %>readonly<% } %> />
             
             <% if (modeConfig.aiEnabled) { %>
+              <!-- AI Model Selection -->
+              <div class="mt-3 mb-2">
+                <label class="form-label small text-muted">Choose AI Model:</label>
+                <div class="btn-group btn-group-sm w-100" role="group" aria-label="AI Model Selection">
+                  <input type="radio" class="btn-check" name="aiModel" id="modelClip" value="clip" checked>
+                  <label class="btn btn-outline-primary" for="modelClip">
+                    <i class="bi bi-eye"></i> CLIP
+                  </label>
+                  
+                  <input type="radio" class="btn-check" name="aiModel" id="modelBlip" value="blip">
+                  <label class="btn btn-outline-primary" for="modelBlip">
+                    <i class="bi bi-chat-text"></i> BLIP
+                  </label>
+                  
+                  <input type="radio" class="btn-check" name="aiModel" id="modelSwin" value="swin">
+                  <label class="btn btn-outline-primary" for="modelSwin">
+                    <i class="bi bi-layers"></i> Swin
+                  </label>
+                </div>
+                <div class="small text-muted mt-1">
+                  <strong>CLIP:</strong> Visual-semantic understanding • 
+                  <strong>BLIP:</strong> Image-text comprehension • 
+                  <strong>Swin:</strong> Hierarchical vision transformer
+                </div>
+              </div>
+              
               <button type="button" id="getTagsBtn" class="btn btn-outline-info btn-sm mt-2">
                 ✨ Generate AI Tags
               </button>

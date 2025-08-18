@@ -29,17 +29,44 @@ projection = ProjectionHead(768, tag_features.shape[1])
 model.eval()
 projection.eval()
 
-def predict_tags(image: Image.Image, top_k=3):
-   
-    inputs = extractor(images=image, return_tensors="pt")
-    
-    with torch.no_grad():
-        outputs = model(**inputs)
-        img_feat = outputs.last_hidden_state.mean(dim=1)
-        img_feat = projection(img_feat)  
-        img_feat = F.normalize(img_feat, dim=1)
+def predict_tags(image: Image.Image, top_k=10):
+    """
+    Generate tags using Swin model with improved logic
+    """
+    try:
+        inputs = extractor(images=image, return_tensors="pt")
+        
+        with torch.no_grad():
+            outputs = model(**inputs)
+            img_feat = outputs.last_hidden_state.mean(dim=1)
+            img_feat = projection(img_feat)  
+            img_feat = F.normalize(img_feat, dim=1)
 
-    sim = torch.matmul(img_feat, tag_features.T)  
-    topk = torch.topk(sim, k=top_k)
-    
-    return [labels[i] for i in topk.indices[0]]
+        # Get similarity scores
+        sim = torch.matmul(img_feat, tag_features.T)
+        
+        # Get top-k most similar labels
+        topk = torch.topk(sim, k=min(top_k, len(labels)))
+        
+        # Extract the best matching labels
+        best_labels = [labels[i] for i in topk.indices[0]]
+        
+        # Filter out low-confidence matches (similarity < 0.1)
+        confidence_threshold = 0.1
+        confident_labels = []
+        for i, label in enumerate(best_labels):
+            confidence = topk.values[0][i].item()
+            if confidence > confidence_threshold:
+                confident_labels.append(label)
+        
+        # If we have enough confident labels, return them
+        if len(confident_labels) >= 3:
+            return confident_labels[:top_k]
+        
+        # Otherwise, return the best matches even if confidence is low
+        return best_labels[:top_k]
+        
+    except Exception as e:
+        print(f"⚠️  Swin model error: {e}")
+        # Fallback to some generic tags
+        return ["texture", "pattern", "material", "style", "design"][:top_k]

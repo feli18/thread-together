@@ -127,3 +127,38 @@
   background: #fff7f2;
   border-radius: 8px;
 }
+
+/* AI Model Selection Styles */
+.btn-group .btn-check:checked + .btn {
+  background-color: #007bff;
+  border-color: #bfa2c1;
+  color: white;
+}
+
+.btn-group .btn-check:not(:checked) + .btn:hover {
+  background-color: #e9ecef;
+  border-color:#bfa2c1;
+  color: #007bff;
+}
+
+.btn-group .btn-check:not(:checked) + .btn {
+  background-color: transparent;
+  border-color:#bfa2c1;
+  color: #007bff;
+}
+
+/* Model-specific colors */
+#modelClip:checked + label {
+  background-color: #fff7d0;
+  border-color: #bfa2c1;
+}
+
+#modelBlip:checked + label {
+  background-color: #fff7d0;
+  border-color:#bfa2c1;
+}
+
+#modelSwin:checked + label {
+  background-color: #fff7d0;
+  border-color:#bfa2c1;
+}
