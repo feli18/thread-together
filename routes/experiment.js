@@ -150,7 +150,7 @@ router.get('/task/:taskId', async (req, res) => {
 // Get all tasks for a user/session (for analysis)
 router.get('/tasks', async (req, res) => {
   try {
-    const { userId, sessionId, mode, imageId, limit = 50 } = req.query;
+    const { userId, sessionId, mode, imageId, limit = 500 } = req.query;
     
     const filter = {};
     if (userId) filter.userId = userId;

@@ -127,7 +127,7 @@ router.get('/metrics', async (req, res) => {
 // List all experiment tasks
 router.get('/tasks', async (req, res) => {
   try {
-    const { mode, limit = 50, completed } = req.query;
+    const { mode, limit = 500, completed } = req.query;
     
     const filter = {};
     if (mode) filter.mode = mode;
